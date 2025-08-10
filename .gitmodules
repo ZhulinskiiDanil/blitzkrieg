@@ -1,0 +1,6 @@
+[submodule "external/socket.io-client-cpp"]
+	path = external/socket.io-client-cpp
+	url = https://github.com/socketio/socket.io-client-cpp.git
+[submodule "external/websocketpp"]
+	path = external/websocketpp
+	url = https://github.com/zaphoyd/websocketpp
