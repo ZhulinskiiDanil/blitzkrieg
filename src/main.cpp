@@ -5,6 +5,7 @@
 #include <Geode/modify/PlayLayer.hpp>
 
 #include <fmt/core.h>
+#include <cvolton.level-id-api/include/EditorIDs.hpp>
 
 #include "./utils/loadProfiles.hpp"
 
@@ -89,9 +90,27 @@ class $modify(PlayLayer) {
 public:
     bool init(GJGameLevel* level, bool p1, bool p2) {
         if (!PlayLayer::init(level, p1, p2)) return false;
+        loadData();
 
-        geode::log::debug("INIT: SET NEW BLITZKRIEG DATA");
+        int levelId = EditorIDs::getID(level);
+        geode::log::debug("Level ID: {}", levelId);
 
+        // TODO: Do level selecting by user
+        // Сейчас это будет работать только для уровня у которого в редакторе ID 1422
+        // И только с The Yangire таблицей для меня, потом сделать нормально
+        if (levelId == 1165) {
+            m_fields->currentProfile = getProfileByName("The Yangire");
+        }
+
+        if (!m_fields->currentProfile) {
+            geode::log::error("Profile The Yangire not found!");
+            loadSounds();
+        }
+
+        return true;
+    }
+
+    void loadData() {
         auto resourcesDir = geode::Mod::get()->getResourcesDir();
         auto fullPath = (resourcesDir / "export.json").string();
 
@@ -99,18 +118,7 @@ public:
             m_fields->profiles = loadProfiles(fullPath);
         } catch (const std::exception& e) {
             geode::log::error("Profile loading error: {}", e.what());
-            return true;
         }
-
-        m_fields->currentProfile = getProfileByName("Deadlocked");
-        if (!m_fields->currentProfile) {
-            geode::log::error("Profile Deadlocked not found!");
-            return false;
-        }
-
-        loadSounds();
-
-        return true;
     }
 
     void resetLevel() {
@@ -193,6 +201,7 @@ public:
 
         FMOD::Channel* channel = nullptr;
         auto system = FMODAudioEngine::sharedEngine()->m_system;
+
         if (system->playSound(sound, nullptr, false, &channel) != FMOD_OK) {
             geode::log::error("Failed to play sound");
         }
@@ -204,6 +213,7 @@ public:
                 return &profile;
             }
         }
+
         return nullptr;
     }
 
@@ -320,8 +330,8 @@ public:
             return;
         }
 
-        int runStart = run.start;
-        int runEnd = run.end;
+        int runStart = static_cast<int>(std::floor(run.start));
+        int runEnd   = static_cast<int>(std::floor(run.end));
 
         geode::log::debug("Checking run: {}-{}", runStart, runEnd);
 
@@ -370,6 +380,8 @@ public:
                 playSound(false);  // Звук закрытия range
 
                 checkedRangeThisRun = true;
+
+                saveData();
             }
 
             // Если закрыли range, проверяем закрыта ли теперь вся стадия
@@ -389,7 +401,5 @@ public:
                 break;
             }
         }
-
-        saveData();
     }
 };

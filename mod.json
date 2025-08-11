@@ -11,6 +11,12 @@
 	"version": "v0.0.1-alpha",
 	"developer": "Zhulis",
 	"description": "TEST",
+	"dependencies": {
+		"cvolton.level-id-api": {
+			"version": "v1.2.3",
+			"importance": "required"
+		}
+	},
 	"resources": {
 		"files": [
 			"resources/audio/range_complete.mp3",
