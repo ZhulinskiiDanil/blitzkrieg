@@ -10,5 +10,10 @@
 	"name": "dgkr-blitzkrieg-tracker",
 	"version": "v0.0.1-alpha",
 	"developer": "Zhulis",
-	"description": "TEST"
+	"description": "TEST",
+	"resources": {
+		"files": [
+			"resources/data/export.json"
+		]
+	}
 }

@@ -2,12 +2,34 @@
 #include <Geode/modify/MenuLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 
+#include "./utils/loadProfiles.hpp"
+
 using namespace geode::prelude;
 
 class $modify(MenuLayer) {
     bool init() {
         if (!MenuLayer::init())
             return false;
+
+        geode::log::debug("INIT: SET NEW BLITZKRIEG DATA");
+
+        auto resourcesDir = geode::Mod::get()->getResourcesDir();
+        auto fullPath = (resourcesDir / "export.json").string();
+
+        std::vector<Profile> profiles;
+        try {
+            profiles = loadProfiles(fullPath);
+        } catch (const std::exception& e) {
+            geode::log::error("Profile loading error: {}", e.what());
+            return true; // или false в зависимости от логики
+        }
+
+        for (const auto& profile : profiles) {
+            if (profile.profileName == "Deadlocked") {
+                geode::log::debug("Profile found: {}", profile.profileName);
+                break; // если нужно только первое совпадение
+            }
+        }
 
         return true;
     }

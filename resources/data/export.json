@@ -1,0 +1,1930 @@
+[
+  {
+    "id": "326219c3-beb8-449d-a8ad-77bf7d46b6ec",
+    "profileName": "Deadlocked",
+    "data": {
+      "tags": [
+        6,
+        12,
+        17,
+        21,
+        24,
+        28,
+        32,
+        35,
+        42,
+        48,
+        56,
+        63,
+        72,
+        76,
+        79,
+        87,
+        89,
+        93
+      ],
+      "stages": [
+        {
+          "id": "e3fd776d-c2d3-40da-a6b6-c235a0b58f9e",
+          "stage": 1,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "e02c3401-8db7-4046-a1c4-38e821768d60",
+              "from": 0,
+              "to": 6,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "a8fb55c9-7017-420b-bec9-c1c24a8f5f11",
+              "from": 6,
+              "to": 12,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "598af32f-1607-467d-b0dc-09cb4f616996",
+              "from": 12,
+              "to": 17,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "b7fe8aea-556e-4478-a31b-dbf15ef1297f",
+              "from": 17,
+              "to": 21,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "a0c08a97-ef96-4962-a5f4-1f272bdf756b",
+              "from": 21,
+              "to": 24,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "a5cc9cf1-0acc-4971-80d6-39701570936c",
+              "from": 24,
+              "to": 28,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "fc86f44c-a1fa-4c6d-9118-156dec24a3b6",
+              "from": 28,
+              "to": 32,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "77c61808-e91a-4b40-8256-38d707e5c0a1",
+              "from": 32,
+              "to": 35,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "6e132a93-6232-4d65-a209-6a84231045d8",
+              "from": 35,
+              "to": 42,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "9c2c76fd-c92d-4421-adbc-edb75085bf52",
+              "from": 42,
+              "to": 48,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "d9c1b31f-cb8a-4a99-b204-7454968185e0",
+              "from": 48,
+              "to": 56,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "31aabf72-c69e-4292-9728-45e06f1e31be",
+              "from": 56,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "a78f6497-fe46-4b69-a926-2536073fc116",
+              "from": 63,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "22cf43f3-d436-4d77-821b-6050d0546749",
+              "from": 72,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "25fe9af8-e250-408f-9443-b438dd7a95b6",
+              "from": 76,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "7097c50c-715d-42b7-bce9-059d9c3d391b",
+              "from": 79,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "2f0f73b4-e464-45d9-b4a3-c0cef28222cb",
+              "from": 87,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "64176384-00c8-4de1-b55d-c90f97b62e8e",
+              "from": 89,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "91762c69-90c8-406e-b7e1-236e5e385dd5",
+              "from": 93,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "1707e513-384b-49c4-9e63-9e16ad193fe8",
+          "stage": 2,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "4502861e-abd4-49d3-808a-9d597618471d",
+              "from": 0,
+              "to": 12,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "0834948f-c0be-4ef9-88d0-6790c8e93495",
+              "from": 6,
+              "to": 17,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "ae13b449-a655-49aa-b10b-07eccf8747e4",
+              "from": 12,
+              "to": 21,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "2500f318-ca4a-4e9f-b473-ffd2ecb82627",
+              "from": 17,
+              "to": 24,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "aaad0a81-225b-4664-b2a8-e1e76bbbd634",
+              "from": 21,
+              "to": 28,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "2429a0b9-943b-4202-92d5-67ab7cff9c17",
+              "from": 24,
+              "to": 32,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "a9b1bd6a-a8cb-4520-aba1-ffb52ccd6a75",
+              "from": 28,
+              "to": 35,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "26395f28-fc00-45c6-b83d-d24d57d044f9",
+              "from": 32,
+              "to": 42,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "b1aab855-b1b4-4fdf-aa4d-263833813b26",
+              "from": 35,
+              "to": 48,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "81b431a1-c54b-4fa6-8fa0-c3f29e5e5653",
+              "from": 42,
+              "to": 56,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "fdc65a8a-b0ba-4a1e-8b51-6e970ddb2001",
+              "from": 48,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "71f08e4d-8858-4242-adfd-002ac50c189e",
+              "from": 56,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "9495769d-21f5-4a89-8782-8d7231a98f3a",
+              "from": 63,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "08e9494d-5cca-4707-a928-544a9afb0467",
+              "from": 72,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "f0050a62-c514-4712-b622-d7afdb35007b",
+              "from": 76,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "15592136-be8e-417d-adb0-9d636c23e281",
+              "from": 79,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "f7ba3671-e610-4496-a925-77ff7d1e87b3",
+              "from": 87,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "32f9a856-0a24-4cf2-bf20-e504c86f1414",
+              "from": 89,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "61dba6f0-81c5-457a-a65c-6eb5833006c4",
+          "stage": 3,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "56c36dfb-de29-4705-b19e-a702fdee042f",
+              "from": 0,
+              "to": 17,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "c4c1f92a-1952-4338-998e-1933886cc833",
+              "from": 6,
+              "to": 21,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "a19b424c-d7eb-46cc-a737-144058a30d48",
+              "from": 12,
+              "to": 24,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "c1f39822-4fd2-415f-9343-7a8914aa0a87",
+              "from": 17,
+              "to": 28,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "e222b4d0-3a47-4ae7-9b54-29ac0cd0d4be",
+              "from": 21,
+              "to": 32,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "ce5f0032-a5cd-46e9-9465-65f3fecb0d3d",
+              "from": 24,
+              "to": 35,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "f7d4ce30-fb00-47ea-8561-caa985fc6e59",
+              "from": 28,
+              "to": 42,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "d293d04f-785a-4f48-b651-c145852fd6cc",
+              "from": 32,
+              "to": 48,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "6637d456-d208-479a-b8c7-5014f8158abe",
+              "from": 35,
+              "to": 56,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "596db813-6206-4e3f-acbe-f734c38b053c",
+              "from": 42,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "aa95e6ef-485f-4a9f-b00d-5226fe0d3fa2",
+              "from": 48,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "338dcece-97c7-4acf-871b-1cd872cdeae8",
+              "from": 56,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "c0c15cdb-73c1-4456-9a3c-8c1fe400ccc7",
+              "from": 63,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "e5977bec-8d0c-419e-87bb-788012663afd",
+              "from": 72,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "799a4847-3b5e-4c45-9e08-99308938eec2",
+              "from": 76,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "c48e7b8b-85c3-4173-84c1-7d91af21ee08",
+              "from": 79,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "4f69cf70-001b-4377-9a74-f41916445074",
+              "from": 87,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "af807f04-1bd0-4e5d-a755-b3da7041de73",
+          "stage": 4,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "86e4eb14-4fc6-4368-9b20-d326bd9872ed",
+              "from": 0,
+              "to": 21,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "02902ad3-c975-47ca-bbfe-f7c79da04db9",
+              "from": 6,
+              "to": 24,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "afebf8f9-627e-4510-ac9e-e56c36e3efb7",
+              "from": 12,
+              "to": 28,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "7a0a10c6-9baf-41e7-bc73-60e3113352aa",
+              "from": 17,
+              "to": 32,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "bcef56cd-d0fb-4782-8b79-a5bb87a4a0a8",
+              "from": 21,
+              "to": 35,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "396c79bc-1947-4ac5-80a8-fa4fa675ecc9",
+              "from": 24,
+              "to": 42,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "a37f73d4-5fca-4d30-8bdd-bc0eaed0f48e",
+              "from": 28,
+              "to": 48,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "357a8132-a9a0-47af-84eb-65fa00e2965e",
+              "from": 32,
+              "to": 56,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "bb2e55a9-6488-4181-82dc-f2ac94ae8b65",
+              "from": 35,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "a1dfa40a-74d9-4f45-b45a-2d7691451a30",
+              "from": 42,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "662bde9f-3080-40ca-9082-61b24a428156",
+              "from": 48,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "e18a7fee-59e2-414f-ba2f-092ca6ba5283",
+              "from": 56,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "2fba637f-e487-47c3-949c-f3d5eb6c518c",
+              "from": 63,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "ad578d45-517b-4758-9a14-2f924168c37e",
+              "from": 72,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "e2d0f4bf-56e5-41e4-b52a-72f3ce79a6a1",
+              "from": 76,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "1089ff4a-05a2-46c2-83f1-d0776ded2409",
+              "from": 79,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "8d090cd8-7f8f-4125-ba9b-9ef854fe0af0",
+          "stage": 5,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "cee98e04-479d-40e4-9e09-32a024c02be4",
+              "from": 0,
+              "to": 24,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "eede6834-b35b-4062-b9a0-f002c62c30f1",
+              "from": 6,
+              "to": 28,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "0a3ddf80-d6db-4b02-befa-609dbbff153f",
+              "from": 12,
+              "to": 32,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "4eb1ff5f-e841-4936-a24f-bc5837002c49",
+              "from": 17,
+              "to": 35,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "3c9084ad-b79d-4685-ba24-c9c2d400d473",
+              "from": 21,
+              "to": 42,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "8f89c25b-ed2b-4df9-b8b5-7f9ed2936a31",
+              "from": 24,
+              "to": 48,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "b5f5df86-5c80-4eaf-b695-f96f7f9e88cb",
+              "from": 28,
+              "to": 56,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "b2e9bc13-26cb-4347-b0da-bb16e333aaad",
+              "from": 32,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "c79c8715-a977-49e0-a1f3-3360ecd29308",
+              "from": 35,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "99684511-5ef5-460d-bf00-f508279b2664",
+              "from": 42,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "c84a94ca-ac4e-4126-aa85-37321c10f909",
+              "from": 48,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "5645cf2c-6dcf-432d-88dc-b8341ee777dd",
+              "from": 56,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "738bc498-53d9-4008-b203-444be6a11858",
+              "from": 63,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "517e55b1-1d9f-4a2a-b8e7-64d7d57afca1",
+              "from": 72,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "39552423-0245-45ab-b9ae-631e5a36ce97",
+              "from": 76,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "a89c6098-e40e-43ab-9bec-7688d88d0fe0",
+          "stage": 6,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "a90a89fd-0dd1-49bc-93d9-67605f061ff7",
+              "from": 0,
+              "to": 28,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "d82b1479-79fa-4c87-8a44-5b6bf369dba8",
+              "from": 6,
+              "to": 32,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "5dce6192-205d-4f9f-b4b8-4c4b56b24e97",
+              "from": 12,
+              "to": 35,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "2d20d335-feb7-4422-b6ba-330e4618974d",
+              "from": 17,
+              "to": 42,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "80ae0e2a-fc89-4701-99bd-f81ebb335cb7",
+              "from": 21,
+              "to": 48,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "bbe6a0fd-c24d-4b7f-b059-7da60a1d7715",
+              "from": 24,
+              "to": 56,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "cd77d3e7-e9f4-4445-b643-4fd72c33e8c4",
+              "from": 28,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "56ba4355-93f5-4553-a660-5dc3547deb28",
+              "from": 32,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "a2ec7100-65ef-4fdf-b4dd-0ebfc1c242b7",
+              "from": 35,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "73b08fc2-a632-499e-94e0-562c1b7e2142",
+              "from": 42,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "3d959927-4b95-473e-98bd-e5b69794d00b",
+              "from": 48,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "b0179815-cac0-4c08-8dea-541f7e99a5cc",
+              "from": 56,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "37bbe157-fe41-4d84-b2b0-9a84f9e7a5df",
+              "from": 63,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "0bca5436-f1d8-4659-82e9-1a271e2b496a",
+              "from": 72,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "4b9bcd5d-02ba-41ee-8eca-215b7d3eb8da",
+          "stage": 7,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "b63f3c74-38a3-4e6e-b358-963d3ea6fbdd",
+              "from": 0,
+              "to": 32,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "04c9f0bc-bbf7-4397-a856-74349c99cdb8",
+              "from": 6,
+              "to": 35,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "748e0bdf-8c7f-4b8c-990b-d3468021c186",
+              "from": 12,
+              "to": 42,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "9067636f-9f57-4d77-867b-d9d10c37e204",
+              "from": 17,
+              "to": 48,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "4fcffaea-1d3d-4707-9b36-a39d5191043b",
+              "from": 21,
+              "to": 56,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "6c92a391-6f2a-45a2-ae4f-b8d57aa5b8c5",
+              "from": 24,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "e6260884-d89c-4809-a4ff-8eda56fcfd61",
+              "from": 28,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "3bdfdeee-c0bf-4360-bc73-2e00d9bcf928",
+              "from": 32,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "24d1349b-0807-4f6a-baca-9dc650d966a4",
+              "from": 35,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "1f3100f4-7254-4f27-b117-6f401750ff9e",
+              "from": 42,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "5c75bd54-e695-45af-bbdd-2f57f0ba8a7c",
+              "from": 48,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "49fc01de-d652-4afd-96f8-0502854d8404",
+              "from": 56,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "31fe8cf1-1a43-4d83-972d-5322be209d64",
+              "from": 63,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "c092e344-88fa-42c4-a813-19c7ccfae34b",
+          "stage": 8,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "80139744-d726-4dc1-9c61-5b52af9a69ab",
+              "from": 0,
+              "to": 35,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "0fdf79ff-2c84-4afc-a2e2-3616993aa7d8",
+              "from": 6,
+              "to": 42,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "a25988e0-d7d8-45f9-b8ad-8afc4258cdd0",
+              "from": 12,
+              "to": 48,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "bbd06852-a736-4613-b510-a2bbcc1de87b",
+              "from": 17,
+              "to": 56,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "821eac83-449d-4344-9dbe-4e919aaad94c",
+              "from": 21,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "3a235c28-4a49-4c69-9ff0-9e3daa7732ba",
+              "from": 24,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "5fab20ab-9aa6-4192-bb60-d33d1d866395",
+              "from": 28,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "61c4a8c0-e467-484f-95b9-131654eb5645",
+              "from": 32,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "95769547-2b2b-47a9-bdf1-9e05f29f8e83",
+              "from": 35,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "1c6786ad-b3f3-4e1e-9d7d-e43ec2184e4e",
+              "from": 42,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "3a4b514c-2d32-43c6-b763-5b4593a00273",
+              "from": 48,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "15d60dd8-3012-42bd-bdbb-a9e2de932186",
+              "from": 56,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "98b29f32-1689-44ec-ad5d-d0dbe7ce0469",
+          "stage": 9,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "9184e18f-4703-40b1-8e5d-8e145d9f9897",
+              "from": 0,
+              "to": 42,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "e1817a6f-faac-4cc3-b3c6-24e5c352a0b1",
+              "from": 6,
+              "to": 48,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "48b87895-2a31-4901-8dc2-288c8843662b",
+              "from": 12,
+              "to": 56,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "07410468-5296-4b3b-8bd0-6e8662a27fb1",
+              "from": 17,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "127a01ed-4646-4996-a332-c4f3d7fce62a",
+              "from": 21,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "f00aff4e-a878-448a-ae10-09f858170c2d",
+              "from": 24,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "51cd63ff-82d3-4ea4-adac-081ab1b38494",
+              "from": 28,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "98c73413-9c4c-47ef-89d0-764c0e1ec143",
+              "from": 32,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "46bb5d11-5de2-4c75-92d7-3ff2b42b54d8",
+              "from": 35,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "5def6674-e726-4221-8251-e5edac18d08b",
+              "from": 42,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "03641b21-91cf-4666-aaa6-d6f996cf76ce",
+              "from": 48,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "96e79106-253f-4bc1-8bc5-e9f44ca11ba7",
+          "stage": 10,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "f33c612a-a0df-450d-9c6b-a3e52a943766",
+              "from": 0,
+              "to": 48,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "dd5dab46-b541-40bf-97f4-7360696c736b",
+              "from": 6,
+              "to": 56,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "07cfecf4-1e29-48f9-881e-37c10bd811d7",
+              "from": 12,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "36162a47-764b-4cdb-811a-2b02b23d1781",
+              "from": 17,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "7196835c-c209-4f72-bbe6-62ce4ccd48b9",
+              "from": 21,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "eb4146d3-74b3-4ab2-8c8b-0d1d1d88c25b",
+              "from": 24,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "490f5ab6-e811-43ec-b49c-b32a7d863fcc",
+              "from": 28,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "424f357e-1924-4dfb-be20-e0cdd8e70dd5",
+              "from": 32,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "242ebafb-10ec-4c66-b0cd-d2285e9ae0d3",
+              "from": 35,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "02ebe283-e8ae-4121-aff3-cb137c85b0a2",
+              "from": 42,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "2f2d5b1d-e902-42c0-a1bc-32b8bad2942e",
+          "stage": 11,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "16aa6380-2255-4343-adf1-c6805bae0548",
+              "from": 0,
+              "to": 56,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "de1840b3-22bc-410c-a898-57dc46df994d",
+              "from": 6,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "17c97396-ead9-497f-9cf6-8de3ce6669ed",
+              "from": 12,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "ff19210b-83ba-4a1c-80c8-76601396eb8f",
+              "from": 17,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "9af1d444-d20d-499c-9fed-90cab54681ed",
+              "from": 21,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "4e05a8fa-dced-4bec-a37d-eade23f3dbd2",
+              "from": 24,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "f10e1ae6-f9b6-4c13-be78-d9ca9b2b355c",
+              "from": 28,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "1889a106-9137-443c-9374-3b2a11cb97df",
+              "from": 32,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "2f6ceb0e-db80-4847-acd1-67b359ba10b3",
+              "from": 35,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "e5e4e090-e8db-4118-9952-abfc2e410a00",
+          "stage": 12,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "98b1991c-cc9b-4f90-b1ab-b179bbbff994",
+              "from": 0,
+              "to": 63,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "735b521d-2b4d-4319-b5fd-f945c216871e",
+              "from": 6,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "cd26966d-b33d-4802-862c-75e403de985e",
+              "from": 12,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "004e0c5c-04ef-458c-884f-759ef44b62f6",
+              "from": 17,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "890783ee-933d-4e80-94e4-8986fa0a5086",
+              "from": 21,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "35ba53b1-cf34-4046-8f8e-f8a022011c9a",
+              "from": 24,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "07c9eb1f-8230-4e55-be04-b4b80057999f",
+              "from": 28,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "449c0baa-eaa0-4e90-bf4a-e4de650d708c",
+              "from": 32,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "db04d59b-5d49-42f3-a385-efb9610e52b5",
+          "stage": 13,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "6ac3e7a6-2cc7-4675-a45d-4f30a4d900cf",
+              "from": 0,
+              "to": 72,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "03ca1df1-7c06-47c3-a974-0f1f20f2734c",
+              "from": 6,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "8db41a6a-fdfd-4a85-b5e9-0326634417ae",
+              "from": 12,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "24e72cdf-9c5a-4d87-b67d-a580f559f38c",
+              "from": 17,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "41eca568-872a-4556-99ac-cb97f1a918a1",
+              "from": 21,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "646e06fa-f327-4f67-a460-8b25c6bda63b",
+              "from": 24,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "6879470d-4829-46d2-b724-ff258400ee22",
+              "from": 28,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "26c1213a-47e4-4111-a08b-43e3ece45aa4",
+          "stage": 14,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "98e284bb-b04f-437e-a6ae-f015ed573db5",
+              "from": 0,
+              "to": 76,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "c44d7961-65e0-4af3-a396-6b52bdf6a0bc",
+              "from": 6,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "028479fd-f0b4-489a-8cb4-6febe5da1a29",
+              "from": 12,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "f0962f7c-9ee6-4a56-b20a-e710587be49b",
+              "from": 17,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "1034d7a7-1304-41db-976a-a800b8f577bc",
+              "from": 21,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "db84e2f3-70d6-4478-8023-0721d132b0ca",
+              "from": 24,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "34eb68d4-9c23-48c2-b9fc-ab243f1158be",
+          "stage": 15,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "e54cba12-9a14-4171-ab77-341315a4e209",
+              "from": 0,
+              "to": 79,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "588c9385-7c3d-4569-b18f-739b4b9650d6",
+              "from": 6,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "668af799-8874-455f-868b-9ca0aaf490b3",
+              "from": 12,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "b379304d-8af2-4d56-8211-b12f084fa1fc",
+              "from": 17,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "62f16a78-c206-4098-93da-1abc2abde37e",
+              "from": 21,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "972eef80-a61c-49e5-904f-3338025fa416",
+          "stage": 16,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "a8a3a24f-575a-4dbd-996d-c3b5ba33dafb",
+              "from": 0,
+              "to": 87,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "7cff5dfe-cd9c-49ab-be03-6f8714906777",
+              "from": 6,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "4364223a-f2e7-43de-892f-502394fdbc46",
+              "from": 12,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "27740af8-6446-459e-b87c-2776fe1f8715",
+              "from": 17,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "70a761b6-cef1-47ae-8416-b46c9f0f53db",
+          "stage": 17,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "0483bed8-934e-4e42-9c81-34edcadfe146",
+              "from": 0,
+              "to": 89,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "215d09b5-fc30-47ee-835d-2ae1001e8e43",
+              "from": 6,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "029745ca-e9a2-41f5-b9a5-bd72b2977a6d",
+              "from": 12,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "f471a9b0-9160-4c6d-83b5-0d30de7b03aa",
+          "stage": 18,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "5ec2e1dc-4d44-4049-8cca-7034721423f0",
+              "from": 0,
+              "to": 93,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            },
+            {
+              "id": "7a283f8f-b339-402c-9a11-fd8340762e86",
+              "from": 6,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        },
+        {
+          "id": "ab7e902f-e366-4025-8abc-7d4bc198ca0d",
+          "stage": 19,
+          "checked": false,
+          "note": "",
+          "attempts": 0,
+          "completionCounter": 0,
+          "ranges": [
+            {
+              "id": "c19364b6-0dd0-42e8-85bf-412cad71307f",
+              "from": 0,
+              "to": 100,
+              "checked": false,
+              "note": "",
+              "attempts": 0,
+              "completionCounter": 0
+            }
+          ]
+        }
+      ]
+    }
+  }
+]
