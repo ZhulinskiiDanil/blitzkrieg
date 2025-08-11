@@ -13,6 +13,8 @@
 	"description": "TEST",
 	"resources": {
 		"files": [
+			"resources/audio/range_complete.mp3",
+			"resources/audio/stage_complete.mp3",
 			"resources/data/export.json"
 		]
 	}
