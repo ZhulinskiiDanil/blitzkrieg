@@ -71,16 +71,20 @@ class $modify(MenuLayer) {
 
 
 class $modify(PlayLayer) {
+
     struct Run {
         int start = 0;
         int end = 0;
     };
 
     struct Fields {
+        CCObject* disabledCheat = nullptr;
+
         std::vector<Profile> profiles;  // все профили
         Profile* currentProfile = nullptr; // текущий профиль
         bool hasRespawned = false;
-        Run currentRun = {0, 0};
+        bool isNoclip = false;
+        Run currentRun;
 
         // Звуки закрытия ранов и стадий
         FMOD::Sound* rangeCompleteSound = nullptr;
@@ -135,6 +139,8 @@ public:
                 m_fields->currentRun.end
             );
         }
+
+        resetState();
     }
 
     void levelComplete() {
@@ -156,10 +162,22 @@ public:
 
             checkRun(m_fields->currentRun);
         }
+
+        resetState();
     }
 
     void destroyPlayer(PlayerObject* player, GameObject* p1) {
+        // First object is anticheat, store it
+        if (!m_fields->disabledCheat) {
+            m_fields->disabledCheat = p1;
+        }
+
         PlayLayer::destroyPlayer(player, p1);
+
+        if (!m_fields->isNoclip && m_fields->disabledCheat != p1 && !player->m_isDead) {
+            m_fields->isNoclip = true;
+            geode::log::debug("UUPS... PLAYER STILL ALIVE");
+        }
 
         if (!player->m_isDead) return;
         if (!m_fields->hasRespawned) return;
@@ -205,6 +223,12 @@ public:
         if (system->playSound(sound, nullptr, false, &channel) != FMOD_OK) {
             geode::log::error("Failed to play sound");
         }
+    }
+
+    void resetState() {
+        geode::log::debug("RESET STATE");
+        m_fields->isNoclip = false;
+        m_fields->disabledCheat = nullptr;
     }
 
     Profile* getProfileByName(const std::string& name) {
@@ -317,7 +341,7 @@ public:
         //     return false;
         // }
 
-        return true;
+        return !m_fields->isNoclip;
     }
 
     void checkRun(const Run& run) {
@@ -330,10 +354,12 @@ public:
             return;
         }
 
+        bool canPlaySound = false;
+        bool isStageClosed = false;
         int runStart = static_cast<int>(std::floor(run.start));
         int runEnd   = static_cast<int>(std::floor(run.end));
 
-        geode::log::debug("Checking run: {}-{}", runStart, runEnd);
+        geode::log::debug("CHECKING RUNG: {}-{} / IS LEGAL: {}", runStart, runEnd, isLegal());
 
         int totalStages = m_fields->currentProfile->data.stages.size();
 
@@ -376,12 +402,12 @@ public:
                 );
 
                 toCheck->checked = true;
-                geode::log::debug("Checked range {}-{}", toCheck->from, toCheck->to);
-                playSound(false);  // Звук закрытия range
-
+                canPlaySound = true;
+                isStageClosed = false;
                 checkedRangeThisRun = true;
-
                 saveData();
+
+                geode::log::debug("CHECKED RANGE {}-{}", toCheck->from, toCheck->to);
             }
 
             // Если закрыли range, проверяем закрыта ли теперь вся стадия
@@ -389,17 +415,26 @@ public:
                 bool allChecked = std::all_of(stage.ranges.begin(), stage.ranges.end(), [](const Range& r) {
                     return r.checked;
                 });
+
                 if (allChecked && !stage.checked) {
                     stage.checked = true;
                     geode::log::debug("Stage closed");
-                    playSound(true);  // Звук закрытия стадии
+                    canPlaySound = true;
+                    isStageClosed = true;
                 }
+
                 break;  // Выходим из цикла стадий, не закрываем следующие стадии пока не закроется эта
             }
             else {
                 // Если не закрыли ни одного range в этой стадии, значит дальше закрывать нельзя
                 break;
             }
+        }
+
+        if (canPlaySound) {
+            // true если нужно проиграть звук стейджа
+            // false если нужно проиграть звук range
+            playSound(isStageClosed);
         }
     }
 };
