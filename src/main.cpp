@@ -11,7 +11,7 @@
 #include <fmt/core.h>
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 
-#include "./utils/loadProfiles.hpp"
+#include "./utils/getProfiles.hpp"
 #include "./utils/saveProfile.hpp"
 
 using namespace geode::prelude;
@@ -62,12 +62,6 @@ public:
         if (levelId == "1165") {
             geode::log::debug("TRYING TO FIND: The Yangire");
             m_fields->currentProfile = getProfileByName("The Yangire");
-        } else if (levelId == "124497158") {
-            geode::log::debug("TRYING TO FIND: Kowareta");
-            m_fields->currentProfile = getProfileByName("Kowareta");
-        } else if (levelId == "83432087") {
-            geode::log::debug("TRYING TO FIND: Nine Circles");
-            m_fields->currentProfile = getProfileByName("Nine Circles");
         } else {
             geode::log::debug("TRYING TO FIND: {}", level->m_levelName);
             m_fields->currentProfile = getProfileByName(level->m_levelName);
@@ -83,7 +77,7 @@ public:
 
     void loadData() {
         try {
-            m_fields->profiles = loadProfiles();
+            m_fields->profiles = getProfiles();
         } catch (const std::exception& e) {
             geode::log::error("Profile loading error: {}", e.what());
         }

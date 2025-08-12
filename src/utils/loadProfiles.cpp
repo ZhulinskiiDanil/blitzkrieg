@@ -7,6 +7,7 @@
 using namespace geode::prelude;
 using json = nlohmann::json;
 
+// Больше не используется, старая подгрузка из export.json
 std::vector<Profile> loadProfiles() {
     // Проверяем, есть ли уже сохранённая строка с профилями
     auto savedProfiles = Mod::get()->getSavedValue<std::string>("profiles");
@@ -14,8 +15,6 @@ std::vector<Profile> loadProfiles() {
         geode::log::debug("Profiles already loaded from saved value");
         return json::parse(savedProfiles).get<std::vector<Profile>>();
     }
-
-    geode::utils::file::pick;
 
     // Путь к export.json внутри ресурсов
     auto resourcesDir = Mod::get()->getResourcesDir();
