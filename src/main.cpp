@@ -1,64 +1,20 @@
+#include "./serialization/profile/index.hpp"
+
 #include <Geode/Geode.hpp>
 #include <Geode/binding/FMODAudioEngine.hpp>
 #include <Geode/binding/AchievementNotifier.hpp>
 #include <Geode/modify/MenuLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 
+#include "./hooks/DTEditLevelLayer/index.hpp"
+
 #include <fmt/core.h>
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 
 #include "./utils/loadProfiles.hpp"
+#include "./utils/saveProfile.hpp"
 
 using namespace geode::prelude;
-using json = nlohmann::json;
-
-json serializeRange(const Range& range) {
-    return {
-        {"id", range.id},
-        {"from", range.from},
-        {"to", range.to},
-        {"checked", range.checked},
-        {"note", range.note},
-        {"attempts", range.attempts},
-        {"completionCounter", range.completionCounter}
-    };
-};
-
-json serializeStage(const Stage& stage) {
-    json jRanges = json::array();
-    for (const auto& range : stage.ranges) {
-        jRanges.push_back(serializeRange(range));
-    }
-    return {
-        {"id", stage.id},
-        {"stage", stage.stage},
-        {"checked", stage.checked},
-        {"note", stage.note},
-        {"attempts", stage.attempts},
-        {"completionCounter", stage.completionCounter},
-        {"ranges", jRanges}
-    };
-};
-
-json serializeProfileData(const ProfileData& data) {
-    json jStages = json::array();
-    for (const auto& stage : data.stages) {
-        jStages.push_back(serializeStage(stage));
-    }
-    return {
-        {"tags", data.tags},
-        {"stages", jStages}
-    };
-};
-
-json serializeProfile(const Profile& profile) {
-    return {
-        {"id", profile.id},
-        {"profileName", profile.profileName},
-        {"data", serializeProfileData(profile.data)}
-    };
-};
-
 
 class $modify(MenuLayer) {
     bool init() {
@@ -71,7 +27,6 @@ class $modify(MenuLayer) {
 
 
 class $modify(PlayLayer) {
-
     struct Run {
         int start = 0;
         int end = 0;
@@ -80,8 +35,8 @@ class $modify(PlayLayer) {
     struct Fields {
         CCObject* disabledCheat = nullptr;
 
-        std::vector<Profile> profiles;  // все профили
-        Profile* currentProfile = nullptr; // текущий профиль
+        std::vector<Profile> profiles;  // Все профили
+        Profile* currentProfile = nullptr; // Текущий профиль
         bool hasRespawned = false;
         bool isNoclip = false;
         Run currentRun;
@@ -96,18 +51,30 @@ public:
         if (!PlayLayer::init(level, p1, p2)) return false;
         loadData();
 
-        int levelId = EditorIDs::getID(level);
-        geode::log::debug("Level ID: {}", levelId);
+        std::string levelId = !level->getID().empty()
+            ? level->getID()
+            : std::to_string(EditorIDs::getID(level));
+        geode::log::debug("Level ID: \"{}\"", levelId);
 
         // TODO: Do level selecting by user
         // Сейчас это будет работать только для уровня у которого в редакторе ID 1422
         // И только с The Yangire таблицей для меня, потом сделать нормально
-        if (levelId == 1165) {
+        if (levelId == "1165") {
+            geode::log::debug("TRYING TO FIND: The Yangire");
             m_fields->currentProfile = getProfileByName("The Yangire");
+        } else if (levelId == "124497158") {
+            geode::log::debug("TRYING TO FIND: Kowareta");
+            m_fields->currentProfile = getProfileByName("Kowareta");
+        } else if (levelId == "83432087") {
+            geode::log::debug("TRYING TO FIND: Nine Circles");
+            m_fields->currentProfile = getProfileByName("Nine Circles");
+        } else {
+            geode::log::debug("TRYING TO FIND: {}", level->m_levelName);
+            m_fields->currentProfile = getProfileByName(level->m_levelName);
         }
 
         if (!m_fields->currentProfile) {
-            geode::log::error("Profile The Yangire not found!");
+            geode::log::error("Profile not found!");
             loadSounds();
         }
 
@@ -115,11 +82,8 @@ public:
     }
 
     void loadData() {
-        auto resourcesDir = geode::Mod::get()->getResourcesDir();
-        auto fullPath = (resourcesDir / "export.json").string();
-
         try {
-            m_fields->profiles = loadProfiles(fullPath);
+            m_fields->profiles = loadProfiles();
         } catch (const std::exception& e) {
             geode::log::error("Profile loading error: {}", e.what());
         }
@@ -247,100 +211,10 @@ public:
             return;
         }
 
-        try {
-            // Копируем вектор профилей
-            auto newProfiles = m_fields->profiles; // копия
-
-            // Находим индекс профиля с таким же именем
-            auto it = std::find_if(newProfiles.begin(), newProfiles.end(), [&](const Profile& p) {
-                return p.profileName == m_fields->currentProfile->profileName;
-            });
-
-            if (it != newProfiles.end()) {
-                // Удаляем старый профиль
-                newProfiles.erase(it);
-            }
-
-            // Добавляем обновленный currentProfile
-            newProfiles.push_back(*m_fields->currentProfile);
-
-            // Сериализуем newProfiles в JSON
-            nlohmann::json j = nlohmann::json::array();
-            for (auto& profile : newProfiles) {
-                j.push_back(serializeProfile(profile));
-            }
-
-            // Записываем в файл
-            auto resourcesDir = geode::Mod::get()->getResourcesDir();
-            auto fullPath = (resourcesDir / "export.json").string();
-
-            std::ofstream file(fullPath);
-            if (!file.is_open()) {
-                geode::log::error("Failed to open export.json for writing");
-                return;
-            }
-            file << j.dump(4);
-            file.close();
-
-            geode::log::info("Saved profiles to export.json");
-
-            // Обновляем m_fields->profiles на новую копию, чтобы в памяти тоже было актуально
-            m_fields->profiles = newProfiles;
-
-        } catch (const std::exception& e) {
-            geode::log::error("Error saving profiles: {}", e.what());
-        }
+        saveProfile(*m_fields->currentProfile);
     }
 
     bool isLegal() {
-        // // Mega Hack indicator adress 0x1b59b581c90
-        // uintptr_t addr = 0x1b59b581c90;
-
-        // if (addr == 0) {
-        //     geode::log::debug("Address is null!");
-        //     return false;
-        // }
-
-        // CCLabelBMFont* ci = nullptr;
-
-        // // Лучше получить детей в вектор до начала перебора
-        // auto childrenCopy = CCArrayExt<CCNode>(m_uiLayer->getChildren());
-
-        // for (auto* node : childrenCopy) {
-        //     if (!node) continue;
-        //     if (node->getTag() != 4326) continue;
-        //     if (auto lbl = typeinfo_cast<CCLabelBMFont*>(node)) {
-        //         auto text = std::string_view(lbl->getString());
-        //         if (text == ".") {
-        //             ci = lbl;
-        //             break;
-        //         }
-        //     }
-        // }
-
-        // geode::log::debug("CHECK IF LEGAL");
-
-        // if (ci) {
-        //     auto ciChildren = CCArrayExt<CCNode>(ci->getChildren());
-        //     if (auto indicator = typeinfo_cast<CCFontSprite*>(ciChildren.front())) {
-        //         auto color = indicator->getColor();
-        //         geode::log::debug("Got CCFontSprite with color: r={}, g={}, b={}", color.r, color.g, color.b);
-        //     } else {
-        //         geode::log::warn("First child is not a CCFontSprite");
-        //     }
-        // } else {
-        //     geode::log::debug("ci NOT FOUND");
-        // }
-
-        // auto obj = reinterpret_cast<CCNode*>(0x1b59b13e540);
-
-        // try {
-        //     geode::log::debug("X: {}, Y: {}", obj->getPositionX(), obj->getPositionY());
-        // } catch (...) {
-        //     geode::log::error("Exception caught while accessing object!");
-        //     return false;
-        // }
-
         return !m_fields->isNoclip;
     }
 
