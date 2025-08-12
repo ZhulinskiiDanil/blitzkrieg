@@ -1,9 +1,11 @@
 #include "index.hpp"
 #include <Geode/ui/GeodeUI.hpp>
 
-DTLayer* DTLayer::create(GJGameLevel* const& Level) {
+DTLayer *DTLayer::create(GJGameLevel *const &Level)
+{
     auto ret = new DTLayer();
-    if (ret && ret->initAnchored(368, 280, Level, "square01_001.png", {0.f, 0.f, 94.f, 94.f})) {
+    if (ret && ret->initAnchored(368, 280, Level, "square01_001.png", {0.f, 0.f, 94.f, 94.f}))
+    {
         ret->autorelease();
         return ret;
     }
@@ -11,7 +13,8 @@ DTLayer* DTLayer::create(GJGameLevel* const& Level) {
     return nullptr;
 };
 
-bool DTLayer::setup(GJGameLevel* const& level) {
+bool DTLayer::setup(GJGameLevel *const &level)
+{
     auto winSize = CCDirector::sharedDirector()->getWinSize();
     m_Level = level;
 
@@ -32,7 +35,7 @@ bool DTLayer::setup(GJGameLevel* const& level) {
 
     alignmentNode->setID("ALIGNMENT-NODE");
 
-    auto sideBG = CCScale9Sprite::create("square01_001.png", {0,0, 94, 94});
+    auto sideBG = CCScale9Sprite::create("square01_001.png", {0, 0, 94, 94});
     sideBG->setContentSize({154, 145});
     sideBG->setPosition(alignmentNode->getPosition() + ccp(233.5f, 10));
     sideBG->setScale(0.65f);
@@ -45,7 +48,8 @@ bool DTLayer::setup(GJGameLevel* const& level) {
     return true;
 }
 
-void DTLayer::onClose(cocos2d::CCObject*) {
+void DTLayer::onClose(cocos2d::CCObject *)
+{
     this->setKeypadEnabled(false);
     this->setTouchEnabled(false);
     this->removeFromParentAndCleanup(true);

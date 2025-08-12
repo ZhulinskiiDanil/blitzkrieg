@@ -3,7 +3,8 @@
 
 using namespace geode::prelude;
 
-class $modify(DTEditLevelLayer, EditLevelLayer) {
-  public:
-    bool init(GJGameLevel* p0);
+class $modify(DTEditLevelLayer, EditLevelLayer)
+{
+public:
+  bool init(GJGameLevel *p0);
 };

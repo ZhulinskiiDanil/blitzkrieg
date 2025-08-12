@@ -8,7 +8,8 @@
 #include "../../utils/selectJsonFile.hpp"
 #include "../../utils/saveProfiles.hpp"
 
-void DTPauseLayer::customSetup() {
+void DTPauseLayer::customSetup()
+{
     PauseLayer::customSetup();
 
     auto sideMenu = this->getChildByID("left-button-menu");
@@ -22,16 +23,23 @@ void DTPauseLayer::customSetup() {
         s,
         nullptr,
         this,
-        menu_selector(DTPauseLayer::onDTMiniMenuOpened)
-    );
+        menu_selector(DTPauseLayer::onImport));
 
     button->setID("dt-skull-button");
     sideMenu->addChild(button);
     sideMenu->updateLayout();
 }
 
-void DTPauseLayer::onDTMiniMenuOpened(CCObject*) {
-    selectJsonFile([this](std::string jsonContent) {
+void DTPauseLayer::onPopup(CCObject *)
+{
+    geode::log::debug("Popup");
+    StagesPopup::create()->show();
+}
+
+void DTPauseLayer::onImport(CCObject *)
+{
+    selectJsonFile([this](std::string jsonContent)
+                   {
         if (jsonContent.empty()) {
             geode::log::debug("Файл не выбран или пуст");
             return;
@@ -58,6 +66,5 @@ void DTPauseLayer::onDTMiniMenuOpened(CCObject*) {
         }
         catch (const std::exception& e) {
             geode::log::debug("Другая ошибка: {}", e.what());
-        }
-    });
+        } });
 }

@@ -6,10 +6,13 @@
 using namespace geode::prelude;
 using json = nlohmann::json;
 
-void saveProfiles(const std::vector<Profile>& profiles) {
-    try {
+void saveProfiles(const std::vector<Profile> &profiles)
+{
+    try
+    {
         json j = json::array();
-        for (const auto& p : profiles) {
+        for (const auto &p : profiles)
+        {
             j.push_back(serializeProfile(p));
         }
 
@@ -18,7 +21,8 @@ void saveProfiles(const std::vector<Profile>& profiles) {
 
         geode::log::debug("Saved {} profiles", profiles.size());
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e)
+    {
         geode::log::error("Error saving profiles: {}", e.what());
     }
 }

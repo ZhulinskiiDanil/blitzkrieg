@@ -5,17 +5,18 @@
 
 using namespace geode::prelude;
 
-class DTLayer : public Popup<GJGameLevel* const&>, public TextInputDelegate, public FLAlertLayerProtocol, public ColorPickPopupDelegate {
-  protected:
-    bool setup(GJGameLevel* const& Level) override;
+class DTLayer : public Popup<GJGameLevel *const &>, public TextInputDelegate, public FLAlertLayerProtocol, public ColorPickPopupDelegate
+{
+protected:
+  bool setup(GJGameLevel *const &Level) override;
 
-  public:
-    GJGameLevel* m_Level;
-    ScrollLayer* m_ScrollLayer;
+public:
+  GJGameLevel *m_Level;
+  ScrollLayer *m_ScrollLayer;
 
-    CCNode* alignmentNode;
+  CCNode *alignmentNode;
 
-    static DTLayer* create(GJGameLevel* const& Level);
-    
-    void onClose(cocos2d::CCObject*) override;
+  static DTLayer *create(GJGameLevel *const &Level);
+
+  void onClose(cocos2d::CCObject *) override;
 };

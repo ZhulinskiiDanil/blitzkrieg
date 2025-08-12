@@ -4,9 +4,11 @@
 
 using json = nlohmann::json;
 
-json loadExportData(const std::string& path) {
+json loadExportData(const std::string &path)
+{
     std::ifstream f(path);
-    if (!f.is_open()) {
+    if (!f.is_open())
+    {
         throw std::runtime_error("Cannot open " + path);
     }
     json j;
