@@ -16,8 +16,10 @@
 
 using namespace geode::prelude;
 
-class $modify(MenuLayer) {
-    bool init() {
+class $modify(MenuLayer)
+{
+    bool init()
+    {
         if (!MenuLayer::init())
             return false;
 
@@ -25,49 +27,49 @@ class $modify(MenuLayer) {
     }
 };
 
-
-class $modify(PlayLayer) {
-    struct Run {
+class $modify(PlayLayer)
+{
+    struct Run
+    {
         int start = 0;
         int end = 0;
     };
 
-    struct Fields {
-        CCObject* disabledCheat = nullptr;
+    struct Fields
+    {
+        CCObject *disabledCheat = nullptr;
 
-        std::vector<Profile> profiles;  // Все профили
-        Profile* currentProfile = nullptr; // Текущий профиль
+        std::vector<Profile> profiles;     // Все профили
+        Profile *currentProfile = nullptr; // Текущий профиль
         bool hasRespawned = false;
         bool isNoclip = false;
         Run currentRun;
 
         // Звуки закрытия ранов и стадий
-        FMOD::Sound* rangeCompleteSound = nullptr;
-        FMOD::Sound* stageCompleteSound = nullptr;
+        FMOD::Sound *rangeCompleteSound = nullptr;
+        FMOD::Sound *stageCompleteSound = nullptr;
     };
 
 public:
-    bool init(GJGameLevel* level, bool p1, bool p2) {
-        if (!PlayLayer::init(level, p1, p2)) return false;
+    bool init(GJGameLevel *level, bool p1, bool p2)
+    {
+        if (!PlayLayer::init(level, p1, p2))
+            return false;
         loadData();
 
         std::string levelId = !level->getID().empty()
-            ? level->getID()
-            : std::to_string(EditorIDs::getID(level));
+                                  ? level->getID()
+                                  : std::to_string(EditorIDs::getID(level));
         geode::log::debug("Level ID: \"{}\"", levelId);
 
         // TODO: Do level selecting by user
         // Сейчас это будет работать только для уровня у которого в редакторе ID 1422
         // И только с The Yangire таблицей для меня, потом сделать нормально
-        if (levelId == "1165") {
-            geode::log::debug("TRYING TO FIND: The Yangire");
-            m_fields->currentProfile = getProfileByName("The Yangire");
-        } else {
-            geode::log::debug("TRYING TO FIND: {}", level->m_levelName);
-            m_fields->currentProfile = getProfileByName(level->m_levelName);
-        }
+        geode::log::debug("TRYING TO FIND: {}", level->m_levelName);
+        m_fields->currentProfile = getProfileByName(level->m_levelName);
 
-        if (!m_fields->currentProfile) {
+        if (!m_fields->currentProfile)
+        {
             geode::log::error("Profile not found!");
             loadSounds();
         }
@@ -75,39 +77,47 @@ public:
         return true;
     }
 
-    void loadData() {
-        try {
+    void loadData()
+    {
+        try
+        {
             m_fields->profiles = getProfiles();
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception &e)
+        {
             geode::log::error("Profile loading error: {}", e.what());
         }
     }
 
-    void resetLevel() {
+    void resetLevel()
+    {
         PlayLayer::resetLevel();
         geode::log::debug("LEVEL RESET");
 
         m_fields->hasRespawned = true;
         m_fields->currentRun.start = static_cast<int>(this->getCurrentPercent());
 
-        if (!m_level->isPlatformer()) {
+        if (!m_level->isPlatformer())
+        {
             geode::log::debug(
                 "RESET LEVEL, RUN: start = {}, end = {}",
                 m_fields->currentRun.start,
-                m_fields->currentRun.end
-            );
+                m_fields->currentRun.end);
         }
 
         resetState();
     }
 
-    void levelComplete() {
+    void levelComplete()
+    {
         PlayLayer::levelComplete();
 
-        if (!m_fields->hasRespawned) return;
+        if (!m_fields->hasRespawned)
+            return;
         m_fields->hasRespawned = false;
 
-        if (!m_level->isPlatformer()) {
+        if (!m_level->isPlatformer())
+        {
             m_fields->currentRun.end = 100;
 
             geode::log::debug("LEVEL COMPLETED");
@@ -115,8 +125,7 @@ public:
             geode::log::debug(
                 "LEVEL COMPLETED, RUN: start = {}, end = {}",
                 m_fields->currentRun.start,
-                m_fields->currentRun.end
-            );
+                m_fields->currentRun.end);
 
             checkRun(m_fields->currentRun);
         }
@@ -124,74 +133,92 @@ public:
         resetState();
     }
 
-    void destroyPlayer(PlayerObject* player, GameObject* p1) {
+    void destroyPlayer(PlayerObject *player, GameObject *p1)
+    {
         // First object is anticheat, store it
-        if (!m_fields->disabledCheat) {
+        if (!m_fields->disabledCheat)
+        {
             m_fields->disabledCheat = p1;
         }
 
         PlayLayer::destroyPlayer(player, p1);
 
-        if (!m_fields->isNoclip && m_fields->disabledCheat != p1 && !player->m_isDead) {
+        if (!m_fields->isNoclip && m_fields->disabledCheat != p1 && !player->m_isDead)
+        {
             m_fields->isNoclip = true;
             geode::log::debug("UUPS... PLAYER STILL ALIVE");
         }
 
-        if (!player->m_isDead) return;
-        if (!m_fields->hasRespawned) return;
+        if (!player->m_isDead)
+            return;
+        if (!m_fields->hasRespawned)
+            return;
         m_fields->hasRespawned = false;
 
-        if (!m_level->isPlatformer()) {
+        if (!m_level->isPlatformer())
+        {
             m_fields->currentRun.end = this->getCurrentPercent();
 
             geode::log::debug("PLAYER DESTROYED, RUN: start = {}, end = {}",
-                m_fields->currentRun.start, m_fields->currentRun.end);
+                              m_fields->currentRun.start, m_fields->currentRun.end);
 
             checkRun(m_fields->currentRun);
         }
     }
 
-    void loadSounds() {
+    void loadSounds()
+    {
         auto resourcesDir = geode::Mod::get()->getResourcesDir();
         auto rangePath = (resourcesDir / "range_complete.mp3").string();
         auto stagePath = (resourcesDir / "stage_complete.mp3").string();
 
         auto system = FMODAudioEngine::sharedEngine()->m_system;
 
-        if (!m_fields->rangeCompleteSound) {
-            if (system->createSound(rangePath.c_str(), FMOD_DEFAULT, nullptr, &m_fields->rangeCompleteSound) != FMOD_OK) {
+        if (!m_fields->rangeCompleteSound)
+        {
+            if (system->createSound(rangePath.c_str(), FMOD_DEFAULT, nullptr, &m_fields->rangeCompleteSound) != FMOD_OK)
+            {
                 geode::log::error("Failed to load range_complete.mp3");
             }
         }
 
-        if (!m_fields->stageCompleteSound) {
-            if (system->createSound(stagePath.c_str(), FMOD_DEFAULT, nullptr, &m_fields->stageCompleteSound) != FMOD_OK) {
+        if (!m_fields->stageCompleteSound)
+        {
+            if (system->createSound(stagePath.c_str(), FMOD_DEFAULT, nullptr, &m_fields->stageCompleteSound) != FMOD_OK)
+            {
                 geode::log::error("Failed to load stage_complete.mp3");
             }
         }
     }
 
-    void playSound(bool isStage) {
-        FMOD::Sound* sound = isStage ? m_fields->stageCompleteSound : m_fields->rangeCompleteSound;
-        if (!sound) return;
+    void playSound(bool isStage)
+    {
+        FMOD::Sound *sound = isStage ? m_fields->stageCompleteSound : m_fields->rangeCompleteSound;
+        if (!sound)
+            return;
 
-        FMOD::Channel* channel = nullptr;
+        FMOD::Channel *channel = nullptr;
         auto system = FMODAudioEngine::sharedEngine()->m_system;
 
-        if (system->playSound(sound, nullptr, false, &channel) != FMOD_OK) {
+        if (system->playSound(sound, nullptr, false, &channel) != FMOD_OK)
+        {
             geode::log::error("Failed to play sound");
         }
     }
 
-    void resetState() {
+    void resetState()
+    {
         geode::log::debug("RESET STATE");
         m_fields->isNoclip = false;
         m_fields->disabledCheat = nullptr;
     }
 
-    Profile* getProfileByName(const std::string& name) {
-        for (auto& profile : m_fields->profiles) {
-            if (profile.profileName == name) {
+    Profile *getProfileByName(const std::string &name)
+    {
+        for (auto &profile : m_fields->profiles)
+        {
+            if (profile.profileName == name)
+            {
                 return &profile;
             }
         }
@@ -199,8 +226,10 @@ public:
         return nullptr;
     }
 
-    void saveData() {
-        if (!m_fields->currentProfile) {
+    void saveData()
+    {
+        if (!m_fields->currentProfile)
+        {
             geode::log::error("Current profile not set");
             return;
         }
@@ -208,16 +237,20 @@ public:
         saveProfile(*m_fields->currentProfile);
     }
 
-    bool isLegal() {
+    bool isLegal()
+    {
         return !m_fields->isNoclip;
     }
 
-    void checkRun(const Run& run) {
-        if (!isLegal()) {
+    void checkRun(const Run &run)
+    {
+        if (!isLegal())
+        {
             return;
         }
 
-        if (!m_fields->currentProfile) {
+        if (!m_fields->currentProfile)
+        {
             geode::log::error("Current profile not set");
             return;
         }
@@ -225,49 +258,54 @@ public:
         bool canPlaySound = false;
         bool isStageClosed = false;
         int runStart = static_cast<int>(std::floor(run.start));
-        int runEnd   = static_cast<int>(std::floor(run.end));
+        int runEnd = static_cast<int>(std::floor(run.end));
 
         geode::log::debug("CHECKING RUNG: {}-{} / IS LEGAL: {}", runStart, runEnd, isLegal());
 
         int totalStages = m_fields->currentProfile->data.stages.size();
 
         // Идем по стадиям по порядку, пока не найдем незакрытую
-        for (auto& stage : m_fields->currentProfile->data.stages) {
+        for (auto &stage : m_fields->currentProfile->data.stages)
+        {
             // Если стадия уже закрыта, переходим к следующей
-            if (stage.checked) continue;
+            if (stage.checked)
+                continue;
 
             bool checkedRangeThisRun = false;
 
             // Собираем все подходящие range, покрываемые текущим run
-            std::vector<Range*> candidates;
+            std::vector<Range *> candidates;
 
-            for (auto& range : stage.ranges) {
-                if (range.checked) continue;
+            for (auto &range : stage.ranges)
+            {
+                if (range.checked)
+                    continue;
 
-                if (runStart <= range.from && runEnd >= range.to) {
+                if (runStart <= range.from && runEnd >= range.to)
+                {
                     candidates.push_back(&range);
                 }
             }
 
-            if (!candidates.empty()) {
+            if (!candidates.empty())
+            {
                 // Выбираем range с минимальным 'from'
-                auto* toCheck = *std::min_element(candidates.begin(), candidates.end(),
-                    [](Range* a, Range* b) { return a->from < b->from; });
+                auto *toCheck = *std::min_element(candidates.begin(), candidates.end(),
+                                                  [](Range *a, Range *b)
+                                                  { return a->from < b->from; });
 
                 std::string fromTo = fmt::format(
                     "Stage {}/{}: {} - {}",
                     stage.stage,
                     totalStages,
                     toCheck->from,
-                    toCheck->to
-                );
+                    toCheck->to);
 
                 AchievementNotifier::sharedState()->notifyAchievement(
                     "New run closed",
                     fromTo.c_str(),
                     "GJ_completesIcon_001.png",
-                    true
-                );
+                    true);
 
                 toCheck->checked = true;
                 canPlaySound = true;
@@ -279,27 +317,30 @@ public:
             }
 
             // Если закрыли range, проверяем закрыта ли теперь вся стадия
-            if (checkedRangeThisRun) {
-                bool allChecked = std::all_of(stage.ranges.begin(), stage.ranges.end(), [](const Range& r) {
-                    return r.checked;
-                });
+            if (checkedRangeThisRun)
+            {
+                bool allChecked = std::all_of(stage.ranges.begin(), stage.ranges.end(), [](const Range &r)
+                                              { return r.checked; });
 
-                if (allChecked && !stage.checked) {
+                if (allChecked && !stage.checked)
+                {
                     stage.checked = true;
                     geode::log::debug("Stage closed");
                     canPlaySound = true;
                     isStageClosed = true;
                 }
 
-                break;  // Выходим из цикла стадий, не закрываем следующие стадии пока не закроется эта
+                break; // Выходим из цикла стадий, не закрываем следующие стадии пока не закроется эта
             }
-            else {
+            else
+            {
                 // Если не закрыли ни одного range в этой стадии, значит дальше закрывать нельзя
                 break;
             }
         }
 
-        if (canPlaySound) {
+        if (canPlaySound)
+        {
             // true если нужно проиграть звук стейджа
             // false если нужно проиграть звук range
             playSound(isStageClosed);
