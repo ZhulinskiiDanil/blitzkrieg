@@ -9,10 +9,11 @@
 #include "./hooks/DTEditLevelLayer/index.hpp"
 
 #include <fmt/core.h>
-#include <cvolton.level-id-api/include/EditorIDs.hpp>
 
+#include "./serialization/profile/index.hpp"
 #include "./utils/getProfiles.hpp"
 #include "./utils/saveProfile.hpp"
+#include "./utils/getProfileByLevel.hpp"
 
 using namespace geode::prelude;
 
@@ -27,7 +28,7 @@ class $modify(MenuLayer)
     }
 };
 
-class $modify(PlayLayer)
+class $modify(DTPlayLayer, PlayLayer)
 {
     struct Run
     {
@@ -39,8 +40,7 @@ class $modify(PlayLayer)
     {
         CCObject *disabledCheat = nullptr;
 
-        std::vector<Profile> profiles;     // Все профили
-        Profile *currentProfile = nullptr; // Текущий профиль
+        std::vector<Profile> profiles; // Все профили
         bool hasRespawned = false;
         bool isNoclip = false;
         Run currentRun;
@@ -56,23 +56,7 @@ public:
         if (!PlayLayer::init(level, p1, p2))
             return false;
         loadData();
-
-        std::string levelId = !level->getID().empty()
-                                  ? level->getID()
-                                  : std::to_string(EditorIDs::getID(level));
-        geode::log::debug("Level ID: \"{}\"", levelId);
-
-        // TODO: Do level selecting by user
-        // Сейчас это будет работать только для уровня у которого в редакторе ID 1422
-        // И только с The Yangire таблицей для меня, потом сделать нормально
-        geode::log::debug("TRYING TO FIND: {}", level->m_levelName);
-        m_fields->currentProfile = getProfileByName(level->m_levelName);
-
-        if (!m_fields->currentProfile)
-        {
-            geode::log::error("Profile not found!");
-            loadSounds();
-        }
+        loadSounds();
 
         return true;
     }
@@ -226,15 +210,15 @@ public:
         return nullptr;
     }
 
-    void saveData()
+    void saveData(Profile currentProfile)
     {
-        if (!m_fields->currentProfile)
+        if (currentProfile.id.empty())
         {
             geode::log::error("Current profile not set");
             return;
         }
 
-        saveProfile(*m_fields->currentProfile);
+        saveProfile(currentProfile);
     }
 
     bool isLegal()
@@ -244,12 +228,15 @@ public:
 
     void checkRun(const Run &run)
     {
+        auto currentProfile = getProfileByLevel(DTPlayLayer::get()->m_level);
+
         if (!isLegal())
         {
+            geode::log::error("Not legal run");
             return;
         }
 
-        if (!m_fields->currentProfile)
+        if (currentProfile.id.empty())
         {
             geode::log::error("Current profile not set");
             return;
@@ -262,10 +249,10 @@ public:
 
         geode::log::debug("CHECKING RUNG: {}-{} / IS LEGAL: {}", runStart, runEnd, isLegal());
 
-        int totalStages = m_fields->currentProfile->data.stages.size();
+        int totalStages = currentProfile.data.stages.size();
 
         // Идем по стадиям по порядку, пока не найдем незакрытую
-        for (auto &stage : m_fields->currentProfile->data.stages)
+        for (auto &stage : currentProfile.data.stages)
         {
             // Если стадия уже закрыта, переходим к следующей
             if (stage.checked)
@@ -311,7 +298,7 @@ public:
                 canPlaySound = true;
                 isStageClosed = false;
                 checkedRangeThisRun = true;
-                saveData();
+                saveData(currentProfile);
 
                 geode::log::debug("CHECKED RANGE {}-{}", toCheck->from, toCheck->to);
             }

@@ -23,7 +23,7 @@ void DTPauseLayer::customSetup()
         s,
         nullptr,
         this,
-        menu_selector(DTPauseLayer::onImport));
+        menu_selector(DTPauseLayer::onPopup));
 
     button->setID("dt-skull-button");
     sideMenu->addChild(button);
@@ -32,39 +32,8 @@ void DTPauseLayer::customSetup()
 
 void DTPauseLayer::onPopup(CCObject *)
 {
-    geode::log::debug("Popup");
-    StagesPopup::create()->show();
-}
+    const auto level = PlayLayer::get()->m_level;
 
-void DTPauseLayer::onImport(CCObject *)
-{
-    selectJsonFile([this](std::string jsonContent)
-                   {
-        if (jsonContent.empty()) {
-            geode::log::debug("Файл не выбран или пуст");
-            return;
-        }
-
-        try {
-            json parsed = json::parse(jsonContent);
-
-            if (!parsed.is_array()) {
-                geode::log::debug("Ошибка: ожидается массив профилей");
-                return;
-            }
-
-            std::vector<Profile> profiles = parsed.get<std::vector<Profile>>();
-            geode::log::debug("Загружено {} профилей", profiles.size());
-
-            saveProfiles(profiles);
-        }
-        catch (const json::parse_error& e) {
-            geode::log::debug("Ошибка парсинга JSON: {}", e.what());
-        }
-        catch (const json::type_error& e) {
-            geode::log::debug("Ошибка типов JSON: {}", e.what());
-        }
-        catch (const std::exception& e) {
-            geode::log::debug("Другая ошибка: {}", e.what());
-        } });
+    StagesPopup::create(level)
+        ->show();
 }

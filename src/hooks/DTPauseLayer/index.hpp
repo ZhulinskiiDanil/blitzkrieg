@@ -7,7 +7,6 @@ using namespace geode::prelude;
 class $modify(DTPauseLayer, PauseLayer)
 {
   void customSetup();
-  void onImport(CCObject *);
   void onPopup(CCObject *);
 
   // void onFolderCreate(std::string name) override;
