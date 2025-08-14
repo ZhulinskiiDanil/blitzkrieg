@@ -212,12 +212,6 @@ public:
 
     void saveData(Profile currentProfile)
     {
-        if (currentProfile.id.empty())
-        {
-            geode::log::error("Current profile not set");
-            return;
-        }
-
         saveProfile(currentProfile);
     }
 
@@ -298,7 +292,6 @@ public:
                 canPlaySound = true;
                 isStageClosed = false;
                 checkedRangeThisRun = true;
-                saveData(currentProfile);
 
                 geode::log::debug("CHECKED RANGE {}-{}", toCheck->from, toCheck->to);
             }
@@ -330,6 +323,7 @@ public:
         {
             // true если нужно проиграть звук стейджа
             // false если нужно проиграть звук range
+            saveData(currentProfile);
             playSound(isStageClosed);
         }
     }
