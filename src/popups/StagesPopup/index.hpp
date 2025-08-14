@@ -13,9 +13,11 @@
 
 #include "../../serialization/profile/index.hpp"
 #include "../../utils/getProfiles.hpp"
+#include "../../utils/getProfileByLevel.hpp"
 #include "../../utils/saveProfiles.hpp"
 #include "../../utils/linkProfileWithLevel.hpp"
 #include "../../utils/selectJsonFile.hpp"
+#include "../../utils/getProfileStats.hpp"
 
 using namespace geode::prelude;
 using json = nlohmann::json;

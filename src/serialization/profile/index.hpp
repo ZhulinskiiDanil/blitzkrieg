@@ -1,10 +1,15 @@
 #pragma once
 
+#include <string>
+#include <sstream>
+
 #include <nlohmann/json.hpp>
 #include "Range.hpp"
 #include "Stage.hpp"
 #include "ProfileData.hpp"
 #include "Profile.hpp"
+
+#include "../safe/index.hpp"
 
 using json = nlohmann::json;
 

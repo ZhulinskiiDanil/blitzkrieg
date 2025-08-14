@@ -27,7 +27,8 @@ bool StagesPopup::setup(GJGameLevel *level)
 
   Padding padding{50.f, 50.f, 20.f, 20.f}; // top, bottom, left, right
 
-  auto profiles = getProfiles();
+  const auto profiles = getProfiles();
+  const auto currentProfile = getProfileByLevel(level);
 
   const auto mainSize = m_mainLayer->getContentSize();
   const auto contentSize = CCSize(
@@ -56,12 +57,21 @@ bool StagesPopup::setup(GJGameLevel *level)
   scroll->m_contentLayer->setLayout(
       ColumnLayout::create()
           ->setGap(5.f)
-          ->setAxisAlignment(AxisAlignment::Start)
+          ->setAxisAlignment(AxisAlignment::End)
           ->setAutoGrowAxis(scroll->getContentHeight()));
 
   // Add each profile as a cell
   for (size_t i = 0; i < profiles.size(); ++i)
   {
+    bool isCurrentProfile = false;
+
+    if (!currentProfile.id.empty())
+    {
+      isCurrentProfile = (currentProfile.id == profiles[i].id);
+    }
+
+    ProfileStats stats = getProfileStats(profiles[i]);
+
     auto cellSize = CCSize(scroll->getContentWidth(), 40.f);
 
     auto cell = CCLayer::create();
@@ -75,28 +85,76 @@ bool StagesPopup::setup(GJGameLevel *level)
     cell->addChild(cellBackground);
 
     // Profile name label
-    auto label = CCLabelBMFont::create(
-        profiles[i].profileName.c_str(),
+    std::string profileName = profiles[i].profileName;
+
+    // Ограничиваем 20 символами
+    if (profileName.length() > 20)
+    {
+      profileName = profileName.substr(0, 20) + "...";
+    }
+
+    // Profile name label
+    auto stageLabel = CCLabelBMFont::create(
+        profileName.c_str(),
         "bigFont.fnt");
-    label->setScale(0.5f);
-    label->setAnchorPoint({0, 0.5f});
-    label->setPosition({10.f, 20.f});
-    cell->addChild(label);
+    stageLabel->setScale(0.6f);
+    stageLabel->setAnchorPoint({0, 0.5f});
+    stageLabel->setPosition({10.f, 25.f});
+    cell->addChild(stageLabel);
 
-    // "Select" button
-    auto btnSpr = ButtonSprite::create("Select");
-    btnSpr->setScale(0.6f);
+    std::string labelText;
+    if (stats.currentStageIndex.has_value())
+    {
+      labelText = "Stages: " + std::to_string(stats.currentStageIndex.value()) + "/" +
+                  std::to_string(stats.totalStages);
+    }
+    else
+    {
+      labelText = "Stages: " + std::to_string(stats.totalStages) + "/" +
+                  std::to_string(stats.totalStages); // все пройдены
+    }
 
-    auto btn = CCMenuItemSpriteExtra::create(
-        btnSpr,
-        this,
-        menu_selector(StagesPopup::onProfileSelect));
-    btn->setTag(static_cast<int>(i));
+    // Profile name label
+    auto statLabel = CCLabelBMFont::create(
+        labelText.c_str(),
+        "bigFont.fnt");
+    statLabel->setScale(0.25f);
+    statLabel->setAnchorPoint({0, 0.5f});
+    statLabel->setPosition({10.f, 10.f});
+    statLabel->setOpacity(255 * 0.5f);
+    cell->addChild(statLabel);
 
-    auto menu = CCMenu::create();
-    menu->addChild(btn);
-    menu->setPosition({scroll->getContentWidth() - btn->getContentWidth() / 2 - 10.f, 20.f});
-    cell->addChild(menu);
+    // Can select if it isn't a current profile
+    if (!isCurrentProfile)
+    {
+      // "Select" button
+      auto btnSpr = ButtonSprite::create("Select");
+      btnSpr->setScale(0.6f);
+
+      auto btn = CCMenuItemSpriteExtra::create(
+          btnSpr,
+          this,
+          menu_selector(StagesPopup::onProfileSelect));
+      btn->setTag(static_cast<int>(i));
+
+      auto menu = CCMenu::create();
+      menu->addChild(btn);
+      menu->setPosition({scroll->getContentWidth() - btn->getContentWidth() / 2 - 10.f, 20.f});
+      cell->addChild(menu);
+    }
+    else
+    {
+      // "Selected" label
+      auto selectedLabel = CCLabelBMFont::create(
+          "Selected",
+          "bigFont.fnt");
+      selectedLabel->setScale(0.35f);
+      selectedLabel->setAnchorPoint({1, 0.5f});
+      selectedLabel->setPosition({scroll->getContentWidth() - 10.f,
+                                  20.f});
+      selectedLabel->setOpacity(255 * 0.5f); // полупрозрачный, как statLabel
+      cell->addChild(selectedLabel);
+    }
 
     scroll->m_contentLayer->addChild(cell);
   }
@@ -149,6 +207,7 @@ bool StagesPopup::setup(GJGameLevel *level)
 
 void StagesPopup::onImport(CCObject *obj)
 {
+  onClose(nullptr);
   selectJsonFile([this](std::string jsonContent)
                  {
         if (jsonContent.empty()) {
