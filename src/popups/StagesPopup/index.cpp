@@ -37,7 +37,7 @@ bool StagesPopup::setup(GJGameLevel *level)
 
   auto titleLabel = CCLabelBMFont::create(
       "Profiles List",
-      "goldFont.fnt");
+      "bigFont.fnt");
   titleLabel->setScale(1.f);
   titleLabel->setAnchorPoint({0.5f, 0.5f});
   titleLabel->setPosition({mainSize.width / 2, mainSize.height - 25.f});
@@ -97,10 +97,10 @@ bool StagesPopup::setup(GJGameLevel *level)
     // Profile name label
     auto stageLabel = CCLabelBMFont::create(
         profileName.c_str(),
-        "bigFont.fnt");
-    stageLabel->setScale(0.6f);
+        "PusabFull.fnt"_spr);
+    stageLabel->setScale(1.f);
     stageLabel->setAnchorPoint({0, 0.5f});
-    stageLabel->setPosition({10.f, 25.f});
+    stageLabel->setPosition({10.f, 30.f});
     if (stats.currentStage > stats.totalStages / 2)
     {
       stageLabel->setColor({253, 165, 106});

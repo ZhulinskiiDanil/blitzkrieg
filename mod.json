@@ -21,6 +21,13 @@
 		"files": [
 			"resources/audio/range_complete.mp3",
 			"resources/audio/stage_complete.mp3"
-		]
+		],
+		"fonts": {
+			"PusabFull": {
+				"path": "resources/fonts/PusabFull.ttf",
+				"size": 64,
+				"charset": "32-500,8226,1040-1103"
+			}
+		}
 	}
 }
