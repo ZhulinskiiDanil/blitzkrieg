@@ -4,8 +4,8 @@
 
 struct ProfileStats
 {
-  std::optional<int> currentStageIndex; // если все пройдены — будет nullopt
-  int totalStages;                      // всего этапов
+  std::optional<int> currentStage; // если все пройдены — будет nullopt
+  int totalStages;                 // всего этапов
 };
 
 // Получаем статистику по профилю

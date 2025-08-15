@@ -10,7 +10,7 @@ StagesPopup *StagesPopup::create(GJGameLevel *level)
 
   // Если получается инициализироват модалку, то вызываем autorelease
   // Чтобы она сама очистилась из памяти когда не будет использоваться
-  if (ret->initAnchored(450, 250, level))
+  if (ret->initAnchored(420, 250, level))
   {
     ret->autorelease();
     return ret;
@@ -71,6 +71,7 @@ bool StagesPopup::setup(GJGameLevel *level)
     }
 
     ProfileStats stats = getProfileStats(profiles[i]);
+    bool isAllStagesCompleted = !stats.currentStage.has_value() || stats.currentStage >= stats.totalStages;
 
     auto cellSize = CCSize(scroll->getContentWidth(), 40.f);
 
@@ -100,18 +101,26 @@ bool StagesPopup::setup(GJGameLevel *level)
     stageLabel->setScale(0.6f);
     stageLabel->setAnchorPoint({0, 0.5f});
     stageLabel->setPosition({10.f, 25.f});
+    if (stats.currentStage > stats.totalStages / 2)
+    {
+      stageLabel->setColor({253, 165, 106});
+    }
+    if (isAllStagesCompleted)
+    {
+      stageLabel->setColor({99, 224, 110});
+    }
     cell->addChild(stageLabel);
 
     std::string labelText;
-    if (stats.currentStageIndex.has_value())
-    {
-      labelText = "Stages: " + std::to_string(stats.currentStageIndex.value()) + "/" +
-                  std::to_string(stats.totalStages);
-    }
-    else
+    if (isAllStagesCompleted)
     {
       labelText = "Stages: " + std::to_string(stats.totalStages) + "/" +
                   std::to_string(stats.totalStages); // все пройдены
+    }
+    else
+    {
+      labelText = "Stages: " + std::to_string(stats.currentStage.value()) + "/" +
+                  std::to_string(stats.totalStages);
     }
 
     // Profile name label
@@ -241,6 +250,37 @@ void StagesPopup::onImport(CCObject *obj)
 
 void StagesPopup::onExport(CCObject *obj)
 {
+  const auto profiles = getProfiles();
+  auto resourcesDir = geode::Mod::get()->getResourcesDir();
+
+  // Формируем папку backup
+  auto backupDir = resourcesDir / "backups";
+  auto backupFile = backupDir / backup::generateBackupFilename();
+
+  const auto res = geode::utils::file::createDirectory(backupDir);
+
+  if (res)
+  {
+    json jProfiles = json::array();
+    for (const auto &profile : profiles)
+    {
+      jProfiles.push_back(serializeProfile(profile));
+    }
+
+    auto result = geode::utils::file::writeString(backupFile, jProfiles.dump());
+    if (result)
+    {
+      geode::utils::file::openFolder(backupFile);
+    }
+    else
+    {
+      geode::log::error("Unable to save JSON: {}", result.unwrapErr());
+    }
+  }
+  else
+  {
+    geode::log::error("");
+  };
 }
 
 void StagesPopup::onProfileSelect(CCObject *obj)

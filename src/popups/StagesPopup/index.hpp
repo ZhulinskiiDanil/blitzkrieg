@@ -6,10 +6,15 @@
 #include <nlohmann/json.hpp>
 
 #include <Geode/Geode.hpp>
+#include <Geode/utils/file.hpp>
 #include <Geode/ui/ScrollLayer.hpp>
 #include <Geode/ui/General.hpp>
 #include <Geode/cocos/cocoa/CCGeometry.h>
 #include <Geode/cocos/extensions/GUI/CCControlExtension/CCScale9Sprite.h>
+
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 #include "../../serialization/profile/index.hpp"
 #include "../../utils/getProfiles.hpp"
@@ -18,6 +23,7 @@
 #include "../../utils/linkProfileWithLevel.hpp"
 #include "../../utils/selectJsonFile.hpp"
 #include "../../utils/getProfileStats.hpp"
+#include "../../utils/generateBackupFilename.hpp"
 
 using namespace geode::prelude;
 using json = nlohmann::json;
