@@ -1,5 +1,7 @@
 #include "./serialization/profile/index.hpp"
 
+#include <fmt/core.h>
+
 #include <Geode/Geode.hpp>
 #include <Geode/binding/FMODAudioEngine.hpp>
 #include <Geode/binding/AchievementNotifier.hpp>
@@ -7,8 +9,6 @@
 #include <Geode/modify/PlayLayer.hpp>
 
 #include "./hooks/DTEditLevelLayer/index.hpp"
-
-#include <fmt/core.h>
 
 #include "./serialization/profile/index.hpp"
 #include "./utils/getProfiles.hpp"

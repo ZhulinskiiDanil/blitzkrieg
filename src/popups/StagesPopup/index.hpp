@@ -12,6 +12,8 @@
 #include <Geode/cocos/cocoa/CCGeometry.h>
 #include <Geode/cocos/extensions/GUI/CCControlExtension/CCScale9Sprite.h>
 
+#include "ProfilesChangedEvent.hpp"
+
 #include <ctime>
 #include <iomanip>
 #include <sstream>
@@ -21,6 +23,7 @@
 #include "../../utils/getProfileByLevel.hpp"
 #include "../../utils/saveProfiles.hpp"
 #include "../../utils/linkProfileWithLevel.hpp"
+#include "../../utils/unlinkProfileFromLevel.hpp"
 #include "../../utils/selectJsonFile.hpp"
 #include "../../utils/getProfileStats.hpp"
 #include "../../utils/generateBackupFilename.hpp"
@@ -48,6 +51,7 @@ private:
 
   bool setup(GJGameLevel *) override;
   void onProfileSelect(CCObject *);
+  void onProfileDeselect(CCObject *);
   void onImport(CCObject *);
   void onExport(CCObject *);
 

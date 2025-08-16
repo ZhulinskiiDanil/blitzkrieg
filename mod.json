@@ -6,11 +6,14 @@
 		"mac": "2.2074",
 		"ios": "2.2074"
 	},
-	"id": "zhulis.dgkr-blitzkrieg-tracker",
-	"name": "dgkr-blitzkrieg-tracker",
-	"version": "v0.0.1-alpha",
+	"id": "zhulis.blitzkrieg",
+	"name": "Blitzkrieg",
+	"version": "v1.0.1",
 	"developer": "Zhulis",
-	"description": "TEST",
+	"description": "Blitzkrieg Notifier",
+	"tags": [
+		"gameplay", "interface", "enhancement"
+	],
 	"dependencies": {
 		"cvolton.level-id-api": {
 			"version": "v1.2.3",

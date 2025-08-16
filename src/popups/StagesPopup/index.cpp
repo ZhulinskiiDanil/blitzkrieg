@@ -37,7 +37,7 @@ bool StagesPopup::setup(GJGameLevel *level)
 
   auto titleLabel = CCLabelBMFont::create(
       "Profiles List",
-      "bigFont.fnt");
+      "goldFont.fnt");
   titleLabel->setScale(1.f);
   titleLabel->setAnchorPoint({0.5f, 0.5f});
   titleLabel->setPosition({mainSize.width / 2, mainSize.height - 25.f});
@@ -95,21 +95,21 @@ bool StagesPopup::setup(GJGameLevel *level)
     }
 
     // Profile name label
-    auto stageLabel = CCLabelBMFont::create(
+    auto profileLabel = CCLabelBMFont::create(
         profileName.c_str(),
-        "PusabFull.fnt"_spr);
-    stageLabel->setScale(1.f);
-    stageLabel->setAnchorPoint({0, 0.5f});
-    stageLabel->setPosition({10.f, 30.f});
+        "bigFont.fnt");
+    profileLabel->setScale(.5f);
+    profileLabel->setAnchorPoint({0, 0.5f});
+    profileLabel->setPosition({10.f, 25.f});
     if (stats.currentStage > stats.totalStages / 2)
     {
-      stageLabel->setColor({253, 165, 106});
+      profileLabel->setColor({253, 165, 106});
     }
     if (isAllStagesCompleted)
     {
-      stageLabel->setColor({99, 224, 110});
+      profileLabel->setColor({99, 224, 110});
     }
-    cell->addChild(stageLabel);
+    cell->addChild(profileLabel);
 
     std::string labelText;
     if (isAllStagesCompleted)
@@ -153,16 +153,20 @@ bool StagesPopup::setup(GJGameLevel *level)
     }
     else
     {
-      // "Selected" label
-      auto selectedLabel = CCLabelBMFont::create(
-          "Selected",
-          "bigFont.fnt");
-      selectedLabel->setScale(0.35f);
-      selectedLabel->setAnchorPoint({1, 0.5f});
-      selectedLabel->setPosition({scroll->getContentWidth() - 10.f,
-                                  20.f});
-      selectedLabel->setOpacity(255 * 0.5f); // полупрозрачный, как statLabel
-      cell->addChild(selectedLabel);
+      // "Deselect" button
+      auto btnSpr = ButtonSprite::create("Deselect");
+      btnSpr->setScale(0.6f);
+
+      auto btn = CCMenuItemSpriteExtra::create(
+          btnSpr,
+          this,
+          menu_selector(StagesPopup::onProfileDeselect));
+      btn->setTag(static_cast<int>(i));
+
+      auto menu = CCMenu::create();
+      menu->addChild(btn);
+      menu->setPosition({scroll->getContentWidth() - btn->getContentWidth() / 2 - 10.f, 20.f});
+      cell->addChild(menu);
     }
 
     scroll->m_contentLayer->addChild(cell);
@@ -216,7 +220,6 @@ bool StagesPopup::setup(GJGameLevel *level)
 
 void StagesPopup::onImport(CCObject *obj)
 {
-  onClose(nullptr);
   selectJsonFile([this](std::string jsonContent)
                  {
         if (jsonContent.empty()) {
@@ -236,6 +239,8 @@ void StagesPopup::onImport(CCObject *obj)
             geode::log::debug("Загружено {} профилей", profiles.size());
 
             saveProfiles(profiles);
+            ProfilesChangedEvent().post();
+            onClose(nullptr);
         }
         catch (const json::parse_error& e) {
             geode::log::debug("Ошибка парсинга JSON: {}", e.what());
@@ -299,6 +304,28 @@ void StagesPopup::onProfileSelect(CCObject *obj)
     geode::log::debug("LINK PROFILE \"{}\" WITH LEVEL \"{}\"", profile.profileName, level->m_levelName);
 
     linkProfileWithLevel(profile, level);
+    ProfilesChangedEvent().post();
+    onClose(nullptr);
+  }
+}
+
+void StagesPopup::onProfileDeselect(CCObject *obj)
+{
+  const auto level = this->m_level;
+
+  if (level)
+  {
+    const auto profiles = getProfiles();
+    const auto index = obj->getTag();
+    if (index >= profiles.size())
+      return;
+
+    const auto &profile = profiles[index];
+
+    geode::log::debug("UNLINK LEVEL \"{}\"", level->m_levelName);
+
+    unlinkProfileFromLevel(profile, level);
+    ProfilesChangedEvent().post();
     onClose(nullptr);
   }
 }
