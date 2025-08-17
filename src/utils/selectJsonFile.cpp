@@ -1,9 +1,10 @@
-#include "selectJsonFile.hpp"
-#include <Geode/utils/file.hpp>
-#include <Geode/loader/Mod.hpp>
-#include <Geode/utils/task.hpp>
 #include <fstream>
 #include <sstream>
+
+#include <Geode/utils/file.hpp>
+#include <Geode/loader/Mod.hpp>
+
+#include "selectJsonFile.hpp"
 
 using namespace geode;
 

@@ -29,13 +29,13 @@ void DTPauseLayer::customSetup()
     sideMenu->updateLayout();
 
     m_fields->m_listener = EventListener<EventFilter<ProfilesChangedEvent>>(
-        [=](ProfilesChangedEvent *)
+        [this](ProfilesChangedEvent *)
         {
             auto level = PlayLayer::get()->m_level;
             m_fields->currentProfile = getProfileByLevel(level);
             updateCurrentProfileLabel(m_fields->currentProfile);
 
-            geode::log::info("PROFILES CAHNGED, UPDATE UI");
+            geode::log::info("PROFILES CHANGED, UPDATE UI");
             return ListenerResult::Propagate;
         });
 }
