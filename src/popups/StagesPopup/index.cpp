@@ -246,7 +246,7 @@ void StagesPopup::onImport(CCObject *obj)
         std::stringstream strStream(jsonContent);
         auto res = matjson::parseAs<std::vector<matjson::Value>>(strStream);
         if (res.isErr()) {
-            geode::log::debug("Ошибка: {}", res.unwrapErr().message());
+            geode::log::debug("Ошибка: {}", res.unwrapErr());
             return;
         }
 
