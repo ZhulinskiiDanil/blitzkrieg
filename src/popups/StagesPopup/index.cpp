@@ -184,6 +184,16 @@ bool StagesPopup::setup(GJGameLevel *level)
 
   auto btnsGap = 5.f;
 
+  // Create button
+  auto btnSprCreate = ButtonSprite::create("Create");
+  btnSprCreate->setScale(1.f);
+  btnSprCreate->setAnchorPoint({0.f, 0.5f});
+
+  auto btnCreate = CCMenuItemSpriteExtra::create(
+      btnSprCreate,
+      this,
+      menu_selector(StagesPopup::onCreate));
+
   // Import button
   auto btnSprImport = ButtonSprite::create("Import");
   btnSprImport->setScale(1.f);
@@ -195,7 +205,7 @@ bool StagesPopup::setup(GJGameLevel *level)
       menu_selector(StagesPopup::onImport));
 
   // Export button
-  auto btnSprExport = ButtonSprite::create("Export all");
+  auto btnSprExport = ButtonSprite::create("Export");
   btnSprExport->setScale(1.f);
   btnSprExport->setAnchorPoint({0.f, 0.5f});
 
@@ -205,6 +215,7 @@ bool StagesPopup::setup(GJGameLevel *level)
       menu_selector(StagesPopup::onExport));
 
   auto btnMenu = CCMenu::create();
+  btnMenu->addChild(btnCreate);
   btnMenu->addChild(btnImport);
   btnMenu->addChild(btnExport);
   btnMenu->alignItemsHorizontallyWithPadding(btnsGap);
@@ -216,6 +227,11 @@ bool StagesPopup::setup(GJGameLevel *level)
   m_mainLayer->addChild(borders);
 
   return true;
+}
+
+void StagesPopup::onCreate(CCObject *obj)
+{
+  geode::utils::web::openLinkInBrowser("https://dgkr-community.vercel.app/blitzkrieg?helpCreateProfile=true");
 }
 
 void StagesPopup::onImport(CCObject *obj)

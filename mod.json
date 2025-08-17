@@ -21,6 +21,9 @@
 		}
 	},
 	"resources": {
+		"sprites": [
+			"resources/sprites/logo.png"
+		],
 		"files": [
 			"resources/audio/range_complete.mp3",
 			"resources/audio/stage_complete.mp3"

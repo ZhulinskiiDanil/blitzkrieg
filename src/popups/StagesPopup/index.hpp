@@ -52,6 +52,7 @@ private:
   bool setup(GJGameLevel *) override;
   void onProfileSelect(CCObject *);
   void onProfileDeselect(CCObject *);
+  void onCreate(CCObject *);
   void onImport(CCObject *);
   void onExport(CCObject *);
 
