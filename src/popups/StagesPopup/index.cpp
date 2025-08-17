@@ -243,30 +243,26 @@ void StagesPopup::onImport(CCObject *obj)
             return;
         }
 
-        try {
-            json parsed = json::parse(jsonContent);
-
-            if (!parsed.is_array()) {
-                geode::log::debug("Ошибка: ожидается массив профилей");
-                return;
-            }
-
-            std::vector<Profile> profiles = parsed.get<std::vector<Profile>>();
-            geode::log::debug("Загружено {} профилей", profiles.size());
-
-            saveProfiles(profiles);
-            ProfilesChangedEvent().post();
-            onClose(nullptr);
+        std::stringstream strStream(jsonContent);
+        auto res = matjson::parseAs<std::vector<matjson::Value>>(strStream);
+        if (res.isErr()) {
+            geode::log::debug("Ошибка: {}", res.unwrapErr());
+            return;
         }
-        catch (const json::parse_error& e) {
-            geode::log::debug("Ошибка парсинга JSON: {}", e.what());
+
+        json parsed = json::parse(jsonContent);
+
+        if (!parsed.is_array()) {
+            geode::log::debug("Ошибка: ожидается массив профилей");
+            return;
         }
-        catch (const json::type_error& e) {
-            geode::log::debug("Ошибка типов JSON: {}", e.what());
-        }
-        catch (const std::exception& e) {
-            geode::log::debug("Другая ошибка: {}", e.what());
-        } });
+
+        std::vector<Profile> profiles = parsed.get<std::vector<Profile>>();
+        geode::log::debug("Загружено {} профилей", profiles.size());
+
+        saveProfiles(profiles);
+        ProfilesChangedEvent().post();
+        onClose(nullptr); });
 }
 
 void StagesPopup::onExport(CCObject *obj)
