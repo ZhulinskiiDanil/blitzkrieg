@@ -87,19 +87,12 @@ void from_json(const json &j, ProfileData &pd)
   {
     for (const auto &t : j["tags"])
     {
-      try
-      {
-        if (t.is_number_integer())
-          pd.tags.push_back(t.get<int>());
-        else if (t.is_string())
-          pd.tags.push_back(std::stoi(t.get<std::string>()));
-        else
-          pd.tags.push_back(0);
-      }
-      catch (...)
-      {
+      if (t.is_number_integer())
+        pd.tags.push_back(t.get<int>());
+      else if (t.is_string())
+        pd.tags.push_back(geode::utils::numFromString<int>(t.get<std::string>()).unwrapOr(0));
+      else
         pd.tags.push_back(0);
-      }
     }
   }
 
