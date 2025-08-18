@@ -28,6 +28,7 @@
 #include "../../utils/selectJsonFile.hpp"
 #include "../../utils/getProfileStats.hpp"
 #include "../../utils/generateBackupFilename.hpp"
+#include "../../utils/getFirstUncheckedStage.hpp"
 
 using namespace geode::prelude;
 using json = nlohmann::json;

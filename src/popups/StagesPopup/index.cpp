@@ -128,7 +128,7 @@ void StagesPopup::drawProfilesList()
     auto cellSize = CCSize(scroll->getContentWidth(), 40.f);
 
     auto cell = CCLayer::create();
-    cell->setContentSize(cellSize); // cell size
+    cell->setContentSize(cellSize);
 
     auto cellBackground = CCScale9Sprite::create("square02b_small.png");
     cellBackground->setContentSize(cellSize);
@@ -284,15 +284,22 @@ void StagesPopup::drawProfilesList()
 
 void StagesPopup::drawCurrentStage()
 {
-  geode::log::debug("Draw Current-Stage");
-
   auto oldList = dynamic_cast<CCNodeContainer *>(m_mainLayer->getChildByID("stages-popup-current-stage"_spr));
   if (oldList)
   {
     oldList->removeFromParentAndCleanup(true);
   }
 
+  Padding padding{50.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
+
+  Profile profile = getProfileByLevel(m_level);
+  Stage *currentStage = getFirstUncheckedStage(profile);
+
   const auto mainSize = m_mainLayer->getContentSize();
+  const auto contentSize = CCSize(
+      mainSize.width - padding.left - padding.right,
+      mainSize.height - padding.top - padding.bottom);
+
   const auto currStageContainer = CCNodeContainer::create();
   currStageContainer->setID("stages-popup-current-stage"_spr);
   currStageContainer->setTag(2);
@@ -304,6 +311,78 @@ void StagesPopup::drawCurrentStage()
   titleLabel->setAnchorPoint({0.5f, 0.5f});
   titleLabel->setPosition({mainSize.width / 2, mainSize.height - 25.f});
 
+  // ScrollLayer that fills the main layer
+  auto scroll = ScrollLayer::create(contentSize);
+
+  // Уменьшаем видимую область ScrollLayer на padding
+  scroll->setContentSize({contentSize.width - 16,
+                          contentSize.height - 16});
+
+  // Сдвигаем позицию ScrollLayer внутри родителя
+  scroll->setPosition({padding.left + 8,
+                       padding.bottom + 8});
+
+  // Column layout: vertical list, aligned to bottom, auto-grow height
+  scroll->m_contentLayer->setLayout(
+      ColumnLayout::create()
+          ->setGap(5.f)
+          ->setAxisAlignment(AxisAlignment::End)
+          ->setAutoGrowAxis(scroll->getContentHeight()));
+
+  // Create and configure list borders
+  auto borders = ListBorders::create();
+  borders->setContentSize(contentSize);
+  borders->setAnchorPoint({0.5f, 0.5f});
+  borders->setPosition({contentSize.width / 2 + padding.left,
+                        contentSize.height / 2 + padding.bottom});
+
+  // Draw stages
+
+  if (currentStage)
+  {
+    for (auto &range : currentStage->ranges)
+    {
+      auto cellSize = CCSize(scroll->getContentWidth(), 25.f);
+
+      auto cell = CCLayer::create();
+      cell->setContentSize(cellSize);
+
+      auto cellBackground = CCScale9Sprite::create("square02b_small.png");
+      cellBackground->setContentSize(cellSize);
+      cellBackground->setPosition({cellSize.width / 2, cellSize.height / 2});
+      cellBackground->setColor({0, 0, 0});
+      cellBackground->setOpacity(255 * 0.3f);
+      cell->addChild(cellBackground);
+
+      std::string rangeText = std::to_string(range.from) + "-" +
+                              std::to_string(range.to) +
+                              " (Total: " +
+                              std::to_string(std::abs(range.to - range.from)) + "%)";
+
+      // Range
+      auto rangeLabel = CCLabelBMFont::create(
+          rangeText.c_str(),
+          "bigFont.fnt");
+      rangeLabel->setScale(.5f);
+      rangeLabel->setAnchorPoint({0, 0.5f});
+      rangeLabel->setPosition({5.f, cellSize.height / 2});
+
+      if (!range.checked)
+        rangeLabel->setColor({253, 165, 106});
+      else
+        rangeLabel->setColor({99, 224, 110});
+
+      cell->addChild(rangeLabel);
+      scroll->m_contentLayer->addChild(cell);
+    }
+  }
+
+  // After all cells added
+  scroll->m_contentLayer->updateLayout();
+  scroll->scrollToTop();
+
+  currStageContainer->addChild(scroll);
+  currStageContainer->addChild(borders);
   currStageContainer->addChild(titleLabel);
   m_mainLayer->addChild(currStageContainer);
   contentContainers.push_back(currStageContainer);
@@ -328,6 +407,7 @@ void StagesPopup::drawTabs()
   tabBtnProfilesList->setAnchorPoint({0.5f, 0.f});
   tabBtnProfilesList->setTag(1);
   tabBtnProfilesList->setID("tabBtnProfilesList"_spr);
+  tabBtnProfilesList->toggle(true);
 
   // Current-Stage tab button
   auto tabBtnCurrentStage = TabButton::create(
@@ -337,7 +417,6 @@ void StagesPopup::drawTabs()
   tabBtnCurrentStage->setAnchorPoint({0.5f, 0.f});
   tabBtnCurrentStage->setTag(2);
   tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
-  tabBtnCurrentStage->toggle(true);
 
   auto tabMenu = CCMenu::create();
   tabMenu->addChild(tabBtnProfilesList);
