@@ -337,6 +337,7 @@ void StagesPopup::drawTabs()
   tabBtnCurrentStage->setAnchorPoint({0.5f, 0.f});
   tabBtnCurrentStage->setTag(2);
   tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
+  tabBtnCurrentStage->toggle(true);
 
   auto tabMenu = CCMenu::create();
   tabMenu->addChild(tabBtnProfilesList);
