@@ -243,21 +243,36 @@ void StagesPopup::onImport(CCObject *obj)
             return;
         }
 
-        std::stringstream strStream(jsonContent);
-        auto res = matjson::parseAs<std::vector<matjson::Value>>(strStream);
-        if (res.isErr()) {
-            geode::log::debug("Ошибка: {}", res.unwrapErr());
+        // Парсим JSON без исключений
+        json parsed = json::parse(jsonContent, nullptr, false);
+
+        if (parsed.is_discarded()) {
+            geode::log::debug("Ошибка парсинга JSON");
             return;
         }
-
-        json parsed = json::parse(jsonContent);
 
         if (!parsed.is_array()) {
             geode::log::debug("Ошибка: ожидается массив профилей");
             return;
         }
 
-        std::vector<Profile> profiles = parsed.get<std::vector<Profile>>();
+        std::vector<Profile> profiles;
+
+        // Здесь используется твой from_json для Profile
+        for (auto const& item : parsed) {
+            if (!item.is_object()) {
+                geode::log::debug("Пропускаем элемент: не объект");
+                continue;
+            }
+
+            Profile p{};
+            // метод get_to НЕ бросает исключений, если j.is_discarded() == false
+            if (!item.is_discarded()) {
+                item.get_to(p);
+                profiles.push_back(std::move(p));
+            }
+        }
+
         geode::log::debug("Загружено {} профилей", profiles.size());
 
         saveProfiles(profiles);
