@@ -1,6 +1,5 @@
 #include "index.hpp"
 
-// StagesPopup* StagesPopup::create(CreateFolderDelegate* delegate) {
 StagesPopup *StagesPopup::create(GJGameLevel *level)
 {
   StagesPopup *ret = new StagesPopup();
@@ -25,11 +24,64 @@ bool StagesPopup::setup(GJGameLevel *level)
 {
   this->m_level = level;
 
+  drawTabs();
+  drawContent();
+
+  return true;
+}
+
+void StagesPopup::drawContent()
+{
+  geode::TabButton *activeButton = tabButtons[0];
+
+  for (auto *btn : tabButtons)
+  {
+    if (btn->isToggled())
+    {
+      activeButton = btn;
+      break; // нашли активную кнопку, дальше искать не нужно
+    }
+  }
+
+  // Проверка
+  if (activeButton)
+  {
+    const auto tag = activeButton->getTag();
+
+    // Clear old content
+    for (auto *container : contentContainers)
+    {
+      if (container)
+      {
+        container->removeFromParentAndCleanup(true);
+      }
+    }
+
+    contentContainers.clear();
+
+    if (tag == 1)
+      drawProfilesList();
+    else if (tag == 2)
+      drawCurrentStage();
+  }
+}
+
+void StagesPopup::drawProfilesList()
+{
+  auto oldList = dynamic_cast<CCNodeContainer *>(m_mainLayer->getChildByID("stages-popup-profiles-list"_spr));
+  if (oldList)
+  {
+    oldList->removeFromParentAndCleanup(true);
+  }
+
   Padding padding{50.f, 50.f, 20.f, 20.f}; // top, bottom, left, right
 
   const auto profiles = getProfiles();
-  const auto currentProfile = getProfileByLevel(level);
+  const auto currentProfile = getProfileByLevel(m_level);
 
+  const auto profileListContainer = CCNodeContainer::create();
+  profileListContainer->setID("stages-popup-profiles-list"_spr);
+  profileListContainer->setTag(1);
   const auto mainSize = m_mainLayer->getContentSize();
   const auto contentSize = CCSize(
       mainSize.width - padding.left - padding.right,
@@ -221,12 +273,115 @@ bool StagesPopup::setup(GJGameLevel *level)
   btnMenu->alignItemsHorizontallyWithPadding(btnsGap);
   btnMenu->setPosition({mainSize.width / 2, 28.f});
 
-  m_mainLayer->addChild(btnMenu);
-  m_mainLayer->addChild(titleLabel);
-  m_mainLayer->addChild(scroll);
-  m_mainLayer->addChild(borders);
+  profileListContainer->addChild(titleLabel);
+  profileListContainer->addChild(scroll);
+  profileListContainer->addChild(borders);
+  profileListContainer->addChild(btnMenu);
 
-  return true;
+  m_mainLayer->addChild(profileListContainer);
+  contentContainers.push_back(profileListContainer);
+}
+
+void StagesPopup::drawCurrentStage()
+{
+  geode::log::debug("Draw Current-Stage");
+
+  auto oldList = dynamic_cast<CCNodeContainer *>(m_mainLayer->getChildByID("stages-popup-current-stage"_spr));
+  if (oldList)
+  {
+    oldList->removeFromParentAndCleanup(true);
+  }
+
+  const auto mainSize = m_mainLayer->getContentSize();
+  const auto currStageContainer = CCNodeContainer::create();
+  currStageContainer->setID("stages-popup-current-stage"_spr);
+  currStageContainer->setTag(2);
+
+  auto titleLabel = CCLabelBMFont::create(
+      "Current stage",
+      "goldFont.fnt");
+  titleLabel->setScale(1.f);
+  titleLabel->setAnchorPoint({0.5f, 0.5f});
+  titleLabel->setPosition({mainSize.width / 2, mainSize.height - 25.f});
+
+  currStageContainer->addChild(titleLabel);
+  m_mainLayer->addChild(currStageContainer);
+  contentContainers.push_back(currStageContainer);
+}
+
+void StagesPopup::drawTabs()
+{
+  auto oldMenu = dynamic_cast<CCMenu *>(m_mainLayer->getChildByID("stages-popup-tab-menu"_spr));
+  if (oldMenu)
+  {
+    oldMenu->removeFromParentAndCleanup(true);
+  }
+
+  const auto mainSize = m_mainLayer->getContentSize();
+  const float btnsGap = 10.f;
+
+  // Profiles-List tab button
+  auto tabBtnProfilesList = TabButton::create(
+      "Profiles List",
+      this,
+      menu_selector(StagesPopup::onProfilesListToggle));
+  tabBtnProfilesList->setAnchorPoint({0.5f, 0.f});
+  tabBtnProfilesList->setTag(1);
+  tabBtnProfilesList->setID("tabBtnProfilesList"_spr);
+
+  // Current-Stage tab button
+  auto tabBtnCurrentStage = TabButton::create(
+      "Current Stage",
+      this,
+      menu_selector(StagesPopup::onCurrentStageToggle));
+  tabBtnCurrentStage->setAnchorPoint({0.5f, 0.f});
+  tabBtnCurrentStage->setTag(2);
+  tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
+
+  auto tabMenu = CCMenu::create();
+  tabMenu->addChild(tabBtnProfilesList);
+  tabMenu->addChild(tabBtnCurrentStage);
+  tabMenu->alignItemsHorizontallyWithPadding(btnsGap);
+  tabMenu->setPosition({mainSize.width / 2, mainSize.height - 3.5f});
+  tabMenu->setID("stages-popup-tab-menu"_spr);
+
+  tabButtons.clear();
+  tabButtons.push_back(tabBtnProfilesList);
+  tabButtons.push_back(tabBtnCurrentStage);
+
+  m_mainLayer->addChild(tabMenu);
+}
+
+void StagesPopup::activateTab(TabButton *btnToActivate)
+{
+  if (!btnToActivate)
+    return;
+
+  // Деактивируем все кнопки кроме btnToActivate
+  for (auto *btn : tabButtons)
+  {
+    if (!btn)
+      continue;
+
+    if (btn != btnToActivate)
+      btn->toggle(false);
+  }
+
+  btnToActivate->toggle(true);
+
+  drawContent();
+}
+
+void StagesPopup::onProfilesListToggle(CCObject *obj)
+{
+  auto *btnProfiles = typeinfo_cast<TabButton *>(obj);
+  activateTab(btnProfiles);
+}
+
+void StagesPopup::onCurrentStageToggle(CCObject *obj)
+{
+  auto *btnStage = typeinfo_cast<TabButton *>(obj);
+  activateTab(btnStage);
 }
 
 void StagesPopup::onCreate(CCObject *obj)
@@ -239,7 +394,7 @@ void StagesPopup::onImport(CCObject *obj)
   selectJsonFile([this](std::string jsonContent)
                  {
         if (jsonContent.empty()) {
-            geode::log::debug("Файл не выбран или пуст");
+            geode::log::debug("File doesn't selected or empty");
             return;
         }
 
@@ -247,12 +402,12 @@ void StagesPopup::onImport(CCObject *obj)
         json parsed = json::parse(jsonContent, nullptr, false);
 
         if (parsed.is_discarded()) {
-            geode::log::debug("Ошибка парсинга JSON");
+            geode::log::debug("JSON Parse error");
             return;
         }
 
         if (!parsed.is_array()) {
-            geode::log::debug("Ошибка: ожидается массив профилей");
+            geode::log::debug("Error: Expected profiles array");
             return;
         }
 
@@ -261,7 +416,7 @@ void StagesPopup::onImport(CCObject *obj)
         // Здесь используется твой from_json для Profile
         for (auto const& item : parsed) {
             if (!item.is_object()) {
-                geode::log::debug("Пропускаем элемент: не объект");
+                geode::log::debug("Skip JSON element: not an object");
                 continue;
             }
 
@@ -273,11 +428,11 @@ void StagesPopup::onImport(CCObject *obj)
             }
         }
 
-        geode::log::debug("Загружено {} профилей", profiles.size());
-
         saveProfiles(profiles);
         ProfilesChangedEvent().post();
-        onClose(nullptr); });
+
+        // Update content
+        drawContent(); });
 }
 
 void StagesPopup::onExport(CCObject *obj)
@@ -328,11 +483,11 @@ void StagesPopup::onProfileSelect(CCObject *obj)
 
     const auto &profile = profiles[index];
 
-    geode::log::debug("LINK PROFILE \"{}\" WITH LEVEL \"{}\"", profile.profileName, level->m_levelName);
-
     linkProfileWithLevel(profile, level);
     ProfilesChangedEvent().post();
-    onClose(nullptr);
+
+    // Update content
+    drawContent();
   }
 }
 
@@ -349,10 +504,10 @@ void StagesPopup::onProfileDeselect(CCObject *obj)
 
     const auto &profile = profiles[index];
 
-    geode::log::debug("UNLINK LEVEL \"{}\"", level->m_levelName);
-
     unlinkProfileFromLevel(profile, level);
     ProfilesChangedEvent().post();
-    onClose(nullptr);
+
+    // Update content
+    drawContent();
   }
 }
