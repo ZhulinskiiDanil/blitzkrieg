@@ -4,18 +4,18 @@ StagesPopup *StagesPopup::create(GJGameLevel *level)
 {
   StagesPopup *ret = new StagesPopup();
 
-  // Запоминаем делегата
+  // Remember the delegate
   // ret->m_delegate = delegate;
 
-  // Если получается инициализироват модалку, то вызываем autorelease
-  // Чтобы она сама очистилась из памяти когда не будет использоваться
+  // If it turns out to be initialized the model, then we call autorelease
+  // So that it itself is cleansed from memory when it will not be used
   if (ret->initAnchored(420, 250, level))
   {
     ret->autorelease();
     return ret;
   }
 
-  // Не удалось инициализировать, поэтому удаляем
+  // Failed to initialize, so we delete
   delete ret;
   return nullptr;
 }
@@ -39,11 +39,10 @@ void StagesPopup::drawContent()
     if (btn->isToggled())
     {
       activeButton = btn;
-      break; // нашли активную кнопку, дальше искать не нужно
+      break;
     }
   }
 
-  // Проверка
   if (activeButton)
   {
     const auto tag = activeButton->getTag();
@@ -97,11 +96,11 @@ void StagesPopup::drawProfilesList()
   // ScrollLayer that fills the main layer
   auto scroll = ScrollLayer::create(contentSize);
 
-  // Уменьшаем видимую область ScrollLayer на padding
+  // Reduce the visible area of Scrolllayer by Padding
   scroll->setContentSize({contentSize.width - 16,
                           contentSize.height - 16});
 
-  // Сдвигаем позицию ScrollLayer внутри родителя
+  // We move the position of Scrolllayer inside the parent
   scroll->setPosition({padding.left + 8,
                        padding.bottom + 8});
 
@@ -140,7 +139,6 @@ void StagesPopup::drawProfilesList()
     // Profile name label
     std::string profileName = profiles[i].profileName;
 
-    // Ограничиваем 20 символами
     if (profileName.length() > 20)
     {
       profileName = profileName.substr(0, 20) + "...";
@@ -314,11 +312,11 @@ void StagesPopup::drawCurrentStage()
   // ScrollLayer that fills the main layer
   auto scroll = ScrollLayer::create(contentSize);
 
-  // Уменьшаем видимую область ScrollLayer на padding
+  // Reduce the visible area of Scrolllayer by Padding
   scroll->setContentSize({contentSize.width - 16,
                           contentSize.height - 16});
 
-  // Сдвигаем позицию ScrollLayer внутри родителя
+  // Move the position of Scrolllayer inside the parent
   scroll->setPosition({padding.left + 8,
                        padding.bottom + 8});
 
@@ -336,8 +334,7 @@ void StagesPopup::drawCurrentStage()
   borders->setPosition({contentSize.width / 2 + padding.left,
                         contentSize.height / 2 + padding.bottom});
 
-  // Draw stages
-
+  // Draw stage progresses
   if (currentStage)
   {
     for (auto &range : currentStage->ranges)
@@ -359,7 +356,7 @@ void StagesPopup::drawCurrentStage()
                               " (Total: " +
                               std::to_string(std::abs(range.to - range.from)) + "%)";
 
-      // Range
+      // Range text
       auto rangeLabel = CCLabelBMFont::create(
           rangeText.c_str(),
           "bigFont.fnt");
@@ -390,16 +387,19 @@ void StagesPopup::drawCurrentStage()
 
 void StagesPopup::drawTabs()
 {
-  auto oldMenu = dynamic_cast<CCMenu *>(m_mainLayer->getChildByID("stages-popup-tab-menu"_spr));
-  if (oldMenu)
-  {
-    oldMenu->removeFromParentAndCleanup(true);
-  }
+  // --- CLEANUP OLD CONTAINER ---
+  auto oldTabsNode = m_mainLayer->getChildByID("stages-popup-tabs-node"_spr);
+  if (oldTabsNode)
+    oldTabsNode->removeFromParentAndCleanup(true);
 
   const auto mainSize = m_mainLayer->getContentSize();
   const float btnsGap = 10.f;
 
-  // Profiles-List tab button
+  // --- MAIN CONTAINER ---
+  auto tabsNode = CCNode::create();
+  tabsNode->setID("stages-popup-tabs-node"_spr);
+
+  // --- BUTTONS ---
   auto tabBtnProfilesList = TabButton::create(
       "Profiles List",
       this,
@@ -409,7 +409,6 @@ void StagesPopup::drawTabs()
   tabBtnProfilesList->setID("tabBtnProfilesList"_spr);
   tabBtnProfilesList->toggle(true);
 
-  // Current-Stage tab button
   auto tabBtnCurrentStage = TabButton::create(
       "Current Stage",
       this,
@@ -418,37 +417,55 @@ void StagesPopup::drawTabs()
   tabBtnCurrentStage->setTag(2);
   tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
 
+  // --- MENU ---
   auto tabMenu = CCMenu::create();
   tabMenu->addChild(tabBtnProfilesList);
   tabMenu->addChild(tabBtnCurrentStage);
   tabMenu->alignItemsHorizontallyWithPadding(btnsGap);
   tabMenu->setPosition({mainSize.width / 2, mainSize.height - 3.5f});
+  tabMenu->setZOrder(1);
   tabMenu->setID("stages-popup-tab-menu"_spr);
+
+  // --- BACKGROUNDS ---
+  auto gradient1 = CCSprite::create("tab-gradient-mask.png"_spr);
+  gradient1->setAnchorPoint({0.5f, 0.f});
+  gradient1->setPosition(tabMenu->convertToWorldSpace(tabBtnProfilesList->getPosition()));
+  gradient1->setColor({190, 235, 65});
+  gradient1->setZOrder(0);
+
+  auto gradient2 = CCSprite::create("tab-gradient-mask.png"_spr);
+  gradient2->setAnchorPoint({0.5f, 0.f});
+  gradient2->setPosition(tabMenu->convertToWorldSpace(tabBtnCurrentStage->getPosition()));
+  gradient2->setColor({190, 235, 65});
+  gradient2->setZOrder(0);
+
+  tabsNode->addChild(gradient1);
+  tabsNode->addChild(gradient2);
+  tabsNode->addChild(tabMenu);
 
   tabButtons.clear();
   tabButtons.push_back(tabBtnProfilesList);
   tabButtons.push_back(tabBtnCurrentStage);
 
-  m_mainLayer->addChild(tabMenu);
+  m_mainLayer->addChild(tabsNode);
 }
 
-void StagesPopup::activateTab(TabButton *btnToActivate)
+void StagesPopup::activateTab(TabButton *sender)
 {
-  if (!btnToActivate)
+  if (!sender)
     return;
 
-  // Деактивируем все кнопки кроме btnToActivate
+  // Deactivate all buttons except sender
   for (auto *btn : tabButtons)
   {
     if (!btn)
       continue;
 
-    if (btn != btnToActivate)
+    if (btn != sender)
       btn->toggle(false);
   }
 
-  btnToActivate->toggle(true);
-
+  sender->toggle(true);
   drawContent();
 }
 
@@ -478,7 +495,7 @@ void StagesPopup::onImport(CCObject *obj)
             return;
         }
 
-        // Парсим JSON без исключений
+        // Parse JSON
         json parsed = json::parse(jsonContent, nullptr, false);
 
         if (parsed.is_discarded()) {
@@ -493,7 +510,6 @@ void StagesPopup::onImport(CCObject *obj)
 
         std::vector<Profile> profiles;
 
-        // Здесь используется твой from_json для Profile
         for (auto const& item : parsed) {
             if (!item.is_object()) {
                 geode::log::debug("Skip JSON element: not an object");
@@ -501,7 +517,6 @@ void StagesPopup::onImport(CCObject *obj)
             }
 
             Profile p{};
-            // метод get_to НЕ бросает исключений, если j.is_discarded() == false
             if (!item.is_discarded()) {
                 item.get_to(p);
                 profiles.push_back(std::move(p));
@@ -520,7 +535,7 @@ void StagesPopup::onExport(CCObject *obj)
   const auto profiles = getProfiles();
   auto resourcesDir = geode::Mod::get()->getResourcesDir();
 
-  // Формируем папку backup
+  // Create Backup folder
   auto backupDir = resourcesDir / "backups";
   auto backupFile = backupDir / backup::generateBackupFilename();
 

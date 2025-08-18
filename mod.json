@@ -26,7 +26,8 @@
 	},
 	"resources": {
 		"sprites": [
-			"resources/sprites/logo.png"
+			"resources/sprites/logo.png",
+			"resources/sprites/tab-gradient-mask.png"
 		],
 		"files": [
 			"resources/audio/range_complete.mp3",
