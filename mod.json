@@ -18,6 +18,10 @@
 		"cvolton.level-id-api": {
 			"version": "v1.2.3",
 			"importance": "required"
+		},
+		"alphalaneous.happy_textures": {
+			"version": "v2.0.17",
+			"importance": "required"
 		}
 	},
 	"resources": {
