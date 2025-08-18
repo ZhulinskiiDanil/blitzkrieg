@@ -1,0 +1,7 @@
+# v1.1.1
+- Added `about.md` (mod description for Geode Manager)
+- Added `changelog.md` (contains a tutorial)
+- Added `support.md`
+
+# v1.1.0
+- Added a list of progresses in the pause menu to see which progresses are already closed and which are in progress
