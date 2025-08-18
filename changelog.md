@@ -1,3 +1,6 @@
+# v1.1.2
+- Added background to tab buttons
+
 # v1.1.1
 - Added `about.md` (mod description for Geode Manager)
 - Added `changelog.md` (contains a tutorial)
