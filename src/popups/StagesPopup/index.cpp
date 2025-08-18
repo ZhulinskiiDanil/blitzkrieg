@@ -284,7 +284,7 @@ void StagesPopup::drawProfilesList()
 
 void StagesPopup::drawCurrentStage()
 {
-  auto oldList = dynamic_cast<CCNodeContainer *>(m_mainLayer->getChildByID("stages-popup-current-stage"_spr));
+  auto oldList = dynamic_cast<CCNode *>(m_mainLayer->getChildByID("stages-popup-current-stage"_spr));
   if (oldList)
   {
     oldList->removeFromParentAndCleanup(true);
@@ -300,7 +300,7 @@ void StagesPopup::drawCurrentStage()
       mainSize.width - padding.left - padding.right,
       mainSize.height - padding.top - padding.bottom);
 
-  const auto currStageContainer = CCNodeContainer::create();
+  const auto currStageContainer = CCNode::create();
   currStageContainer->setID("stages-popup-current-stage"_spr);
   currStageContainer->setTag(2);
 
