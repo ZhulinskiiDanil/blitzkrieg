@@ -68,7 +68,7 @@ void StagesPopup::drawContent()
 
 void StagesPopup::drawProfilesList()
 {
-  auto oldList = dynamic_cast<CCNodeContainer *>(m_mainLayer->getChildByID("stages-popup-profiles-list"_spr));
+  auto oldList = dynamic_cast<CCNode *>(m_mainLayer->getChildByID("stages-popup-profiles-list"_spr));
   if (oldList)
   {
     oldList->removeFromParentAndCleanup(true);
@@ -79,7 +79,7 @@ void StagesPopup::drawProfilesList()
   const auto profiles = getProfiles();
   const auto currentProfile = getProfileByLevel(m_level);
 
-  const auto profileListContainer = CCNodeContainer::create();
+  const auto profileListContainer = CCNode::create();
   profileListContainer->setID("stages-popup-profiles-list"_spr);
   profileListContainer->setTag(1);
   const auto mainSize = m_mainLayer->getContentSize();

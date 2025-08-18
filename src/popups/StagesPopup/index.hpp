@@ -50,7 +50,7 @@ class StagesPopup : public geode::Popup<GJGameLevel *>
 {
 private:
   std::vector<TabButton *> tabButtons;
-  std::vector<CCNodeContainer *> contentContainers;
+  std::vector<CCNode *> contentContainers;
   GJGameLevel *m_level = nullptr;
 
   void drawTabs();
