@@ -42,7 +42,7 @@ bool StageRangeCell::init(int from, int to, bool checked, GJGameLevel *level, co
   m_checkbox->setAnchorPoint({0.5f, 0.5f});
   m_checkbox->toggle(!m_checked);
 
-  auto menu = CCMenu::create(m_checkbox);
+  auto menu = CCMenu::createWithItem(m_checkbox);
   menu->setScale(0.5f);
   menu->setAnchorPoint({0.5f, 0.f});
   menu->setContentSize({32.f, 32.f});
