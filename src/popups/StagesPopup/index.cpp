@@ -337,8 +337,9 @@ void StagesPopup::drawCurrentStage()
   // Draw stage progresses
   if (currentStage)
   {
-    for (auto &range : currentStage->ranges)
+    for (size_t i = 0; i < currentStage->ranges.size(); ++i)
     {
+      auto &range = currentStage->ranges[i];
       auto cellSize = CCSize(scroll->getContentWidth(), 25.f);
 
       auto cell = CCLayer::create();
@@ -364,6 +365,28 @@ void StagesPopup::drawCurrentStage()
       rangeLabel->setAnchorPoint({0, 0.5f});
       rangeLabel->setPosition({5.f, cellSize.height / 2});
 
+      // ! --- CHECK | UNCHECK RUN BUTTON --- !
+      auto toggleOn = CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png");
+      auto toggleOff = CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png");
+
+      auto checkbox = CCMenuItemToggler::create(
+          toggleOn,
+          toggleOff,
+          this,
+          menu_selector(StagesPopup::onToggleRun));
+      checkbox->setAnchorPoint({0.5f, 0.5f});
+      checkbox->setTag(static_cast<int>(i));
+      checkbox->toggle(!range.checked);
+
+      auto menu = CCMenu::create();
+      menu->addChild(checkbox);
+      menu->setScale(.5f);
+      menu->setAnchorPoint({0.5f, 0.f});
+      menu->setContentSize({32.f, 32.f});
+      menu->setPosition({scroll->getContentWidth() - checkbox->getContentWidth() / 2 - 5.f,
+                         cell->getContentHeight() / 2});
+      cell->addChild(menu);
+
       if (!range.checked)
         rangeLabel->setColor({253, 165, 106});
       else
@@ -383,6 +406,33 @@ void StagesPopup::drawCurrentStage()
   currStageContainer->addChild(titleLabel);
   m_mainLayer->addChild(currStageContainer);
   contentContainers.push_back(currStageContainer);
+}
+
+void StagesPopup::onToggleRun(CCObject *sender)
+{
+  auto checkbox = static_cast<CCMenuItemToggler *>(sender);
+  const auto rangeIndex = checkbox->getTag();
+  Profile profile = getProfileByLevel(m_level);
+  Stage *currentStage = getFirstUncheckedStage(profile);
+  bool newStateChecked = false;
+
+  if (currentStage)
+  {
+    for (int i = 0; i < currentStage->ranges.size(); i++)
+    {
+      if (i == rangeIndex)
+      {
+        auto &range = currentStage->ranges[i];
+        range.checked = !range.checked;
+        newStateChecked = range.checked;
+        break;
+      }
+    }
+
+    saveProfile(profile);
+    if (checkbox)
+      checkbox->toggle(newStateChecked);
+  }
 }
 
 void StagesPopup::drawTabs()

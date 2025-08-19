@@ -13,6 +13,7 @@
 #include <Geode/cocos/cocoa/CCGeometry.h>
 #include <Geode/cocos/extensions/GUI/CCControlExtension/CCScale9Sprite.h>
 
+// #include "./ui/index.hpp"
 #include "ProfilesChangedEvent.hpp"
 
 #include <ctime>
@@ -22,6 +23,7 @@
 #include "../../serialization/profile/index.hpp"
 #include "../../utils/getProfiles.hpp"
 #include "../../utils/getProfileByLevel.hpp"
+#include "../../utils/saveProfile.hpp"
 #include "../../utils/saveProfiles.hpp"
 #include "../../utils/linkProfileWithLevel.hpp"
 #include "../../utils/unlinkProfileFromLevel.hpp"
@@ -51,6 +53,7 @@ class StagesPopup : public geode::Popup<GJGameLevel *>
 private:
   std::vector<TabButton *> tabButtons;
   std::vector<CCNode *> contentContainers;
+  std::vector<CCMenuItemToggle *> stageCheckboxes;
   GJGameLevel *m_level = nullptr;
 
   void drawTabs();
@@ -59,11 +62,15 @@ private:
   void drawCurrentStage();
 
   bool setup(GJGameLevel *) override;
+
   void onProfileSelect(CCObject *);
   void onProfileDeselect(CCObject *);
+
   void onCreate(CCObject *);
   void onImport(CCObject *);
   void onExport(CCObject *);
+
+  void onToggleRun(CCObject *);
 
   void onCurrentStageToggle(CCObject *);
   void onProfilesListToggle(CCObject *);

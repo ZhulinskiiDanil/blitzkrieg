@@ -210,11 +210,6 @@ public:
         return nullptr;
     }
 
-    void saveData(Profile currentProfile)
-    {
-        saveProfile(currentProfile);
-    }
-
     bool isLegal()
     {
         return !m_fields->isNoclip;
@@ -323,7 +318,7 @@ public:
         {
             // true если нужно проиграть звук стейджа
             // false если нужно проиграть звук range
-            saveData(currentProfile);
+            saveProfile(currentProfile);
             playSound(isStageClosed);
         }
     }
