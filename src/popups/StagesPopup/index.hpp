@@ -13,7 +13,7 @@
 #include <Geode/cocos/cocoa/CCGeometry.h>
 #include <Geode/cocos/extensions/GUI/CCControlExtension/CCScale9Sprite.h>
 
-// #include "./ui/index.hpp"
+#include "./ui/StageRangesList.hpp"
 #include "ProfilesChangedEvent.hpp"
 
 #include <ctime>
@@ -23,7 +23,6 @@
 #include "../../serialization/profile/index.hpp"
 #include "../../utils/getProfiles.hpp"
 #include "../../utils/getProfileByLevel.hpp"
-#include "../../utils/saveProfile.hpp"
 #include "../../utils/saveProfiles.hpp"
 #include "../../utils/linkProfileWithLevel.hpp"
 #include "../../utils/unlinkProfileFromLevel.hpp"
@@ -69,8 +68,6 @@ private:
   void onCreate(CCObject *);
   void onImport(CCObject *);
   void onExport(CCObject *);
-
-  void onToggleRun(CCObject *);
 
   void onCurrentStageToggle(CCObject *);
   void onProfilesListToggle(CCObject *);

@@ -309,130 +309,15 @@ void StagesPopup::drawCurrentStage()
   titleLabel->setAnchorPoint({0.5f, 0.5f});
   titleLabel->setPosition({mainSize.width / 2, mainSize.height - 25.f});
 
-  // ScrollLayer that fills the main layer
-  auto scroll = ScrollLayer::create(contentSize);
+  // ! --- Create StageRangesList --- !
+  auto rangesListContentSize = CCSize({contentSize.width - 16, contentSize.height - 16});
+  auto rangesList = StageRangesList::create(currentStage, m_level, rangesListContentSize);
+  rangesList->setPosition({padding.left + 8, padding.bottom + 8});
 
-  // Reduce the visible area of Scrolllayer by Padding
-  scroll->setContentSize({contentSize.width - 16,
-                          contentSize.height - 16});
-
-  // Move the position of Scrolllayer inside the parent
-  scroll->setPosition({padding.left + 8,
-                       padding.bottom + 8});
-
-  // Column layout: vertical list, aligned to bottom, auto-grow height
-  scroll->m_contentLayer->setLayout(
-      ColumnLayout::create()
-          ->setGap(5.f)
-          ->setAxisAlignment(AxisAlignment::End)
-          ->setAutoGrowAxis(scroll->getContentHeight()));
-
-  // Create and configure list borders
-  auto borders = ListBorders::create();
-  borders->setContentSize(contentSize);
-  borders->setAnchorPoint({0.5f, 0.5f});
-  borders->setPosition({contentSize.width / 2 + padding.left,
-                        contentSize.height / 2 + padding.bottom});
-
-  // Draw stage progresses
-  if (currentStage)
-  {
-    for (size_t i = 0; i < currentStage->ranges.size(); ++i)
-    {
-      auto &range = currentStage->ranges[i];
-      auto cellSize = CCSize(scroll->getContentWidth(), 25.f);
-
-      auto cell = CCLayer::create();
-      cell->setContentSize(cellSize);
-
-      auto cellBackground = CCScale9Sprite::create("square02b_small.png");
-      cellBackground->setContentSize(cellSize);
-      cellBackground->setPosition({cellSize.width / 2, cellSize.height / 2});
-      cellBackground->setColor({0, 0, 0});
-      cellBackground->setOpacity(255 * 0.3f);
-      cell->addChild(cellBackground);
-
-      std::string rangeText = std::to_string(range.from) + "-" +
-                              std::to_string(range.to) +
-                              " (Total: " +
-                              std::to_string(std::abs(range.to - range.from)) + "%)";
-
-      // Range text
-      auto rangeLabel = CCLabelBMFont::create(
-          rangeText.c_str(),
-          "bigFont.fnt");
-      rangeLabel->setScale(.5f);
-      rangeLabel->setAnchorPoint({0, 0.5f});
-      rangeLabel->setPosition({5.f, cellSize.height / 2});
-
-      // ! --- CHECK | UNCHECK RUN BUTTON --- !
-      auto toggleOn = CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png");
-      auto toggleOff = CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png");
-
-      auto checkbox = CCMenuItemToggler::create(
-          toggleOn,
-          toggleOff,
-          this,
-          menu_selector(StagesPopup::onToggleRun));
-      checkbox->setAnchorPoint({0.5f, 0.5f});
-      checkbox->setTag(static_cast<int>(i));
-      checkbox->toggle(!range.checked);
-
-      auto menu = CCMenu::create();
-      menu->addChild(checkbox);
-      menu->setScale(.5f);
-      menu->setAnchorPoint({0.5f, 0.f});
-      menu->setContentSize({32.f, 32.f});
-      menu->setPosition({scroll->getContentWidth() - checkbox->getContentWidth() / 2 - 5.f,
-                         cell->getContentHeight() / 2});
-      cell->addChild(menu);
-
-      if (!range.checked)
-        rangeLabel->setColor({253, 165, 106});
-      else
-        rangeLabel->setColor({99, 224, 110});
-
-      cell->addChild(rangeLabel);
-      scroll->m_contentLayer->addChild(cell);
-    }
-  }
-
-  // After all cells added
-  scroll->m_contentLayer->updateLayout();
-  scroll->scrollToTop();
-
-  currStageContainer->addChild(scroll);
-  currStageContainer->addChild(borders);
+  currStageContainer->addChild(rangesList);
   currStageContainer->addChild(titleLabel);
   m_mainLayer->addChild(currStageContainer);
   contentContainers.push_back(currStageContainer);
-}
-
-void StagesPopup::onToggleRun(CCObject *sender)
-{
-  auto checkbox = static_cast<CCMenuItemToggler *>(sender);
-  const auto rangeIndex = checkbox->getTag();
-  Profile profile = getProfileByLevel(m_level);
-  Stage *currentStage = getFirstUncheckedStage(profile);
-  bool newStateChecked = false;
-
-  if (currentStage)
-  {
-    for (int i = 0; i < currentStage->ranges.size(); i++)
-    {
-      if (i == rangeIndex)
-      {
-        auto &range = currentStage->ranges[i];
-        range.checked = !range.checked;
-        newStateChecked = range.checked;
-        break;
-      }
-    }
-
-    saveProfile(profile);
-    if (checkbox)
-      checkbox->toggle(newStateChecked);
-  }
 }
 
 void StagesPopup::drawTabs()
