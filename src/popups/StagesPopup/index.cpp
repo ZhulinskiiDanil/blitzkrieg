@@ -45,7 +45,7 @@ void StagesPopup::drawContent()
 
   if (activeButton)
   {
-    const auto tag = activeButton->getTag();
+    const auto btnId = activeButton->getID();
 
     // Clear old content
     for (auto *container : contentContainers)
@@ -58,22 +58,23 @@ void StagesPopup::drawContent()
 
     contentContainers.clear();
 
-    if (tag == 1)
+    if (btnId == "tabBtnProfilesList"_spr)
       drawProfilesList();
-    else if (tag == 2)
+    else if (btnId == "tabBtnCurrentStage"_spr)
       drawCurrentStage();
+    else if (btnId == "tabBtnLastRuns"_spr)
+      drawLastRuns();
   }
 }
 
 void StagesPopup::drawProfilesList()
 {
-  auto oldList = dynamic_cast<CCNode *>(m_mainLayer->getChildByID("stages-popup-profiles-list"_spr));
-  if (oldList)
+  if (auto oldList = dynamic_cast<CCNode *>(m_mainLayer->getChildByID("stages-popup-profiles-list"_spr)))
   {
     oldList->removeFromParentAndCleanup(true);
   }
 
-  Padding padding{50.f, 50.f, 20.f, 20.f}; // top, bottom, left, right
+  Padding padding{45.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
 
   const auto profiles = getProfiles();
   const auto currentProfile = getProfileByLevel(m_level);
@@ -81,200 +82,23 @@ void StagesPopup::drawProfilesList()
   const auto profileListContainer = CCNode::create();
   profileListContainer->setID("stages-popup-profiles-list"_spr);
   profileListContainer->setTag(1);
+
   const auto mainSize = m_mainLayer->getContentSize();
   const auto contentSize = CCSize(
       mainSize.width - padding.left - padding.right,
       mainSize.height - padding.top - padding.bottom);
 
-  auto titleLabel = CCLabelBMFont::create(
-      "Profiles List",
-      "goldFont.fnt");
+  // Заголовок
+  auto titleLabel = CCLabelBMFont::create("Profiles List", "goldFont.fnt");
   titleLabel->setScale(1.f);
-  titleLabel->setAnchorPoint({0.5f, 0.5f});
-  titleLabel->setPosition({mainSize.width / 2, mainSize.height - 25.f});
-
-  // ScrollLayer that fills the main layer
-  auto scroll = ScrollLayer::create(contentSize);
-
-  // Reduce the visible area of Scrolllayer by Padding
-  scroll->setContentSize({contentSize.width - 16,
-                          contentSize.height - 16});
-
-  // We move the position of Scrolllayer inside the parent
-  scroll->setPosition({padding.left + 8,
-                       padding.bottom + 8});
-
-  // Column layout: vertical list, aligned to bottom, auto-grow height
-  scroll->m_contentLayer->setLayout(
-      ColumnLayout::create()
-          ->setGap(5.f)
-          ->setAxisAlignment(AxisAlignment::End)
-          ->setAutoGrowAxis(scroll->getContentHeight()));
-
-  // Add each profile as a cell
-  for (size_t i = 0; i < profiles.size(); ++i)
-  {
-    bool isCurrentProfile = false;
-
-    if (!currentProfile.id.empty())
-    {
-      isCurrentProfile = (currentProfile.id == profiles[i].id);
-    }
-
-    ProfileStats stats = getProfileStats(profiles[i]);
-    bool isAllStagesCompleted = !stats.currentStage.has_value() || stats.currentStage >= stats.totalStages;
-
-    auto cellSize = CCSize(scroll->getContentWidth(), 40.f);
-
-    auto cell = CCLayer::create();
-    cell->setContentSize(cellSize);
-
-    auto cellBackground = CCScale9Sprite::create("square02b_small.png");
-    cellBackground->setContentSize(cellSize);
-    cellBackground->setPosition({cellSize.width / 2, cellSize.height / 2});
-    cellBackground->setColor({0, 0, 0});
-    cellBackground->setOpacity(255 * 0.3f);
-    cell->addChild(cellBackground);
-
-    // Profile name label
-    std::string profileName = profiles[i].profileName;
-
-    if (profileName.length() > 20)
-    {
-      profileName = profileName.substr(0, 20) + "...";
-    }
-
-    // Profile name label
-    auto profileLabel = CCLabelBMFont::create(
-        profileName.c_str(),
-        "bigFont.fnt");
-    profileLabel->setScale(.5f);
-    profileLabel->setAnchorPoint({0, 0.5f});
-    profileLabel->setPosition({10.f, 25.f});
-    if (stats.currentStage > stats.totalStages / 2)
-    {
-      profileLabel->setColor({253, 165, 106});
-    }
-    if (isAllStagesCompleted)
-    {
-      profileLabel->setColor({99, 224, 110});
-    }
-    cell->addChild(profileLabel);
-
-    std::string labelText;
-    if (isAllStagesCompleted)
-    {
-      labelText = "Stages: " + std::to_string(stats.totalStages) + "/" +
-                  std::to_string(stats.totalStages); // все пройдены
-    }
-    else
-    {
-      labelText = "Stages: " + std::to_string(stats.currentStage.value()) + "/" +
-                  std::to_string(stats.totalStages);
-    }
-
-    // Profile name label
-    auto statLabel = CCLabelBMFont::create(
-        labelText.c_str(),
-        "bigFont.fnt");
-    statLabel->setScale(0.25f);
-    statLabel->setAnchorPoint({0, 0.5f});
-    statLabel->setPosition({10.f, 10.f});
-    statLabel->setOpacity(255 * 0.5f);
-    cell->addChild(statLabel);
-
-    // Can select if it isn't a current profile
-    if (!isCurrentProfile)
-    {
-      // "Select" button
-      auto btnSpr = ButtonSprite::create("Select");
-      btnSpr->setScale(0.6f);
-
-      auto btn = CCMenuItemSpriteExtra::create(
-          btnSpr,
-          this,
-          menu_selector(StagesPopup::onProfileSelect));
-      btn->setTag(static_cast<int>(i));
-
-      auto menu = CCMenu::create();
-      menu->addChild(btn);
-      menu->setPosition({scroll->getContentWidth() - btn->getContentWidth() / 2 - 10.f, 20.f});
-      cell->addChild(menu);
-    }
-    else
-    {
-      // "Deselect" button
-      auto btnSpr = ButtonSprite::create("Deselect");
-      btnSpr->setScale(0.6f);
-
-      auto btn = CCMenuItemSpriteExtra::create(
-          btnSpr,
-          this,
-          menu_selector(StagesPopup::onProfileDeselect));
-      btn->setTag(static_cast<int>(i));
-
-      auto menu = CCMenu::create();
-      menu->addChild(btn);
-      menu->setPosition({scroll->getContentWidth() - btn->getContentWidth() / 2 - 10.f, 20.f});
-      cell->addChild(menu);
-    }
-
-    scroll->m_contentLayer->addChild(cell);
-  }
-
-  scroll->m_contentLayer->updateLayout();
-  scroll->scrollToTop();
-
-  // Create and configure list borders
-  auto borders = ListBorders::create();
-  borders->setContentSize(contentSize);
-  borders->setAnchorPoint({0.5f, 0.5f});
-  borders->setPosition({contentSize.width / 2 + padding.left,
-                        contentSize.height / 2 + padding.bottom});
-
-  auto btnsGap = 5.f;
-
-  // Create button
-  auto btnSprCreate = ButtonSprite::create("Create");
-  btnSprCreate->setScale(1.f);
-  btnSprCreate->setAnchorPoint({0.f, 0.5f});
-
-  auto btnCreate = CCMenuItemSpriteExtra::create(
-      btnSprCreate,
-      this,
-      menu_selector(StagesPopup::onCreate));
-
-  // Import button
-  auto btnSprImport = ButtonSprite::create("Import");
-  btnSprImport->setScale(1.f);
-  btnSprImport->setAnchorPoint({0.f, 0.5f});
-
-  auto btnImport = CCMenuItemSpriteExtra::create(
-      btnSprImport,
-      this,
-      menu_selector(StagesPopup::onImport));
-
-  // Export button
-  auto btnSprExport = ButtonSprite::create("Export");
-  btnSprExport->setScale(1.f);
-  btnSprExport->setAnchorPoint({0.f, 0.5f});
-
-  auto btnExport = CCMenuItemSpriteExtra::create(
-      btnSprExport,
-      this,
-      menu_selector(StagesPopup::onExport));
-
-  auto btnMenu = CCMenu::create();
-  btnMenu->addChild(btnCreate);
-  btnMenu->addChild(btnImport);
-  btnMenu->addChild(btnExport);
-  btnMenu->alignItemsHorizontallyWithPadding(btnsGap);
-  btnMenu->setPosition({mainSize.width / 2, 28.f});
-
+  titleLabel->setAnchorPoint({0.f, 0.5f});
+  titleLabel->setPosition({padding.left + 5.f, mainSize.height - padding.top / 2 - 5.f});
   profileListContainer->addChild(titleLabel);
-  profileListContainer->addChild(scroll);
-  profileListContainer->addChild(borders);
-  profileListContainer->addChild(btnMenu);
+
+  // Сам список со всеми кнопками внутри
+  auto listLayer = ProfilesListLayer::create(m_level, profiles, currentProfile, contentSize);
+  listLayer->setPosition({padding.left, padding.bottom});
+  profileListContainer->addChild(listLayer);
 
   m_mainLayer->addChild(profileListContainer);
   contentContainers.push_back(profileListContainer);
@@ -288,7 +112,7 @@ void StagesPopup::drawCurrentStage()
     oldList->removeFromParentAndCleanup(true);
   }
 
-  Padding padding{50.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
+  Padding padding{45.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
   Profile profile = getProfileByLevel(m_level);
   Stage *currentStage = getFirstUncheckedStage(profile);
@@ -306,13 +130,13 @@ void StagesPopup::drawCurrentStage()
       "Current stage",
       "goldFont.fnt");
   titleLabel->setScale(1.f);
-  titleLabel->setAnchorPoint({0.5f, 0.5f});
-  titleLabel->setPosition({mainSize.width / 2, mainSize.height - 25.f});
+  titleLabel->setAnchorPoint({0.f, 0.5f});
+  titleLabel->setPosition({padding.left + 5.f, mainSize.height - padding.top / 2 - 5.f});
 
   // ! --- Create StageRangesList --- !
-  auto rangesListContentSize = CCSize(contentSize.width - 16, contentSize.height - 16);
+  auto rangesListContentSize = CCSize(contentSize.width, contentSize.height);
   auto rangesList = StageRangesList::create(currentStage, m_level, rangesListContentSize);
-  rangesList->setPosition({padding.left + 8, padding.bottom + 8});
+  rangesList->setPosition({padding.left, padding.bottom});
 
   currStageContainer->addChild(rangesList);
   currStageContainer->addChild(titleLabel);
@@ -320,21 +144,26 @@ void StagesPopup::drawCurrentStage()
   contentContainers.push_back(currStageContainer);
 }
 
+void StagesPopup::drawLastRuns()
+{
+  drawCurrentStage();
+}
+
 void StagesPopup::drawTabs()
 {
-  // --- CLEANUP OLD CONTAINER ---
+  // ! --- CLEANUP OLD CONTAINER --- !
   auto oldTabsNode = m_mainLayer->getChildByID("stages-popup-tabs-node"_spr);
   if (oldTabsNode)
     oldTabsNode->removeFromParentAndCleanup(true);
 
   const auto mainSize = m_mainLayer->getContentSize();
-  const float btnsGap = 10.f;
+  const float btnsGap = 2.f;
 
-  // --- MAIN CONTAINER ---
+  // ! --- MAIN CONTAINER --- !
   auto tabsNode = CCNode::create();
   tabsNode->setID("stages-popup-tabs-node"_spr);
 
-  // --- BUTTONS ---
+  // ! --- BUTTONS --- !
   auto tabBtnProfilesList = TabButton::create(
       "Profiles List",
       this,
@@ -352,36 +181,42 @@ void StagesPopup::drawTabs()
   tabBtnCurrentStage->setTag(2);
   tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
 
-  // --- MENU ---
+  auto tabBtnLastRuns = TabButton::create(
+      "Last runs",
+      this,
+      menu_selector(StagesPopup::onCurrentStageToggle));
+  tabBtnLastRuns->setAnchorPoint({0.5f, 0.f});
+  tabBtnLastRuns->setTag(3);
+  tabBtnLastRuns->setID("tabBtnLastRuns"_spr);
+
+  // ! --- MENU --- !
   auto tabMenu = CCMenu::create();
   tabMenu->addChild(tabBtnProfilesList);
   tabMenu->addChild(tabBtnCurrentStage);
+  tabMenu->addChild(tabBtnLastRuns);
   tabMenu->alignItemsHorizontallyWithPadding(btnsGap);
   tabMenu->setPosition({mainSize.width / 2, mainSize.height - 3.5f});
   tabMenu->setZOrder(1);
   tabMenu->setID("stages-popup-tab-menu"_spr);
 
-  // --- BACKGROUNDS ---
-  auto gradient1 = CCSprite::create("tab-gradient-mask.png"_spr);
-  gradient1->setAnchorPoint({0.5f, 0.f});
-  gradient1->setPosition(tabMenu->convertToWorldSpace(tabBtnProfilesList->getPosition()));
-  gradient1->setColor({190, 235, 65});
-  gradient1->setZOrder(0);
-
-  auto gradient2 = CCSprite::create("tab-gradient-mask.png"_spr);
-  gradient2->setAnchorPoint({0.5f, 0.f});
-  gradient2->setPosition(tabMenu->convertToWorldSpace(tabBtnCurrentStage->getPosition()));
-  gradient2->setColor({190, 235, 65});
-  gradient2->setZOrder(0);
-
-  tabsNode->addChild(gradient1);
-  tabsNode->addChild(gradient2);
-  tabsNode->addChild(tabMenu);
-
   tabButtons.clear();
   tabButtons.push_back(tabBtnProfilesList);
   tabButtons.push_back(tabBtnCurrentStage);
+  tabButtons.push_back(tabBtnLastRuns);
 
+  // ! --- TAB BUTTONS BACKGROUNDS --- !
+  for (auto *btn : tabButtons)
+  {
+    auto gradient = CCSprite::create("tab-gradient-mask.png"_spr);
+    gradient->setAnchorPoint({0.5f, 0.f});
+    gradient->setPosition(tabMenu->convertToWorldSpace(btn->getPosition()));
+    gradient->setColor({190, 235, 65});
+    gradient->setZOrder(0);
+
+    tabsNode->addChild(gradient);
+  }
+
+  tabsNode->addChild(tabMenu);
   m_mainLayer->addChild(tabsNode);
 }
 
@@ -414,130 +249,4 @@ void StagesPopup::onCurrentStageToggle(CCObject *obj)
 {
   auto *btnStage = typeinfo_cast<TabButton *>(obj);
   activateTab(btnStage);
-}
-
-void StagesPopup::onCreate(CCObject *obj)
-{
-  geode::utils::web::openLinkInBrowser("https://dgkr-community.vercel.app/blitzkrieg?helpCreateProfile=true");
-}
-
-void StagesPopup::onImport(CCObject *obj)
-{
-  selectJsonFile([this](std::string jsonContent)
-                 {
-        if (jsonContent.empty()) {
-            geode::log::debug("File doesn't selected or empty");
-            return;
-        }
-
-        // Parse JSON
-        json parsed = json::parse(jsonContent, nullptr, false);
-
-        if (parsed.is_discarded()) {
-            geode::log::debug("JSON Parse error");
-            return;
-        }
-
-        if (!parsed.is_array()) {
-            geode::log::debug("Error: Expected profiles array");
-            return;
-        }
-
-        std::vector<Profile> profiles;
-
-        for (auto const& item : parsed) {
-            if (!item.is_object()) {
-                geode::log::debug("Skip JSON element: not an object");
-                continue;
-            }
-
-            Profile p{};
-            if (!item.is_discarded()) {
-                item.get_to(p);
-                profiles.push_back(std::move(p));
-            }
-        }
-
-        saveProfiles(profiles);
-        ProfilesChangedEvent().post();
-
-        // Update content
-        drawContent(); });
-}
-
-void StagesPopup::onExport(CCObject *obj)
-{
-  const auto profiles = getProfiles();
-  auto resourcesDir = geode::Mod::get()->getResourcesDir();
-
-  // Create Backup folder
-  auto backupDir = resourcesDir / "backups";
-  auto backupFile = backupDir / backup::generateBackupFilename();
-
-  const auto res = geode::utils::file::createDirectory(backupDir);
-
-  if (res)
-  {
-    json jProfiles = json::array();
-    for (const auto &profile : profiles)
-    {
-      jProfiles.push_back(serializeProfile(profile));
-    }
-
-    auto result = geode::utils::file::writeString(backupFile, jProfiles.dump());
-    if (result)
-    {
-      geode::utils::file::openFolder(backupFile);
-    }
-    else
-    {
-      geode::log::error("Unable to save JSON: {}", result.unwrapErr());
-    }
-  }
-  else
-  {
-    geode::log::error("");
-  };
-}
-
-void StagesPopup::onProfileSelect(CCObject *obj)
-{
-  const auto level = this->m_level;
-
-  if (level)
-  {
-    const auto profiles = getProfiles();
-    const auto index = obj->getTag();
-    if (index >= profiles.size())
-      return;
-
-    const auto &profile = profiles[index];
-
-    linkProfileWithLevel(profile, level);
-    ProfilesChangedEvent().post();
-
-    // Update content
-    drawContent();
-  }
-}
-
-void StagesPopup::onProfileDeselect(CCObject *obj)
-{
-  const auto level = this->m_level;
-
-  if (level)
-  {
-    const auto profiles = getProfiles();
-    const auto index = obj->getTag();
-    if (index >= profiles.size())
-      return;
-
-    const auto &profile = profiles[index];
-
-    unlinkProfileFromLevel(profile, level);
-    ProfilesChangedEvent().post();
-
-    // Update content
-    drawContent();
-  }
 }

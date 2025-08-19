@@ -21,7 +21,7 @@ bool StageRangesList::init(Stage *stage, GJGameLevel *level, const CCSize &conte
   m_level = level;
   m_stage = stage;
 
-  // ScrollLayer
+  // ! --- ScrollLayer --- !
   m_scroll = ScrollLayer::create(contentSize);
   m_scroll->setContentSize({contentSize.width - 16, contentSize.height - 16});
   m_scroll->setPosition({8, 8});
@@ -34,11 +34,11 @@ bool StageRangesList::init(Stage *stage, GJGameLevel *level, const CCSize &conte
 
   this->addChild(m_scroll);
 
-  // Borders
+  // ! --- Borders --- !
   auto borders = ListBorders::create();
   borders->setContentSize(contentSize);
   borders->setAnchorPoint({0.5f, 0.5f});
-  borders->setPosition({contentSize.width / 2, contentSize.height / 2});
+  borders->setPosition(contentSize / 2);
   this->addChild(borders);
 
   reload();

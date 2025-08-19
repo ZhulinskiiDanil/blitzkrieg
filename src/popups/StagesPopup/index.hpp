@@ -14,21 +14,11 @@
 #include <Geode/cocos/extensions/GUI/CCControlExtension/CCScale9Sprite.h>
 
 #include "./ui/StageRangesList.hpp"
-#include "ProfilesChangedEvent.hpp"
-
-#include <ctime>
-#include <iomanip>
-#include <sstream>
+#include "./ui/ProfilesListLayer.hpp"
 
 #include "../../serialization/profile/index.hpp"
 #include "../../utils/getProfiles.hpp"
 #include "../../utils/getProfileByLevel.hpp"
-#include "../../utils/saveProfiles.hpp"
-#include "../../utils/linkProfileWithLevel.hpp"
-#include "../../utils/unlinkProfileFromLevel.hpp"
-#include "../../utils/selectJsonFile.hpp"
-#include "../../utils/getProfileStats.hpp"
-#include "../../utils/generateBackupFilename.hpp"
 #include "../../utils/getFirstUncheckedStage.hpp"
 
 using namespace geode::prelude;
@@ -59,6 +49,7 @@ private:
   void drawContent();
   void drawProfilesList();
   void drawCurrentStage();
+  void drawLastRuns();
 
   bool setup(GJGameLevel *) override;
 
