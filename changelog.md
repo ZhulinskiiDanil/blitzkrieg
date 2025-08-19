@@ -1,3 +1,6 @@
+# v1.1.3
+- Added the ability to mark progress in the stage tab
+
 # v1.1.2
 - Added background to tab buttons
 
