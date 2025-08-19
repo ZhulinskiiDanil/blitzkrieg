@@ -48,7 +48,7 @@ bool DTLayer::setup(GJGameLevel *const &level)
     return true;
 }
 
-void DTLayer::onClose(cocos2d::CCObject *)
+void DTLayer::onClose(CCObject *)
 {
     this->setKeypadEnabled(false);
     this->setTouchEnabled(false);

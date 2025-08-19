@@ -18,5 +18,5 @@ public:
 
   static DTLayer *create(GJGameLevel *const &Level);
 
-  void onClose(cocos2d::CCObject *) override;
+  void onClose(CCObject *) override;
 };
