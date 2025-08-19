@@ -63,6 +63,7 @@ void StageRangesList::reload()
   }
 
   m_scroll->m_contentLayer->updateLayout();
+  scrollToTop();
 }
 
 void StageRangesList::scrollToTop()
