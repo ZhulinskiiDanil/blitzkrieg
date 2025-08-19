@@ -310,7 +310,7 @@ void StagesPopup::drawCurrentStage()
   titleLabel->setPosition({mainSize.width / 2, mainSize.height - 25.f});
 
   // ! --- Create StageRangesList --- !
-  auto rangesListContentSize = CCSize({contentSize.width - 16, contentSize.height - 16});
+  auto rangesListContentSize = CCSize(contentSize.width - 16, contentSize.height - 16);
   auto rangesList = StageRangesList::create(currentStage, m_level, rangesListContentSize);
   rangesList->setPosition({padding.left + 8, padding.bottom + 8});
 
