@@ -1,3 +1,7 @@
+# v1.1.4
+- Fixed an issue where stage progress checkmarks were not being saved
+- Improved profiles list interface for a smoother experience
+
 # v1.1.3
 - Added the ability to mark progress in the stage tab
 
