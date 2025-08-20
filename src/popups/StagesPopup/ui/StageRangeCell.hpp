@@ -11,6 +11,9 @@ using namespace geode::prelude;
 class StageRangeCell : public CCLayer
 {
 private:
+  int m_from;
+  int m_to;
+
   RangeLabel *m_rangeLabel = nullptr;
   CCMenuItemToggler *m_checkbox = nullptr;
   CCScale9Sprite *m_background = nullptr;

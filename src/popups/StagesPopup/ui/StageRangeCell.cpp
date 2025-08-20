@@ -20,6 +20,8 @@ bool StageRangeCell::init(int from, int to, bool checked, GJGameLevel *level, co
   this->setContentSize(cellSize);
   m_checked = checked;
   m_level = level;
+  m_from = from;
+  m_to = to;
 
   // --- Background ---
   m_background = CCScale9Sprite::create("square02b_small.png");
@@ -61,24 +63,20 @@ void StageRangeCell::onToggle(CCObject *sender)
   if (!m_level)
     return;
 
-  const auto rangeIndex = sender->getTag();
   Profile profile = getProfileByLevel(m_level);
   Stage *currentStage = getFirstUncheckedStage(profile);
 
   if (currentStage)
   {
-    for (int i = 0; i < currentStage->ranges.size(); i++)
+    for (auto &range : currentStage->ranges)
     {
-      if (i == rangeIndex)
+      if (range.from == m_from && range.to == m_to)
       {
-        auto &range = currentStage->ranges[i];
         range.checked = !range.checked;
-
+        saveProfile(profile);
         break;
       }
     }
-
-    saveProfile(profile);
   }
 }
 

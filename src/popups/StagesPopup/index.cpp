@@ -181,19 +181,19 @@ void StagesPopup::drawTabs()
   tabBtnCurrentStage->setTag(2);
   tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
 
-  auto tabBtnLastRuns = TabButton::create(
-      "Last runs",
-      this,
-      menu_selector(StagesPopup::onCurrentStageToggle));
-  tabBtnLastRuns->setAnchorPoint({0.5f, 0.f});
-  tabBtnLastRuns->setTag(3);
-  tabBtnLastRuns->setID("tabBtnLastRuns"_spr);
+  // auto tabBtnLastRuns = TabButton::create(
+  //     "Last runs",
+  //     this,
+  //     menu_selector(StagesPopup::onCurrentStageToggle));
+  // tabBtnLastRuns->setAnchorPoint({0.5f, 0.f});
+  // tabBtnLastRuns->setTag(3);
+  // tabBtnLastRuns->setID("tabBtnLastRuns"_spr);
 
   // ! --- MENU --- !
   auto tabMenu = CCMenu::create();
   tabMenu->addChild(tabBtnProfilesList);
   tabMenu->addChild(tabBtnCurrentStage);
-  tabMenu->addChild(tabBtnLastRuns);
+  // tabMenu->addChild(tabBtnLastRuns);
   tabMenu->alignItemsHorizontallyWithPadding(btnsGap);
   tabMenu->setPosition({mainSize.width / 2, mainSize.height - 3.5f});
   tabMenu->setZOrder(1);
@@ -202,7 +202,7 @@ void StagesPopup::drawTabs()
   tabButtons.clear();
   tabButtons.push_back(tabBtnProfilesList);
   tabButtons.push_back(tabBtnCurrentStage);
-  tabButtons.push_back(tabBtnLastRuns);
+  // tabButtons.push_back(tabBtnLastRuns);
 
   // ! --- TAB BUTTONS BACKGROUNDS --- !
   for (auto *btn : tabButtons)
