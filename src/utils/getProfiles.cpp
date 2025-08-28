@@ -3,13 +3,15 @@
 
 std::vector<Profile> getProfiles()
 {
-    auto jsonStr = Mod::get()->getSavedValue<std::string>("profiles");
+    std::string saved = Mod::get()->getSavedValue<std::string>("profiles", "[]");
 
-    if (jsonStr.empty())
+    // Используем parseAs для прямого парсинга в вектор Profile
+    auto res = matjson::parseAs<std::vector<Profile>>(saved);
+    if (res.isErr())
     {
-        return {}; // если ничего не сохранено
+        geode::log::debug("Profiles JSON parse error: {}", res.unwrapErr());
+        return {};
     }
 
-    auto j = json::parse(jsonStr);
-    return j.get<std::vector<Profile>>();
+    return res.unwrap();
 }

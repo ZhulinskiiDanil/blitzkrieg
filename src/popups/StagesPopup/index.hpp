@@ -3,7 +3,6 @@
 #include <string>
 
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
-#include <nlohmann/json.hpp>
 
 #include <Geode/Geode.hpp>
 #include <Geode/ui/General.hpp>
@@ -22,7 +21,6 @@
 #include "../../utils/getFirstUncheckedStage.hpp"
 
 using namespace geode::prelude;
-using json = nlohmann::json;
 
 struct Padding
 {
@@ -52,13 +50,6 @@ private:
   void drawLastRuns();
 
   bool setup(GJGameLevel *) override;
-
-  void onProfileSelect(CCObject *);
-  void onProfileDeselect(CCObject *);
-
-  void onCreate(CCObject *);
-  void onImport(CCObject *);
-  void onExport(CCObject *);
 
   void onCurrentStageToggle(CCObject *);
   void onProfilesListToggle(CCObject *);

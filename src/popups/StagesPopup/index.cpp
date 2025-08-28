@@ -69,7 +69,7 @@ void StagesPopup::drawContent()
 
 void StagesPopup::drawProfilesList()
 {
-  if (auto oldList = dynamic_cast<CCNode *>(m_mainLayer->getChildByID("stages-popup-profiles-list"_spr)))
+  if (auto oldList = m_mainLayer->getChildByID("stages-popup-profiles-list"_spr))
   {
     oldList->removeFromParentAndCleanup(true);
   }
@@ -106,8 +106,7 @@ void StagesPopup::drawProfilesList()
 
 void StagesPopup::drawCurrentStage()
 {
-  auto oldList = dynamic_cast<CCNode *>(m_mainLayer->getChildByID("stages-popup-current-stage"_spr));
-  if (oldList)
+  if (auto oldList = m_mainLayer->getChildByID("stages-popup-current-stage"_spr))
   {
     oldList->removeFromParentAndCleanup(true);
   }
@@ -116,6 +115,14 @@ void StagesPopup::drawCurrentStage()
 
   Profile profile = getProfileByLevel(m_level);
   Stage *currentStage = getFirstUncheckedStage(profile);
+
+  if (!currentStage)
+  {
+    if (!profile.data.stages.empty())
+      currentStage = &profile.data.stages.back();
+    else
+      currentStage = nullptr;
+  }
 
   const auto mainSize = m_mainLayer->getContentSize();
   const auto contentSize = CCSize(

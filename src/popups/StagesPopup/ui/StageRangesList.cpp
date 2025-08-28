@@ -43,6 +43,13 @@ bool StageRangesList::init(Stage *stage, GJGameLevel *level, const CCSize &conte
 
   reload();
 
+  m_listener = EventListener<EventFilter<StagesChangedEvent>>(
+      [this](StagesChangedEvent *)
+      {
+        reload();
+        return ListenerResult::Propagate;
+      });
+
   return true;
 }
 

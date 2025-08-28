@@ -2,6 +2,7 @@
 #include <Geode/Geode.hpp>
 #include "RangeLabel.hpp"
 
+#include "../StagesChangedEvent.hpp"
 #include "../../../utils/saveProfile.hpp"
 #include "../../../utils/getProfileByLevel.hpp"
 #include "../../../utils/getFirstUncheckedStage.hpp"

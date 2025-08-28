@@ -17,6 +17,12 @@
 
 using namespace geode::prelude;
 
+struct Run
+{
+    int start = 0;
+    int end = 0;
+};
+
 class $modify(MenuLayer)
 {
     bool init()
@@ -30,11 +36,6 @@ class $modify(MenuLayer)
 
 class $modify(DTPlayLayer, PlayLayer)
 {
-    struct Run
-    {
-        int start = 0;
-        int end = 0;
-    };
 
     struct Fields
     {
@@ -56,21 +57,14 @@ public:
         if (!PlayLayer::init(level, p1, p2))
             return false;
         loadData();
-        loadSounds();
+        // loadSounds();
 
         return true;
     }
 
     void loadData()
     {
-        try
-        {
-            m_fields->profiles = getProfiles();
-        }
-        catch (const std::exception &e)
-        {
-            geode::log::error("Profile loading error: {}", e.what());
-        }
+        m_fields->profiles = getProfiles();
     }
 
     void resetLevel()
@@ -150,44 +144,12 @@ public:
         }
     }
 
-    void loadSounds()
-    {
-        auto resourcesDir = geode::Mod::get()->getResourcesDir();
-        auto rangePath = (resourcesDir / "range_complete.mp3").string();
-        auto stagePath = (resourcesDir / "stage_complete.mp3").string();
-
-        auto system = FMODAudioEngine::sharedEngine()->m_system;
-
-        if (!m_fields->rangeCompleteSound)
-        {
-            if (system->createSound(rangePath.c_str(), FMOD_DEFAULT, nullptr, &m_fields->rangeCompleteSound) != FMOD_OK)
-            {
-                geode::log::error("Failed to load range_complete.mp3");
-            }
-        }
-
-        if (!m_fields->stageCompleteSound)
-        {
-            if (system->createSound(stagePath.c_str(), FMOD_DEFAULT, nullptr, &m_fields->stageCompleteSound) != FMOD_OK)
-            {
-                geode::log::error("Failed to load stage_complete.mp3");
-            }
-        }
-    }
-
     void playSound(bool isStage)
     {
-        FMOD::Sound *sound = isStage ? m_fields->stageCompleteSound : m_fields->rangeCompleteSound;
-        if (!sound)
-            return;
-
-        FMOD::Channel *channel = nullptr;
-        auto system = FMODAudioEngine::sharedEngine()->m_system;
-
-        if (system->playSound(sound, nullptr, false, &channel) != FMOD_OK)
-        {
-            geode::log::error("Failed to play sound");
-        }
+        if (isStage)
+            FMODAudioEngine::sharedEngine()->playEffect("stage_complete.mp3"_spr);
+        else
+            FMODAudioEngine::sharedEngine()->playEffect("range_complete.mp3"_spr);
     }
 
     void resetState()

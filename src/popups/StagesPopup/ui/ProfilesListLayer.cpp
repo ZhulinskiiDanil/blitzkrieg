@@ -80,6 +80,14 @@ bool ProfilesListLayer::init(
   this->addChild(btnMenu);
 
   reload();
+
+  m_listener = EventListener<EventFilter<ProfilesChangedEvent>>(
+      [this](ProfilesChangedEvent *)
+      {
+        m_profiles = getProfiles();
+        return ListenerResult::Propagate;
+      });
+
   return true;
 }
 
@@ -126,50 +134,29 @@ void ProfilesListLayer::onImport(CCObject *obj)
 {
   selectJsonFile([this](std::string jsonContent)
                  {
-                   if (jsonContent.empty())
-                   {
-                     geode::log::debug("File doesn't selected or empty");
-                     return;
-                   }
+        if (jsonContent.empty()) {
+            geode::log::debug("File not selected or empty");
+            return;
+        }
 
-                   // Parse JSON
-                   json parsed = json::parse(jsonContent, nullptr, false);
+        auto res = matjson::parseAs<std::vector<Profile>>(jsonContent);
+        if (res.isErr()) {
+            geode::log::debug("JSON parse error: {}", res.unwrapErr());
+            return;
+        }
 
-                   if (parsed.is_discarded())
-                   {
-                     geode::log::debug("JSON Parse error");
-                     return;
-                   }
+        auto profiles = res.unwrap();
 
-                   if (!parsed.is_array())
-                   {
-                     geode::log::debug("Error: Expected profiles array");
-                     return;
-                   }
+        if (profiles.empty()) {
+            geode::log::debug("Parsed JSON is empty or not a valid profiles array");
+            return;
+        }
 
-                   std::vector<Profile> profiles;
+        saveProfiles(profiles);
+        ProfilesChangedEvent().post();
 
-                   for (auto const &item : parsed)
-                   {
-                     if (!item.is_object())
-                     {
-                       geode::log::debug("Skip JSON element: not an object");
-                       continue;
-                     }
-
-                     Profile p{};
-                     if (!item.is_discarded())
-                     {
-                       item.get_to(p);
-                       profiles.push_back(std::move(p));
-                     }
-                   }
-
-                   saveProfiles(profiles);
-                   ProfilesChangedEvent().post();
-
-                   // Update content
-                   reload(); });
+        // Update profiles list
+        reload(); });
 }
 
 void ProfilesListLayer::onExport(CCObject *obj)
@@ -183,26 +170,18 @@ void ProfilesListLayer::onExport(CCObject *obj)
 
   const auto res = geode::utils::file::createDirectory(backupDir);
 
-  if (res)
+  if (!res)
   {
-    json jProfiles = json::array();
-    for (const auto &profile : profiles)
-    {
-      jProfiles.push_back(serializeProfile(profile));
-    }
-
-    auto result = geode::utils::file::writeString(backupFile, jProfiles.dump());
-    if (result)
-    {
-      geode::utils::file::openFolder(backupFile);
-    }
-    else
-    {
-      geode::log::error("Unable to save JSON: {}", result.unwrapErr());
-    }
+    geode::log::error("Unable to create backup directory: {}", res.unwrapErr());
+    return;
   }
+
+  matjson::Value jProfiles = profiles;
+  auto jsonString = jProfiles.dump(matjson::NO_INDENTATION);
+  auto result = geode::utils::file::writeString(backupFile, jsonString);
+
+  if (result)
+    geode::utils::file::openFolder(backupFile);
   else
-  {
-    geode::log::error("");
-  };
+    geode::log::error("Unable to save JSON: {}", result.unwrapErr());
 }

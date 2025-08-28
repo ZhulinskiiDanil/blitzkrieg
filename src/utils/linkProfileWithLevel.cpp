@@ -5,33 +5,29 @@
 void linkProfileWithLevel(const Profile &profile, GJGameLevel *level)
 {
   if (!level)
-    return;
+    return geode::log::debug("Failed to find level in \"linkProfileWithLevel\"");
+
+  if (!&profile)
+    return geode::log::debug("Failed to find profile in \"linkProfileWithLevel\"");
 
   // Уникальный идентификатор уровня
-  std::string levelId = !level->getID().empty()
-                            ? level->getID()
-                            : std::to_string(EditorIDs::getID(level));
+  std::string lvlId = !level->getID().empty()
+                          ? level->getID()
+                          : std::to_string(EditorIDs::getID(level));
+
+  geode::log::debug("Link profile {} with level {}", profile.id, lvlId);
 
   // Отвязываем этот уровень от всех других профилей
-  auto allProfiles = getProfiles();
-  for (const auto &p : allProfiles)
-  {
-    if (p.profileName != profile.profileName)
-    {
-      // Проверяем, привязан ли профиль к этому уровню
-      // Предполагаем, что функция `isProfileLinkedToLevel` есть или делаем через ключ
-      std::string key = levelId + "-" + p.profileName;
-      auto saved = Mod::get()->getSavedValue<std::string>(key);
+  auto profiles = getProfiles();
 
-      if (!saved.empty())
-      {
-        unlinkProfileFromLevel(p, levelId);
-      }
-    }
+  // Unlink all profile(s) from current level
+  for (const auto &p : profiles)
+  {
+    unlinkProfileFromLevel(p, lvlId);
   }
 
-  // Привязываем текущий профиль
-  std::string key = levelId + "-" + profile.profileName;
-  json j = serializeProfile(profile);
-  Mod::get()->setSavedValue(key, j.dump());
+  // Link new profile
+  std::string key = lvlId + "-" + profile.profileName;
+  matjson::Value profileJson = profile;
+  Mod::get()->setSavedValue(key, profileJson.dump(matjson::NO_INDENTATION));
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Geode/Geode.hpp>
+#include <Geode/loader/Event.hpp>
 
 #include "../ProfilesChangedEvent.hpp"
 #include "./BlitzkriegProfile.hpp"
@@ -17,6 +18,7 @@ class ProfilesListLayer : public CCLayer
 private:
   ScrollLayer *m_scroll = nullptr;
   GJGameLevel *m_level = nullptr;
+  EventListener<EventFilter<ProfilesChangedEvent>> m_listener;
   CCSize m_contentSize;
 
   std::vector<Profile> m_profiles;

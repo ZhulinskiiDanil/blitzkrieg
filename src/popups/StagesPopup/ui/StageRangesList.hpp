@@ -1,5 +1,8 @@
 #pragma once
 #include <Geode/Geode.hpp>
+#include <Geode/loader/Event.hpp>
+
+#include "../StagesChangedEvent.hpp"
 #include "StageRangeCell.hpp"
 
 using namespace geode::prelude;
@@ -10,6 +13,7 @@ private:
   ScrollLayer *m_scroll = nullptr;
   CCSize m_contentSize;
   GJGameLevel *m_level = nullptr;
+  EventListener<EventFilter<StagesChangedEvent>> m_listener;
   Stage *m_stage = nullptr;
 
 public:

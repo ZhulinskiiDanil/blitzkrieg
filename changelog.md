@@ -1,3 +1,6 @@
+# v1.1.5
+- Refactor
+
 # v1.1.4
 - Fixed an issue where stage progress checkmarks were not being saved
 - Improved profiles list interface for a smoother experience

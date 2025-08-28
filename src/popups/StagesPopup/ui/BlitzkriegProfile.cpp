@@ -136,12 +136,8 @@ void BlitzkriegProfile::createButton()
 }
 
 // ! --- Handlers --- !
-
 void BlitzkriegProfile::onProfileSelect(CCObject *obj)
 {
-  if (!m_level)
-    return;
-
   linkProfileWithLevel(m_profile, m_level);
   ProfilesChangedEvent().post();
 

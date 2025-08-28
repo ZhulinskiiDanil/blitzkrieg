@@ -4,6 +4,7 @@
 
 #include "../ProfilesChangedEvent.hpp"
 
+#include "../../../serialization/profile/index.hpp"
 #include "../../../utils/getProfileStats.hpp"
 #include "../../../utils/getProfileByLevel.hpp"
 #include "../../../utils/linkProfileWithLevel.hpp"

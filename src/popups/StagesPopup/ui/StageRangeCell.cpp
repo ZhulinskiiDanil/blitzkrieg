@@ -73,10 +73,18 @@ void StageRangeCell::onToggle(CCObject *sender)
       if (range.from == m_from && range.to == m_to)
       {
         range.checked = !range.checked;
-        saveProfile(profile);
         break;
       }
     }
+
+    bool everyRangeChecked = std::all_of(currentStage->ranges.begin(), currentStage->ranges.end(),
+                                         [](auto &r)
+                                         { return r.checked; });
+
+    if (everyRangeChecked)
+      currentStage->checked = true;
+
+    saveProfile(profile);
   }
 }
 
@@ -89,4 +97,6 @@ void StageRangeCell::setChecked(bool checked)
 
   if (m_rangeLabel)
     m_rangeLabel->setEnabled(m_checked);
+
+  StagesChangedEvent().post();
 }
