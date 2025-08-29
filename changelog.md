@@ -1,3 +1,6 @@
+# v1.1.6
+- Fixed import error
+
 # v1.1.5
 - Refactor
 

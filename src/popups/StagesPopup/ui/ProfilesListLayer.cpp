@@ -147,8 +147,13 @@ void ProfilesListLayer::onImport(CCObject *obj)
 
         auto profiles = res.unwrap();
 
-        if (profiles.empty()) {
+        if (profiles.empty() || !res.isOk()) {
             geode::log::debug("Parsed JSON is empty or not a valid profiles array");
+            return;
+        }
+
+        if (!res.isOk()) {
+            geode::log::debug("JSON Parse error at import: {}", res.unwrapErr());
             return;
         }
 
