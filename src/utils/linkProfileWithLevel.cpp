@@ -13,7 +13,7 @@ void linkProfileWithLevel(const Profile &profile, GJGameLevel *level)
   // Уникальный идентификатор уровня
   std::string lvlId = !level->getID().empty()
                           ? level->getID()
-                          : std::to_string(EditorIDs::getID(level));
+                          : geode::utils::numToString(EditorIDs::getID(level));
 
   geode::log::debug("Link profile {} with level {}", profile.id, lvlId);
 

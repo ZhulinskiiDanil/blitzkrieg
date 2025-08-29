@@ -7,7 +7,7 @@ Profile getProfileByLevel(GJGameLevel *level)
   // Получаем уникальный ID уровня
   std::string levelId = !level->getID().empty()
                             ? level->getID()
-                            : std::to_string(EditorIDs::getID(level));
+                            : geode::utils::numToString(EditorIDs::getID(level));
   return getProfileByLevel(levelId);
 }
 

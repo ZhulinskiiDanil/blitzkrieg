@@ -1,3 +1,10 @@
+# v1.2.0
+- Added notes to stage ranges
+- Updated the font for ranges
+- Increased cell sizes
+- Display current stage ranges in 2 columns
+- Display current stage number and total number of stages
+
 # v1.1.6
 - Fixed import error
 

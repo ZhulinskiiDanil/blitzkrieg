@@ -60,13 +60,41 @@ void StageRangesList::reload()
 
   m_scroll->m_contentLayer->removeAllChildrenWithCleanup(true);
 
-  for (size_t i = 0; i < m_stage->ranges.size(); ++i)
-  {
-    auto &range = m_stage->ranges[i];
-    auto cellSize = CCSize(m_scroll->getContentWidth(), 25.f);
+  const float gap = 5.f;
+  const float cellHeight = 30.f;
+  const float totalWidth = m_scroll->getContentWidth();
+  const float cellWidth = (totalWidth - gap) / 2.f;
 
-    auto cell = StageRangeCell::create(range.from, range.to, range.checked, m_level, cellSize);
-    m_scroll->m_contentLayer->addChild(cell);
+  size_t total = m_stage->ranges.size();
+
+  for (size_t i = 0; i < total;)
+  {
+    size_t remaining = total - i;
+    size_t cellsInRow = (remaining == 1) ? 1 : 2;
+
+    auto row = CCLayer::create();
+    row->setContentSize({totalWidth, cellHeight});
+
+    for (size_t j = 0; j < cellsInRow; ++j, ++i)
+    {
+      auto &range = m_stage->ranges[i];
+      CCSize cellSize = (cellsInRow == 1)
+                            ? CCSize(totalWidth, cellHeight)
+                            : CCSize(cellWidth, cellHeight);
+
+      auto cell = StageRangeCell::create(&range, m_level, cellSize);
+
+      float x = (cellsInRow == 2)
+                    ? (j != 0 ? 0.f : (cellWidth + gap))
+                    : 0.f;
+
+      cell->setAnchorPoint({0, 0});
+      cell->setPosition(x, 0);
+
+      row->addChild(cell);
+    }
+
+    m_scroll->m_contentLayer->addChild(row);
   }
 
   m_scroll->m_contentLayer->updateLayout();

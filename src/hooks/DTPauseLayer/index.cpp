@@ -63,8 +63,8 @@ void DTPauseLayer::updateCurrentProfileLabel(Profile currentProfile)
     const auto stats = getProfileStats(m_fields->currentProfile);
     std::string profileString =
         m_fields->currentProfile.profileName + " " +
-        (stats.currentStage ? std::to_string(*stats.currentStage) : "0") + "/" +
-        std::to_string(stats.totalStages);
+        (stats.currentStage ? geode::utils::numToString(*stats.currentStage) : "0") + "/" +
+        geode::utils::numToString(stats.totalStages);
 
     // Создаём новую
     auto profileLabel = CCLabelBMFont::create(profileString.c_str(), "goldFont.fnt");

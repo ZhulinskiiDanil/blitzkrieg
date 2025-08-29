@@ -133,8 +133,15 @@ void StagesPopup::drawCurrentStage()
   currStageContainer->setID("stages-popup-current-stage"_spr);
   currStageContainer->setTag(2);
 
+  std::string title = fmt::format(
+      "Current stage: {} / {}",
+      currentStage ? geode::utils::numToString(currentStage->stage) : "N/A",
+      profile.data.stages.size() > 0
+          ? geode::utils::numToString(profile.data.stages.size())
+          : "N/A");
+
   auto titleLabel = CCLabelBMFont::create(
-      "Current stage",
+      title.c_str(),
       "goldFont.fnt");
   titleLabel->setScale(1.f);
   titleLabel->setAnchorPoint({0.f, 0.5f});

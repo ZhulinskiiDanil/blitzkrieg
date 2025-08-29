@@ -1,9 +1,9 @@
 #include "StageRangeCell.hpp"
 
-StageRangeCell *StageRangeCell::create(int from, int to, bool checked, GJGameLevel *level, const CCSize &cellSize)
+StageRangeCell *StageRangeCell::create(Range *range, GJGameLevel *level, const CCSize &cellSize)
 {
   StageRangeCell *ret = new StageRangeCell();
-  if (ret && ret->init(from, to, checked, level, cellSize))
+  if (ret && ret->init(range, level, cellSize))
   {
     ret->autorelease();
     return ret;
@@ -12,27 +12,26 @@ StageRangeCell *StageRangeCell::create(int from, int to, bool checked, GJGameLev
   return nullptr;
 }
 
-bool StageRangeCell::init(int from, int to, bool checked, GJGameLevel *level, const CCSize &cellSize)
+bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSize)
 {
   if (!CCLayer::init())
     return false;
 
   this->setContentSize(cellSize);
-  m_checked = checked;
+  m_range = range;
+  m_checked = m_range->checked;
   m_level = level;
-  m_from = from;
-  m_to = to;
 
   // --- Background ---
   m_background = CCScale9Sprite::create("square02b_small.png");
   m_background->setContentSize(cellSize);
   m_background->setPosition({cellSize.width / 2, cellSize.height / 2});
-  m_background->setColor({0, 0, 0});
+  m_background->setColor({17, 16, 16});
   m_background->setOpacity(255 * 0.3f);
   this->addChild(m_background);
 
   // --- Range Label ---
-  m_rangeLabel = RangeLabel::create(from, to, m_checked);
+  m_rangeLabel = RangeLabel::create(m_range);
   m_rangeLabel->setPosition({25.f, cellSize.height / 2});
   this->addChild(m_rangeLabel);
 
@@ -70,7 +69,7 @@ void StageRangeCell::onToggle(CCObject *sender)
   {
     for (auto &range : currentStage->ranges)
     {
-      if (range.from == m_from && range.to == m_to)
+      if (range.from == m_range->from && range.to == m_range->to)
       {
         range.checked = !range.checked;
         break;

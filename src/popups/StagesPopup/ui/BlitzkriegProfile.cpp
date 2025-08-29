@@ -111,13 +111,13 @@ void BlitzkriegProfile::createLabels()
   std::string stagesText;
   if (!m_stats.currentStage.has_value() || m_stats.currentStage >= m_stats.totalStages)
   {
-    stagesText = "Stages: " + std::to_string(m_stats.totalStages) + "/" +
-                 std::to_string(m_stats.totalStages);
+    stagesText = "Stages: " + geode::utils::numToString(m_stats.totalStages) + "/" +
+                 geode::utils::numToString(m_stats.totalStages);
   }
   else
   {
-    stagesText = "Stages: " + std::to_string(m_stats.currentStage.value()) + "/" +
-                 std::to_string(m_stats.totalStages);
+    stagesText = "Stages: " + geode::utils::numToString(m_stats.currentStage.value()) + "/" +
+                 geode::utils::numToString(m_stats.totalStages);
   }
 
   auto stagesLabel = CCLabelBMFont::create(stagesText.c_str(), "bigFont.fnt");

@@ -3,6 +3,7 @@
 #include "RangeLabel.hpp"
 
 #include "../StagesChangedEvent.hpp"
+#include "../../../serialization/profile/index.hpp"
 #include "../../../utils/saveProfile.hpp"
 #include "../../../utils/getProfileByLevel.hpp"
 #include "../../../utils/getFirstUncheckedStage.hpp"
@@ -12,9 +13,7 @@ using namespace geode::prelude;
 class StageRangeCell : public CCLayer
 {
 private:
-  int m_from;
-  int m_to;
-
+  Range *m_range;
   RangeLabel *m_rangeLabel = nullptr;
   CCMenuItemToggler *m_checkbox = nullptr;
   CCScale9Sprite *m_background = nullptr;
@@ -24,9 +23,9 @@ private:
   void onToggle(CCObject *sender);
 
 public:
-  static StageRangeCell *create(int from, int to, bool checked, GJGameLevel *level, const CCSize &cellSize);
+  static StageRangeCell *create(Range *range, GJGameLevel *level, const CCSize &cellSize);
 
-  bool init(int from, int to, bool checked, GJGameLevel *level, const CCSize &cellSize);
+  bool init(Range *range, GJGameLevel *level, const CCSize &cellSize);
 
   bool isChecked() const { return m_checked; }
   void setChecked(bool checked);

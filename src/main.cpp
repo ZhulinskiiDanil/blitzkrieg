@@ -238,6 +238,10 @@ public:
                     totalStages,
                     toCheck->from,
                     toCheck->to);
+                std::string currentRunNote = fmt::format(
+                    "{} - {}",
+                    runStart,
+                    runEnd);
 
                 AchievementNotifier::sharedState()->notifyAchievement(
                     "New run closed",
@@ -246,6 +250,7 @@ public:
                     true);
 
                 toCheck->checked = true;
+                toCheck->note = currentRunNote;
                 canPlaySound = true;
                 isStageClosed = false;
                 checkedRangeThisRun = true;
