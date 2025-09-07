@@ -3,6 +3,7 @@
 #include <Geode/loader/Event.hpp>
 
 #include "../ProfilesChangedEvent.hpp"
+#include "../../CreateProfilePopup/index.hpp"
 #include "./BlitzkriegProfile.hpp"
 
 #include "../../../serialization/profile/index.hpp"

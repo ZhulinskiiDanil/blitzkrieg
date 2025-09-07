@@ -208,44 +208,9 @@ void ProfilesListLayer::onExport(CCObject *obj)
 
 void ProfilesListLayer::onCreate(CCObject *sender)
 {
-  // Old redirect instead of profile creation
-  // geode::utils::web::openLinkInBrowser("https://dgkr-community.vercel.app/blitzkrieg?helpCreateProfile=true");
-
   if (!m_level)
     return;
 
-  std::vector<float> array1;
-  std::vector<float> array2;
-
-  for (auto child : CCArrayExt<StartPosObject *>(PlayLayer::get()->m_objects))
-  {
-    if (auto startPos = typeinfo_cast<StartPosObject *>(child))
-    {
-      const float levelLength = PlayLayer::get()->m_levelLength;
-      const float levelTime = PlayLayer::get()->timeForPos({levelLength, 0.f}, 0.f, 0.f, true, 0.f);
-
-      const float startPosX = startPos->getPositionX();
-      const float startPosPercentByPosX = (startPosX / levelLength) * 100.f;
-
-      const float startPosTime = PlayLayer::get()->timeForPos({startPosX, 0.f}, 0.f, 0.f, true, 0.f);
-      const float startPosPercentByTime = (startPosTime / levelTime) * 100.f;
-
-      array1.push_back(startPosPercentByPosX);
-      array2.push_back(startPosPercentByTime);
-    }
-  }
-
-  std::sort(array1.begin(), array1.end());
-  std::sort(array2.begin(), array2.end());
-
-  std::string levelName = m_level->m_levelName;
-
-  matjson::Value profile1 = generateProfile(fmt::format("2.1 {}", levelName), array1);
-  matjson::Value profile2 = generateProfile(fmt::format("2.2 {}", levelName), array2);
-
-  addProfiles({profile1.as<Profile>().unwrap(), profile2.as<Profile>().unwrap()});
-
-  // Update ui
-  m_profiles = getProfiles();
-  reload();
+  const auto createProfilePopup = CreateProfilePopup::create(m_level);
+  createProfilePopup->show();
 }
