@@ -231,7 +231,7 @@ public:
                                                   { return a->from < b->from; });
 
                 std::string fromTo = fmt::format(
-                    "Stage {}/{}: {} - {}",
+                    "Stage {}/{}: {:.2f} - {:.2f}",
                     stage.stage,
                     totalStages,
                     toCheck->from,

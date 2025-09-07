@@ -21,8 +21,11 @@ bool RangeLabel::init(Range *range, const std::string &font)
   if (!CCNode::init())
     return false;
 
-  std::string rangeText = geode::utils::numToString(range->from) + "-" + geode::utils::numToString(range->to) +
-                          " (" + geode::utils::numToString(std::abs(range->to - range->from)) + "%)";
+  auto from = range->from;
+  auto to = range->to;
+  auto diff = std::abs(from - to);
+
+  std::string rangeText = fmt::format("{:.2f}-{:.2f} ({:.2f}%)", from, to, diff);
   std::string rangeNote = range->note;
 
   m_label = CCLabelBMFont::create(rangeText.c_str(), font.c_str());
@@ -31,7 +34,7 @@ bool RangeLabel::init(Range *range, const std::string &font)
 
   if (!rangeNote.empty())
   {
-    m_label->setPositionY(5.f);
+    m_label->setPositionY(4.f);
 
     m_noteLabel = CCLabelBMFont::create(rangeNote.c_str(), "gjFont17.fnt");
     m_noteLabel->setScale(0.25f);

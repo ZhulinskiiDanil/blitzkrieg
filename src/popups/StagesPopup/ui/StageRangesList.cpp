@@ -32,6 +32,7 @@ bool StageRangesList::init(Stage *stage, GJGameLevel *level, const CCSize &conte
       ColumnLayout::create()
           ->setGap(5.f)
           ->setAxisAlignment(AxisAlignment::End)
+          ->setAxisReverse(true)
           ->setAutoGrowAxis(m_scroll->getContentHeight()));
 
   this->addChild(m_scroll);
@@ -83,9 +84,13 @@ void StageRangesList::reload()
   for (size_t i = 0; i < total;)
   {
     size_t remaining = total - i;
-    size_t cellsInRow = (remaining == 1) ? 1 : 2;
+    size_t cellsInRow = std::min<size_t>(2, remaining);
 
     auto row = CCLayer::create();
+    row->setLayout(
+        RowLayout::create()
+            ->setGap(5.f)
+            ->setAutoScale(false));
     row->setContentSize({totalWidth, cellHeight});
 
     for (size_t j = 0; j < cellsInRow; ++j, ++i)
@@ -96,15 +101,10 @@ void StageRangesList::reload()
                             : CCSize(cellWidth, cellHeight);
 
       auto cell = StageRangeCell::create(&range, m_level, cellSize);
-
-      float x = (cellsInRow == 2)
-                    ? (j != 0 ? 0.f : (cellWidth + gap))
-                    : 0.f;
-
-      cell->setAnchorPoint({0, 0});
-      cell->setPosition(x, 0);
+      cell->ignoreAnchorPointForPosition(true);
 
       row->addChild(cell);
+      row->updateLayout();
     }
 
     m_scroll->m_contentLayer->addChild(row);
