@@ -33,10 +33,10 @@ bool BlitzkriegProfile::init(Profile const &profile,
 
   createBackground();
   createLabels();
-  createButton();
+  createMenu();
 
-  m_listener = EventListener<EventFilter<ProfilesChangedEvent>>(
-      [this](ProfilesChangedEvent *)
+  m_listener = EventListener<EventFilter<ProfileChangedEvent>>(
+      [this](ProfileChangedEvent *)
       {
         updateFromCurrentProfile();
         return ListenerResult::Propagate;
@@ -51,33 +51,62 @@ void BlitzkriegProfile::updateFromCurrentProfile()
     return;
 
   Profile current = getProfileByLevel(m_level);
-
   bool shouldBeCurrent = (!current.id.empty() && current.id == m_profile.id);
+
   if (m_isCurrent != shouldBeCurrent)
   {
     m_isCurrent = shouldBeCurrent;
-    updateButton();
+    updateSelectButton();
+    m_buttonMenu->updateLayout();
   }
 }
 
-void BlitzkriegProfile::updateButton()
+void BlitzkriegProfile::createMenu()
 {
-  m_buttonMenu->removeAllChildren();
-  CCMenuItemSpriteExtra *btn;
-  if (!m_isCurrent)
-  {
-    auto spr = ButtonSprite::create("Select");
-    spr->setScale(0.6f);
-    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(BlitzkriegProfile::onProfileSelect));
-  }
-  else
-  {
-    auto spr = ButtonSprite::create("Deselect");
-    spr->setScale(0.6f);
-    btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(BlitzkriegProfile::onProfileDeselect));
-  }
-  m_buttonMenu->addChild(btn);
-  m_buttonMenu->setPosition({m_size.width - btn->getContentWidth() / 2 - 10.f, m_size.height / 2});
+  m_buttonMenu = CCMenu::create();
+  m_buttonMenu->setAnchorPoint({1.f, 0.5f});
+  m_buttonMenu->setPosition({m_size.width - 10.f, m_size.height / 2});
+  m_buttonMenu->setLayout(
+      RowLayout::create()
+          ->setGap(5.f)
+          ->setAutoScale(false)
+          ->setAutoGrowAxis(true)
+          ->setAxisAlignment(AxisAlignment::End)
+          ->setCrossAxisAlignment(AxisAlignment::Center));
+  m_buttonMenu->getLayout()->ignoreInvisibleChildren(true);
+  this->addChild(m_buttonMenu);
+
+  updateSelectButton();
+  updateTrashButton();
+  m_buttonMenu->updateLayout();
+}
+
+void BlitzkriegProfile::updateSelectButton()
+{
+  if (auto btn = typeinfo_cast<CCMenuItemSpriteExtra *>(m_selectButton))
+    btn->removeFromParentAndCleanup(true);
+
+  auto selectSongBtnSpr = CCSprite::createWithSpriteFrameName(m_isCurrent ? "GJ_selectSongOnBtn_001.png" : "GJ_selectSongBtn_001.png");
+  m_selectButton = CCMenuItemSpriteExtra::create(selectSongBtnSpr, this, menu_selector(BlitzkriegProfile::onToggleProfile));
+  m_selectButton->ignoreAnchorPointForPosition(true);
+  m_selectButton->setScale(.75f);
+
+  m_buttonMenu->addChild(m_selectButton, 1);
+  m_buttonMenu->updateLayout();
+}
+
+void BlitzkriegProfile::updateTrashButton()
+{
+  if (auto btn = typeinfo_cast<CCMenuItemSpriteExtra *>(m_trashButton))
+    btn->removeFromParentAndCleanup(true);
+
+  auto spr = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
+  m_trashButton = CCMenuItemSpriteExtra::create(spr, this, menu_selector(BlitzkriegProfile::onDeleteProfile));
+  m_trashButton->ignoreAnchorPointForPosition(true);
+  m_trashButton->setScale(.75f);
+
+  m_buttonMenu->addChild(m_trashButton, 2);
+  m_buttonMenu->updateLayout();
 }
 
 void BlitzkriegProfile::createBackground()
@@ -128,31 +157,29 @@ void BlitzkriegProfile::createLabels()
   this->addChild(stagesLabel);
 }
 
-void BlitzkriegProfile::createButton()
-{
-  m_buttonMenu = CCMenu::create();
-  this->addChild(m_buttonMenu);
-  updateButton();
-}
-
 // ! --- Handlers --- !
-void BlitzkriegProfile::onProfileSelect(CCObject *obj)
+void BlitzkriegProfile::onToggleProfile(CCObject *obj)
 {
-  linkProfileWithLevel(m_profile, m_level);
-  ProfilesChangedEvent().post();
+  auto now = std::chrono::steady_clock::now();
 
-  m_isCurrent = true;
-  updateButton();
-}
-
-void BlitzkriegProfile::onProfileDeselect(CCObject *obj)
-{
-  if (!m_level)
+  if (m_profileToggleDisabled || (now - m_lastToggleTime) < debounceDuration)
     return;
 
-  unlinkProfileFromLevel(m_profile, m_level);
-  ProfilesChangedEvent().post();
+  m_lastToggleTime = now;
 
-  m_isCurrent = false;
-  updateButton();
+  if (m_isCurrent)
+    unlinkProfileFromLevel(m_profile, m_level);
+  else
+    linkProfileWithLevel(m_profile, m_level);
+
+  updateSelectButton();
+  m_buttonMenu->updateLayout();
+  ProfileChangedEvent().post();
+}
+
+void BlitzkriegProfile::onDeleteProfile(CCObject *obj)
+{
+  deleteProfile(m_profile.id);
+  this->removeFromParentAndCleanup(true);
+  ProfilesChangedEvent().post();
 }

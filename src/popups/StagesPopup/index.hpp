@@ -19,6 +19,7 @@
 #include "../../utils/getProfiles.hpp"
 #include "../../utils/getProfileByLevel.hpp"
 #include "../../utils/getFirstUncheckedStage.hpp"
+#include "../../utils/generateProfile.hpp"
 
 using namespace geode::prelude;
 

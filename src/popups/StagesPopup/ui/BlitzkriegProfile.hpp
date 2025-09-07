@@ -1,7 +1,9 @@
 #pragma once
+#include <chrono>
 #include <Geode/Geode.hpp>
 #include <Geode/loader/Event.hpp>
 
+#include "../ProfileChangedEvent.hpp"
 #include "../ProfilesChangedEvent.hpp"
 
 #include "../../../serialization/profile/index.hpp"
@@ -9,6 +11,7 @@
 #include "../../../utils/getProfileByLevel.hpp"
 #include "../../../utils/linkProfileWithLevel.hpp"
 #include "../../../utils/unlinkProfileFromLevel.hpp"
+#include "../../../utils/deleteProfile.hpp"
 
 using namespace geode::prelude;
 
@@ -18,23 +21,29 @@ protected:
   Profile m_profile;
   ProfileStats m_stats;
   bool m_isCurrent = false;
+  bool m_profileToggleDisabled = false;
+  std::chrono::steady_clock::time_point m_lastToggleTime;
+
+  const std::chrono::milliseconds debounceDuration{300}; // 300 мс
 
   GJGameLevel *m_level = nullptr;
-  EventListener<EventFilter<ProfilesChangedEvent>> m_listener;
+  EventListener<EventFilter<ProfileChangedEvent>> m_listener;
 
   CCSize m_size;
   CCMenu *m_buttonMenu = nullptr;
-  CCObject *m_button = nullptr;
+  CCMenuItemSpriteExtra *m_selectButton = nullptr;
+  CCMenuItemSpriteExtra *m_trashButton = nullptr;
 
   void createBackground();
   void createLabels();
-  void createButton();
-  void updateButton();
+  void createMenu();
+  void updateSelectButton();
+  void updateTrashButton();
   void updateFromCurrentProfile();
 
   // --- Handlers ---
-  void onProfileSelect(CCObject *obj);
-  void onProfileDeselect(CCObject *obj);
+  void onToggleProfile(CCObject *obj);
+  void onDeleteProfile(CCObject *obj);
 
 public:
   static BlitzkriegProfile *create(Profile const &profile,

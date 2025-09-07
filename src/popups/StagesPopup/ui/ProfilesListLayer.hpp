@@ -7,6 +7,8 @@
 
 #include "../../../serialization/profile/index.hpp"
 #include "../../../utils/getProfiles.hpp"
+#include "../../../utils/generateProfile.hpp"
+#include "../../../utils/addProfiles.hpp"
 #include "../../../utils/saveProfiles.hpp"
 #include "../../../utils/selectJsonFile.hpp"
 #include "../../../utils/generateBackupFilename.hpp"

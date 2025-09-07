@@ -30,10 +30,12 @@ bool ProfilesListLayer::init(
   m_currentProfile = current;
   m_level = level;
 
+  float padding = 3.f;
+
   // ! --- ScrollLayer --- !
   m_scroll = ScrollLayer::create(contentSize);
-  m_scroll->setContentSize({contentSize.width - 16, contentSize.height - 16});
-  m_scroll->setPosition({8, 8});
+  m_scroll->setContentSize({contentSize.width - padding * 2, contentSize.height - padding * 2});
+  m_scroll->setPosition({padding, padding});
 
   m_scroll->m_contentLayer->setLayout(
       ColumnLayout::create()
@@ -45,49 +47,67 @@ bool ProfilesListLayer::init(
 
   // ! --- Borders --- !
   auto borders = ListBorders::create();
-  borders->setContentSize(contentSize);
+  borders->setSpriteFrames("list-top.png"_spr, "list-side.png"_spr, 2.f); // 2.1f
+  borders->updateLayout();
+  borders->setContentSize({contentSize.width, contentSize.height - 3});
+  borders->setPosition({contentSize.width / 2, contentSize.height / 2 - .5f});
   borders->setAnchorPoint({0.5f, 0.5f});
-  borders->setPosition(contentSize / 2);
   this->addChild(borders);
+
+  for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
+  {
+    child->setColor(ccc3(15, 15, 15));
+  }
 
   // ! --- Bottom buttons --- !
   auto btnsGap = 5.f;
 
   auto btnSprCreate = ButtonSprite::create("Create");
-  btnSprCreate->setScale(1.f);
-  btnSprCreate->setAnchorPoint({0.f, 0.5f});
   auto btnCreate = CCMenuItemSpriteExtra::create(
       btnSprCreate, this, menu_selector(ProfilesListLayer::onCreate));
+  btnCreate->setScale(.75f);
+  btnCreate->ignoreAnchorPointForPosition(true);
 
   auto btnSprImport = ButtonSprite::create("Import");
-  btnSprImport->setScale(1.f);
-  btnSprImport->setAnchorPoint({0.f, 0.5f});
   auto btnImport = CCMenuItemSpriteExtra::create(
       btnSprImport, this, menu_selector(ProfilesListLayer::onImport));
+  btnImport->setScale(.75f);
+  btnImport->ignoreAnchorPointForPosition(true);
 
   auto btnSprExport = ButtonSprite::create("Export");
-  btnSprExport->setScale(1.f);
-  btnSprExport->setAnchorPoint({0.f, 0.5f});
   auto btnExport = CCMenuItemSpriteExtra::create(
       btnSprExport, this, menu_selector(ProfilesListLayer::onExport));
+  btnExport->setScale(.75f);
+  btnExport->ignoreAnchorPointForPosition(true);
 
   auto btnMenu = CCMenu::create();
+  btnMenu->setLayout(
+      RowLayout::create()
+          ->setGap(btnsGap)
+          ->setAutoScale(false)
+          ->setAutoGrowAxis(true)
+          ->setAxisAlignment(AxisAlignment::End)
+          ->setCrossAxisAlignment(AxisAlignment::Center));
+  btnMenu->getLayout()->ignoreInvisibleChildren(true);
+
   btnMenu->addChild(btnCreate);
   btnMenu->addChild(btnImport);
   btnMenu->addChild(btnExport);
-  btnMenu->alignItemsHorizontallyWithPadding(btnsGap);
-  btnMenu->setPosition({contentSize.width / 2, -20.f}); // под списком
-  this->addChild(btnMenu);
+  btnMenu->setAnchorPoint({0.f, .5f});
+  btnMenu->setPosition({0.f, -20.f});
 
-  reload();
+  this->addChild(btnMenu);
+  btnMenu->updateLayout();
 
   m_listener = EventListener<EventFilter<ProfilesChangedEvent>>(
       [this](ProfilesChangedEvent *)
       {
         m_profiles = getProfiles();
+        reload();
         return ListenerResult::Propagate;
       });
 
+  reload();
   return true;
 }
 
@@ -123,11 +143,6 @@ void ProfilesListLayer::scrollToTop()
 {
   if (m_scroll)
     m_scroll->scrollToTop();
-}
-
-void ProfilesListLayer::onCreate(CCObject *obj)
-{
-  geode::utils::web::openLinkInBrowser("https://dgkr-community.vercel.app/blitzkrieg?helpCreateProfile=true");
 }
 
 void ProfilesListLayer::onImport(CCObject *obj)
@@ -167,7 +182,7 @@ void ProfilesListLayer::onImport(CCObject *obj)
 void ProfilesListLayer::onExport(CCObject *obj)
 {
   const auto profiles = getProfiles();
-  auto resourcesDir = geode::Mod::get()->getResourcesDir();
+  auto resourcesDir = geode::Mod::get()->getSaveDir();
 
   // Create Backup folder
   auto backupDir = resourcesDir / "backups";
@@ -189,4 +204,48 @@ void ProfilesListLayer::onExport(CCObject *obj)
     geode::utils::file::openFolder(backupFile);
   else
     geode::log::error("Unable to save JSON: {}", result.unwrapErr());
+}
+
+void ProfilesListLayer::onCreate(CCObject *sender)
+{
+  // Old redirect instead of profile creation
+  // geode::utils::web::openLinkInBrowser("https://dgkr-community.vercel.app/blitzkrieg?helpCreateProfile=true");
+
+  if (!m_level)
+    return;
+
+  std::vector<float> array1;
+  std::vector<float> array2;
+
+  for (auto child : CCArrayExt<StartPosObject *>(PlayLayer::get()->m_objects))
+  {
+    if (auto startPos = typeinfo_cast<StartPosObject *>(child))
+    {
+      const float levelLength = PlayLayer::get()->m_levelLength;
+      const float levelTime = PlayLayer::get()->timeForPos({levelLength, 0.f}, 0.f, 0.f, true, 0.f);
+
+      const float startPosX = startPos->getPositionX();
+      const float startPosPercentByPosX = (startPosX / levelLength) * 100.f;
+
+      const float startPosTime = PlayLayer::get()->timeForPos({startPosX, 0.f}, 0.f, 0.f, true, 0.f);
+      const float startPosPercentByTime = (startPosTime / levelTime) * 100.f;
+
+      array1.push_back(startPosPercentByPosX);
+      array2.push_back(startPosPercentByTime);
+    }
+  }
+
+  std::sort(array1.begin(), array1.end());
+  std::sort(array2.begin(), array2.end());
+
+  std::string levelName = m_level->m_levelName;
+
+  matjson::Value profile1 = generateProfile(fmt::format("2.1 {}", levelName), array1);
+  matjson::Value profile2 = generateProfile(fmt::format("2.2 {}", levelName), array2);
+
+  addProfiles({profile1.as<Profile>().unwrap(), profile2.as<Profile>().unwrap()});
+
+  // Update ui
+  m_profiles = getProfiles();
+  reload();
 }

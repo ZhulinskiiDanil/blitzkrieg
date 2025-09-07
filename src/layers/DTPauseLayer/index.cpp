@@ -8,13 +8,15 @@ void DTPauseLayer::customSetup()
 
     auto sideMenu = this->getChildByID("left-button-menu");
 
-    auto s = CCSprite::createWithSpriteFrameName("GJ_plainBtn_001.png");
-    auto s2 = CCSprite::create("logo.png"_spr);
-    s2->setPosition(s->getContentSize() / 2);
-    s->addChild(s2);
-    s->setScale(0.75f);
+    auto spr = CCSprite::createWithSpriteFrameName("GJ_plainBtn_001.png");
+    auto spr2 = CCSprite::create("logo.png"_spr);
+    spr2->setPosition(spr->getContentSize() / 2);
+    spr2->setAnchorPoint({.5f, .5f});
+    spr2->setScale(.85f);
+    spr->setScale(.75f);
+    spr->addChild(spr2);
     auto button = CCMenuItemSpriteExtra::create(
-        s,
+        spr,
         nullptr,
         this,
         menu_selector(DTPauseLayer::onPopup));

@@ -4,19 +4,13 @@ StagesPopup *StagesPopup::create(GJGameLevel *level)
 {
   StagesPopup *ret = new StagesPopup();
 
-  // Remember the delegate
-  // ret->m_delegate = delegate;
-
-  // If it turns out to be initialized the model, then we call autorelease
-  // So that it itself is cleansed from memory when it will not be used
-  if (ret->initAnchored(420, 250, level))
+  if (ret->initAnchored(420, 250, level, "GJ_square01_custom.png"_spr))
   {
     ret->autorelease();
     return ret;
   }
 
-  // Failed to initialize, so we delete
-  delete ret;
+  CC_SAFE_DELETE(ret);
   return nullptr;
 }
 
@@ -74,7 +68,7 @@ void StagesPopup::drawProfilesList()
     oldList->removeFromParentAndCleanup(true);
   }
 
-  Padding padding{45.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
+  Padding padding{10.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
 
   const auto profiles = getProfiles();
   const auto currentProfile = getProfileByLevel(m_level);
@@ -88,14 +82,6 @@ void StagesPopup::drawProfilesList()
       mainSize.width - padding.left - padding.right,
       mainSize.height - padding.top - padding.bottom);
 
-  // Заголовок
-  auto titleLabel = CCLabelBMFont::create("Profiles List", "goldFont.fnt");
-  titleLabel->setScale(1.f);
-  titleLabel->setAnchorPoint({0.f, 0.5f});
-  titleLabel->setPosition({padding.left + 5.f, mainSize.height - padding.top / 2 - 5.f});
-  profileListContainer->addChild(titleLabel);
-
-  // Сам список со всеми кнопками внутри
   auto listLayer = ProfilesListLayer::create(m_level, profiles, currentProfile, contentSize);
   listLayer->setPosition({padding.left, padding.bottom});
   profileListContainer->addChild(listLayer);
@@ -111,7 +97,7 @@ void StagesPopup::drawCurrentStage()
     oldList->removeFromParentAndCleanup(true);
   }
 
-  Padding padding{45.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
+  Padding padding{50.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
   Profile profile = getProfileByLevel(m_level);
   Stage *currentStage = getFirstUncheckedStage(profile);
@@ -134,7 +120,7 @@ void StagesPopup::drawCurrentStage()
   currStageContainer->setTag(2);
 
   std::string title = fmt::format(
-      "Current stage: {} / {}",
+      "Current stage: {}/{}",
       currentStage ? geode::utils::numToString(currentStage->stage) : "N/A",
       profile.data.stages.size() > 0
           ? geode::utils::numToString(profile.data.stages.size())
@@ -224,7 +210,7 @@ void StagesPopup::drawTabs()
     auto gradient = CCSprite::create("tab-gradient-mask.png"_spr);
     gradient->setAnchorPoint({0.5f, 0.f});
     gradient->setPosition(tabMenu->convertToWorldSpace(btn->getPosition()));
-    gradient->setColor({190, 235, 65});
+    gradient->setColor({82, 82, 82});
     gradient->setZOrder(0);
 
     tabsNode->addChild(gradient);

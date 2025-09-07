@@ -21,10 +21,12 @@ bool StageRangesList::init(Stage *stage, GJGameLevel *level, const CCSize &conte
   m_level = level;
   m_stage = stage;
 
+  float padding = 3.f;
+
   // ! --- ScrollLayer --- !
   m_scroll = ScrollLayer::create(contentSize);
-  m_scroll->setContentSize({contentSize.width - 16, contentSize.height - 16});
-  m_scroll->setPosition({8, 8});
+  m_scroll->setContentSize({contentSize.width - padding * 2, contentSize.height - padding * 2});
+  m_scroll->setPosition({padding, padding});
 
   m_scroll->m_contentLayer->setLayout(
       ColumnLayout::create()
@@ -36,12 +38,22 @@ bool StageRangesList::init(Stage *stage, GJGameLevel *level, const CCSize &conte
 
   // ! --- Borders --- !
   auto borders = ListBorders::create();
-  borders->setContentSize(contentSize);
+  borders->setSpriteFrames("list-top.png"_spr, "list-side.png"_spr, 2.f); // 2.1f
+  borders->updateLayout();
+  borders->setContentSize({contentSize.width, contentSize.height - 3});
+  borders->setPosition({contentSize.width / 2, contentSize.height / 2 - .5f});
   borders->setAnchorPoint({0.5f, 0.5f});
-  borders->setPosition(contentSize / 2);
   this->addChild(borders);
 
-  reload();
+  for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
+  {
+    child->setColor(ccc3(15, 15, 15));
+  }
+
+  for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
+  {
+    child->setColor(ccc3(15, 15, 15));
+  }
 
   m_listener = EventListener<EventFilter<StagesChangedEvent>>(
       [this](StagesChangedEvent *)
@@ -50,6 +62,7 @@ bool StageRangesList::init(Stage *stage, GJGameLevel *level, const CCSize &conte
         return ListenerResult::Propagate;
       });
 
+  reload();
   return true;
 }
 

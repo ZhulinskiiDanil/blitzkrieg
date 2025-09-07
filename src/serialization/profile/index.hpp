@@ -31,8 +31,8 @@ struct matjson::Serialize<Range>
   {
     return geode::Ok(Range{
         .id = getOr<std::string>(value, "id", ""),
-        .from = getOr<int>(value, "from", 0),
-        .to = getOr<int>(value, "to", 0),
+        .from = getOr<float>(value, "from", 0.f),
+        .to = getOr<float>(value, "to", 0.f),
         .checked = getOr<bool>(value, "checked", false),
         .note = getOr<std::string>(value, "note", ""),
         .attempts = getOr<int>(value, "attempts", 0),

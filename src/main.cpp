@@ -8,8 +8,6 @@
 #include <Geode/modify/MenuLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 
-#include "./hooks/DTEditLevelLayer/index.hpp"
-
 #include "./serialization/profile/index.hpp"
 #include "./utils/getProfiles.hpp"
 #include "./utils/saveProfile.hpp"

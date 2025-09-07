@@ -6,7 +6,6 @@
 
 #include "../../popups/StagesPopup/ProfilesChangedEvent.hpp"
 #include "../../popups/StagesPopup/index.hpp"
-#include "../../layers/DTLayer/index.hpp"
 
 #include "../../serialization/profile/index.hpp"
 #include "../../utils/selectJsonFile.hpp"

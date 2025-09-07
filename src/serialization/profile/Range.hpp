@@ -2,10 +2,11 @@
 
 #include <string>
 
-struct Range {
+struct Range
+{
   std::string id;
-  int from;
-  int to;
+  float from;
+  float to;
   bool checked;
   std::string note;
   int attempts;

@@ -26,9 +26,16 @@
 	},
 	"resources": {
 		"sprites": [
+			"resources/sprites/GJ_square01_custom.png",
 			"resources/sprites/logo.png",
 			"resources/sprites/tab-gradient-mask.png"
 		],
+		"spritesheets": {
+			"Borders": [
+				"resources/sprites/borders/*.png",
+				"resources/sprites/borders/*.png"
+			]
+		},
 		"files": [
 			"resources/audio/range_complete.mp3",
 			"resources/audio/stage_complete.mp3"
