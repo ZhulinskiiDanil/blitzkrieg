@@ -1,3 +1,8 @@
+# v1.3.0
+- Profile creation using the automatic start position finder
+- Profile deletion support
+- Redesigned interface
+
 # v1.2.0
 - Added notes to stage ranges
 - Updated the font for ranges
