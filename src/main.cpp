@@ -17,8 +17,8 @@ using namespace geode::prelude;
 
 struct Run
 {
-    int start = 0;
-    int end = 0;
+    float start = 0;
+    float end = 0;
 };
 
 class $modify(MenuLayer)
@@ -55,7 +55,6 @@ public:
         if (!PlayLayer::init(level, p1, p2))
             return false;
         loadData();
-        // loadSounds();
 
         return true;
     }
@@ -71,7 +70,7 @@ public:
         geode::log::debug("LEVEL RESET");
 
         m_fields->hasRespawned = true;
-        m_fields->currentRun.start = static_cast<int>(this->getCurrentPercent());
+        m_fields->currentRun.start = this->getCurrentPercent();
 
         if (!m_level->isPlatformer())
         {
@@ -193,23 +192,20 @@ public:
 
         bool canPlaySound = false;
         bool isStageClosed = false;
-        int runStart = static_cast<int>(std::floor(run.start));
-        int runEnd = static_cast<int>(std::floor(run.end));
+        float runStart = run.start;
+        float runEnd = run.end;
 
         geode::log::debug("CHECKING RUNG: {}-{} / IS LEGAL: {}", runStart, runEnd, isLegal());
 
         int totalStages = currentProfile.data.stages.size();
 
-        // Идем по стадиям по порядку, пока не найдем незакрытую
         for (auto &stage : currentProfile.data.stages)
         {
-            // Если стадия уже закрыта, переходим к следующей
             if (stage.checked)
                 continue;
 
             bool checkedRangeThisRun = false;
 
-            // Собираем все подходящие range, покрываемые текущим run
             std::vector<Range *> candidates;
 
             for (auto &range : stage.ranges)
@@ -225,7 +221,6 @@ public:
 
             if (!candidates.empty())
             {
-                // Выбираем range с минимальным 'from'
                 auto *toCheck = *std::min_element(candidates.begin(), candidates.end(),
                                                   [](Range *a, Range *b)
                                                   { return a->from < b->from; });
@@ -237,7 +232,7 @@ public:
                     toCheck->from,
                     toCheck->to);
                 std::string currentRunNote = fmt::format(
-                    "{} - {}",
+                    "{:.2f} - {:.2f}",
                     runStart,
                     runEnd);
 
@@ -270,13 +265,10 @@ public:
                     isStageClosed = true;
                 }
 
-                break; // Выходим из цикла стадий, не закрываем следующие стадии пока не закроется эта
-            }
-            else
-            {
-                // Если не закрыли ни одного range в этой стадии, значит дальше закрывать нельзя
                 break;
             }
+            else
+                break;
         }
 
         if (canPlaySound)

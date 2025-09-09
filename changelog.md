@@ -1,3 +1,6 @@
+# v1.3.2
+- Fixed incorrect marking of runs
+
 # v1.3.1
 - Added website link
 - Added Discord community link
