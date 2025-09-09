@@ -1,3 +1,7 @@
+# v1.3.1
+- Added website link
+- Added Discord community link
+
 # v1.3.0
 - Profile creation using the automatic start position finder
 - Profile deletion support
