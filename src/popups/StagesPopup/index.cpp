@@ -96,7 +96,7 @@ void StagesPopup::drawCurrentStage()
     oldList->removeFromParentAndCleanup(true);
   }
 
-  Padding padding{50.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
+  Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
   Profile profile = getProfileByLevel(m_level);
   Stage *currentStage = getFirstUncheckedStage(profile);
@@ -146,7 +146,7 @@ void StagesPopup::drawCurrentStageTitle(int currStage, int totalStages, Padding 
         "goldFont.fnt");
     m_currentStageTitleLabel->setScale(1.f);
     m_currentStageTitleLabel->setAnchorPoint({0.f, 0.5f});
-    m_currentStageTitleLabel->setPosition({padding.left + 5.f, m_size.height - padding.top / 2 - 5.f});
+    m_currentStageTitleLabel->setPosition({padding.left + 5.f, m_size.height - padding.top / 2 - 2.5f});
 
     m_currentStageNode->addChild(m_currentStageTitleLabel);
 

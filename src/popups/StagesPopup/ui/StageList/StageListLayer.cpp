@@ -58,7 +58,16 @@ bool StageListLayer::init(
   borders->setContentSize({contentSize.width, contentSize.height - 3});
   borders->setPosition({contentSize.width / 2, contentSize.height / 2 - .5f});
   borders->setAnchorPoint({0.5f, 0.5f});
+
   this->addChild(borders);
+
+  // ! --- Lock --- !
+  m_lockSpr = CCSprite::createWithSpriteFrameName("GJ_lock_001.png");
+  m_lockSpr->setPosition(m_contentSize / 2);
+  m_lockSpr->setScale(4.f);
+  m_lockSpr->setVisible(false);
+
+  this->addChild(m_lockSpr);
 
   for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
   {
@@ -90,6 +99,7 @@ void StageListLayer::reload()
 
   bool isDisabled = m_stage->stage > m_uncheckedStage->stage;
   m_scroll->m_contentLayer->removeAllChildrenWithCleanup(true);
+  m_lockSpr->setVisible(isDisabled);
 
   const float gap = 5.f;
   const float cellHeight = 30.f;

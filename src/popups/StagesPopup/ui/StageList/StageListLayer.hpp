@@ -13,16 +13,19 @@ using namespace geode::prelude;
 class StageListLayer : public CCLayer
 {
 private:
-  ScrollLayer *m_scroll = nullptr;
   CCSize m_contentSize;
+  ScrollLayer *m_scroll = nullptr;
+  CCSprite *m_lockSpr = nullptr;
+
   CCMenu *m_buttonMenuLeft = nullptr;
   CCMenu *m_buttonMenuRight = nullptr;
   CCMenuItemSpriteExtra *m_buttonLeft = nullptr;
   CCMenuItemSpriteExtra *m_buttonRight = nullptr;
-  GJGameLevel *m_level = nullptr;
+
   EventListener<EventFilter<StagesChangedEvent>> m_listener;
 
   Profile m_profile;
+  GJGameLevel *m_level = nullptr;
   std::vector<Stage> *m_stages = nullptr;
   Stage *m_uncheckedStage = nullptr;
   Stage *m_stage = nullptr;
