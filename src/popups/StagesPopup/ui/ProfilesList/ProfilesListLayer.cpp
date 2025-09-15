@@ -10,9 +10,11 @@ ProfilesListLayer *ProfilesListLayer::create(
   if (ret && ret->init(level, profiles, current, contentSize))
   {
     ret->autorelease();
+
     return ret;
   }
-  delete ret;
+
+  CC_SAFE_DELETE(ret);
   return nullptr;
 }
 
@@ -29,6 +31,8 @@ bool ProfilesListLayer::init(
   m_profiles = profiles;
   m_currentProfile = current;
   m_level = level;
+
+  this->setContentSize(m_contentSize);
 
   float padding = 3.f;
 
@@ -149,26 +153,24 @@ void ProfilesListLayer::onImport(CCObject *obj)
 {
   selectJsonFile([this](std::string jsonContent)
                  {
-        if (jsonContent.empty()) {
-            geode::log::debug("File not selected or empty");
+        if (jsonContent.empty())
             return;
-        }
 
         auto res = matjson::parseAs<std::vector<Profile>>(jsonContent);
         if (res.isErr()) {
-            geode::log::debug("JSON parse error: {}", res.unwrapErr());
+            geode::log::error("JSON parse error: {}", res.unwrapErr());
             return;
         }
 
         auto profiles = res.unwrap();
 
         if (profiles.empty() || !res.isOk()) {
-            geode::log::debug("Parsed JSON is empty or not a valid profiles array");
+            geode::log::error("Parsed JSON is empty or not a valid profiles array");
             return;
         }
 
         if (!res.isOk()) {
-            geode::log::debug("JSON Parse error at import: {}", res.unwrapErr());
+            geode::log::error("JSON Parse error at import: {}", res.unwrapErr());
             return;
         }
 

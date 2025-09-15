@@ -3,15 +3,15 @@
 #include <Geode/Geode.hpp>
 #include <Geode/loader/Event.hpp>
 
-#include "../ProfileChangedEvent.hpp"
-#include "../ProfilesChangedEvent.hpp"
+#include "../../ProfileChangedEvent.hpp"
+#include "../../ProfilesChangedEvent.hpp"
 
-#include "../../../serialization/profile/index.hpp"
-#include "../../../utils/getProfileStats.hpp"
-#include "../../../utils/getProfileByLevel.hpp"
-#include "../../../utils/linkProfileWithLevel.hpp"
-#include "../../../utils/unlinkProfileFromLevel.hpp"
-#include "../../../utils/deleteProfile.hpp"
+#include "../../../../serialization/profile/index.hpp"
+#include "../../../../utils/getProfileStats.hpp"
+#include "../../../../utils/getProfileByLevel.hpp"
+#include "../../../../utils/linkProfileWithLevel.hpp"
+#include "../../../../utils/unlinkProfileFromLevel.hpp"
+#include "../../../../utils/deleteProfile.hpp"
 
 using namespace geode::prelude;
 
@@ -24,7 +24,7 @@ protected:
   bool m_profileToggleDisabled = false;
   std::chrono::steady_clock::time_point m_lastToggleTime;
 
-  const std::chrono::milliseconds debounceDuration{300}; // 300 мс
+  const std::chrono::milliseconds debounceDuration{300};
 
   GJGameLevel *m_level = nullptr;
   EventListener<EventFilter<ProfileChangedEvent>> m_listener;

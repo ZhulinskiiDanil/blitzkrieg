@@ -8,7 +8,8 @@ StageRangeCell *StageRangeCell::create(Range *range, GJGameLevel *level, const C
     ret->autorelease();
     return ret;
   }
-  delete ret;
+
+  CC_SAFE_DELETE(ret);
   return nullptr;
 }
 
@@ -41,6 +42,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
 
   m_checkbox = CCMenuItemToggler::create(toggleOn, toggleOff, this, menu_selector(StageRangeCell::onToggle));
   m_checkbox->setAnchorPoint({0.5f, 0.5f});
+  m_checkbox->setCascadeColorEnabled(true);
   m_checkbox->toggle(!m_checked);
 
   auto menu = CCMenu::createWithItem(m_checkbox);
@@ -55,11 +57,13 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
 
 void StageRangeCell::onToggle(CCObject *sender)
 {
-  m_checked = !m_checked;
+  if (!m_disabled)
+    m_checked = !m_checked;
+
   m_checkbox->toggle(m_checked);
   m_rangeLabel->setEnabled(m_checked);
 
-  if (!m_level)
+  if (!m_level || m_disabled)
     return;
 
   Profile profile = getProfileByLevel(m_level);
@@ -87,15 +91,12 @@ void StageRangeCell::onToggle(CCObject *sender)
   }
 }
 
-void StageRangeCell::setChecked(bool checked)
+void StageRangeCell::setDisabled(bool disabled)
 {
-  m_checked = checked;
+  m_disabled = disabled;
 
-  if (m_checkbox)
-    m_checkbox->toggle(!m_checked);
-
-  if (m_rangeLabel)
-    m_rangeLabel->setEnabled(m_checked);
-
-  StagesChangedEvent().post();
+  if (disabled)
+    m_checkbox->setColor({100, 100, 100});
+  else
+    m_checkbox->setColor({255, 255, 255});
 }

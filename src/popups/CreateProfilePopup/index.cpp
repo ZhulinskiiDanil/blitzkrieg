@@ -266,21 +266,6 @@ void CreateProfilePopup::onCreateProfile(CCObject *sender)
   matjson::Value profile1 = generateProfile(levelName, m_2_1_percentages);
   matjson::Value profile2 = generateProfile(levelName, m_2_2_percentages);
 
-  // Log the arrays of float
-  std::string log_2_1 = "m_2_1_percentages: ";
-  for (const auto &val : m_2_1_percentages)
-  {
-    log_2_1 += fmt::format("{:.2f} ", val);
-  }
-  geode::log::info("{}", log_2_1);
-
-  std::string log_2_2 = "m_2_2_percentages: ";
-  for (const auto &val : m_2_2_percentages)
-  {
-    log_2_2 += fmt::format("{:.2f} ", val);
-  }
-  geode::log::info("{}", log_2_2);
-
   auto profile = m_checked ? profile1 : profile2;
   saveProfile(profile.as<Profile>().unwrap());
 

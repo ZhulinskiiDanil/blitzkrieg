@@ -4,24 +4,15 @@
 
 void linkProfileWithLevel(const Profile &profile, GJGameLevel *level)
 {
-  if (!level)
-    return geode::log::debug("Failed to find level in \"linkProfileWithLevel\"");
+  if (!level || !&profile)
+    return;
 
-  if (!&profile)
-    return geode::log::debug("Failed to find profile in \"linkProfileWithLevel\"");
-
-  // Уникальный идентификатор уровня
   std::string lvlId = !level->getID().empty()
                           ? level->getID()
                           : geode::utils::numToString(EditorIDs::getID(level));
 
-  geode::log::debug("Link profile {} with level {}", profile.id, lvlId);
-
-  // Отвязываем этот уровень от всех других профилей
-  auto profiles = getProfiles();
-
   // Unlink all profile(s) from current level
-  for (const auto &p : profiles)
+  for (const auto &p : getProfiles())
   {
     unlinkProfileFromLevel(p, lvlId);
   }

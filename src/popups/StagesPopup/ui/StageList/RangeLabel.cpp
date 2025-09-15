@@ -12,7 +12,8 @@ RangeLabel *RangeLabel::create(
     ret->autorelease();
     return ret;
   }
-  delete ret;
+
+  CC_SAFE_DELETE(ret);
   return nullptr;
 }
 

@@ -77,10 +77,9 @@ void StagesPopup::drawProfilesList()
   profileListContainer->setID("stages-popup-profiles-list"_spr);
   profileListContainer->setTag(1);
 
-  const auto mainSize = m_mainLayer->getContentSize();
   const auto contentSize = CCSize(
-      mainSize.width - padding.left - padding.right,
-      mainSize.height - padding.top - padding.bottom);
+      m_size.width - padding.left - padding.right,
+      m_size.height - padding.top - padding.bottom);
 
   auto listLayer = ProfilesListLayer::create(m_level, profiles, currentProfile, contentSize);
   listLayer->setPosition({padding.left, padding.bottom});
@@ -110,38 +109,64 @@ void StagesPopup::drawCurrentStage()
       currentStage = nullptr;
   }
 
-  const auto mainSize = m_mainLayer->getContentSize();
   const auto contentSize = CCSize(
-      mainSize.width - padding.left - padding.right,
-      mainSize.height - padding.top - padding.bottom);
+      m_size.width - padding.left - padding.right,
+      m_size.height - padding.top - padding.bottom);
 
-  const auto currStageContainer = CCNode::create();
-  currStageContainer->setID("stages-popup-current-stage"_spr);
-  currStageContainer->setTag(2);
+  m_currentStageNode = CCNode::create();
+  m_currentStageNode->setID("stages-popup-current-stage"_spr);
+  m_currentStageNode->setTag(2);
 
-  std::string title = fmt::format(
-      "Current stage: {}/{}",
-      currentStage ? geode::utils::numToString(currentStage->stage) : "N/A",
-      profile.data.stages.size() > 0
-          ? geode::utils::numToString(profile.data.stages.size())
-          : "N/A");
+  // ! --- Title --- !
+  drawCurrentStageTitle(currentStage->stage, profile.data.stages.size(), padding);
 
-  auto titleLabel = CCLabelBMFont::create(
-      title.c_str(),
-      "goldFont.fnt");
-  titleLabel->setScale(1.f);
-  titleLabel->setAnchorPoint({0.f, 0.5f});
-  titleLabel->setPosition({padding.left + 5.f, mainSize.height - padding.top / 2 - 5.f});
+  // ! --- StageListLayer --- !
+  auto stageListContentSize = CCSize(contentSize.width, contentSize.height);
+  auto stageList = StageListLayer::create(currentStage, m_level, stageListContentSize);
+  stageList->setPosition({padding.left, padding.bottom});
 
-  // ! --- Create StageRangesList --- !
-  auto rangesListContentSize = CCSize(contentSize.width, contentSize.height);
-  auto rangesList = StageRangesList::create(currentStage, m_level, rangesListContentSize);
-  rangesList->setPosition({padding.left, padding.bottom});
+  m_currentStageNode->addChild(stageList);
+  m_mainLayer->addChild(m_currentStageNode);
+  contentContainers.push_back(m_currentStageNode);
+}
 
-  currStageContainer->addChild(rangesList);
-  currStageContainer->addChild(titleLabel);
-  m_mainLayer->addChild(currStageContainer);
-  contentContainers.push_back(currStageContainer);
+void StagesPopup::drawCurrentStageTitle(int currStage, int totalStages, Padding padding)
+{
+  if (m_currentStageNode)
+  {
+    std::string title = fmt::format(
+        "Stage: {}/{}",
+        currStage ? geode::utils::numToString(currStage) : "?",
+        totalStages > 0
+            ? geode::utils::numToString(totalStages)
+            : "?");
+
+    m_currentStageTitleLabel = CCLabelBMFont::create(
+        title.c_str(),
+        "goldFont.fnt");
+    m_currentStageTitleLabel->setScale(1.f);
+    m_currentStageTitleLabel->setAnchorPoint({0.f, 0.5f});
+    m_currentStageTitleLabel->setPosition({padding.left + 5.f, m_size.height - padding.top / 2 - 5.f});
+
+    m_currentStageNode->addChild(m_currentStageTitleLabel);
+
+    m_stageChangedListener = EventListener<EventFilter<StageChangedEvent>>(
+        [this](StageChangedEvent *event)
+        {
+          const int currentStage = event->getCurrentStage();
+          const int totalStages = event->getTotalStages();
+
+          std::string newTitle = fmt::format(
+              "Stage: {}/{}",
+              currentStage ? geode::utils::numToString(currentStage) : "?",
+              totalStages > 0
+                  ? geode::utils::numToString(totalStages)
+                  : "?");
+
+          m_currentStageTitleLabel->setString(newTitle.c_str());
+          return ListenerResult::Propagate;
+        });
+  }
 }
 
 void StagesPopup::drawLastRuns()
@@ -156,7 +181,6 @@ void StagesPopup::drawTabs()
   if (oldTabsNode)
     oldTabsNode->removeFromParentAndCleanup(true);
 
-  const auto mainSize = m_mainLayer->getContentSize();
   const float btnsGap = 2.f;
 
   // ! --- MAIN CONTAINER --- !
@@ -195,7 +219,7 @@ void StagesPopup::drawTabs()
   tabMenu->addChild(tabBtnCurrentStage);
   // tabMenu->addChild(tabBtnLastRuns);
   tabMenu->alignItemsHorizontallyWithPadding(btnsGap);
-  tabMenu->setPosition({mainSize.width / 2, mainSize.height - 3.5f});
+  tabMenu->setPosition({m_size.width / 2, m_size.height - 3.5f});
   tabMenu->setZOrder(1);
   tabMenu->setID("stages-popup-tab-menu"_spr);
 

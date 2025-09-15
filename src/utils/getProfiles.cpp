@@ -5,11 +5,10 @@ std::vector<Profile> getProfiles()
 {
     std::string saved = Mod::get()->getSavedValue<std::string>("profiles", "[]");
 
-    // Используем parseAs для прямого парсинга в вектор Profile
     auto res = matjson::parseAs<std::vector<Profile>>(saved);
     if (res.isErr())
     {
-        geode::log::debug("Profiles JSON parse error: {}", res.unwrapErr());
+        geode::log::error("Profiles JSON parse error: {}", res.unwrapErr());
         return {};
     }
 

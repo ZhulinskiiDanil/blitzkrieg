@@ -1,3 +1,6 @@
+# v1.3.3
+- Added the ability to switch between stages as in pages
+
 # v1.3.2
 - Fixed incorrect marking of runs
 

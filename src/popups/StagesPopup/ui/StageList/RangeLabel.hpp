@@ -2,7 +2,7 @@
 
 #include <Geode/Geode.hpp>
 
-#include "../../../serialization/profile/index.hpp"
+#include "../../../../serialization/profile/index.hpp"
 
 using namespace geode::prelude;
 

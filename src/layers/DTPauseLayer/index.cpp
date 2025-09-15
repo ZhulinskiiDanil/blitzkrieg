@@ -37,14 +37,12 @@ void DTPauseLayer::customSetup()
             m_fields->currentProfile = getProfileByLevel(level);
             updateCurrentProfileLabel(m_fields->currentProfile);
 
-            geode::log::info("PROFILES CHANGED, UPDATE UI");
             return ListenerResult::Propagate;
         });
 }
 
 void DTPauseLayer::onQuit(CCObject *sender)
 {
-    geode::log::debug("DTPauseLayer QUIT");
     m_fields->m_listener.disable();
     PauseLayer::onQuit(sender);
 }

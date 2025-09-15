@@ -67,18 +67,9 @@ public:
     void resetLevel()
     {
         PlayLayer::resetLevel();
-        geode::log::debug("LEVEL RESET");
 
         m_fields->hasRespawned = true;
         m_fields->currentRun.start = this->getCurrentPercent();
-
-        if (!m_level->isPlatformer())
-        {
-            geode::log::debug(
-                "RESET LEVEL, RUN: start = {}, end = {}",
-                m_fields->currentRun.start,
-                m_fields->currentRun.end);
-        }
 
         resetState();
     }
@@ -94,14 +85,6 @@ public:
         if (!m_level->isPlatformer())
         {
             m_fields->currentRun.end = 100;
-
-            geode::log::debug("LEVEL COMPLETED");
-
-            geode::log::debug(
-                "LEVEL COMPLETED, RUN: start = {}, end = {}",
-                m_fields->currentRun.start,
-                m_fields->currentRun.end);
-
             checkRun(m_fields->currentRun);
         }
 
@@ -121,7 +104,6 @@ public:
         if (!m_fields->isNoclip && m_fields->disabledCheat != p1 && !player->m_isDead)
         {
             m_fields->isNoclip = true;
-            geode::log::debug("UUPS... PLAYER STILL ALIVE");
         }
 
         if (!player->m_isDead)
@@ -133,10 +115,6 @@ public:
         if (!m_level->isPlatformer())
         {
             m_fields->currentRun.end = this->getCurrentPercent();
-
-            geode::log::debug("PLAYER DESTROYED, RUN: start = {}, end = {}",
-                              m_fields->currentRun.start, m_fields->currentRun.end);
-
             checkRun(m_fields->currentRun);
         }
     }
@@ -151,7 +129,6 @@ public:
 
     void resetState()
     {
-        geode::log::debug("RESET STATE");
         m_fields->isNoclip = false;
         m_fields->disabledCheat = nullptr;
     }
@@ -179,23 +156,15 @@ public:
         auto currentProfile = getProfileByLevel(DTPlayLayer::get()->m_level);
 
         if (!isLegal())
-        {
-            geode::log::error("Not legal run");
             return;
-        }
 
         if (currentProfile.id.empty())
-        {
-            geode::log::error("Current profile not set");
             return;
-        }
 
         bool canPlaySound = false;
         bool isStageClosed = false;
         float runStart = run.start;
         float runEnd = run.end;
-
-        geode::log::debug("CHECKING RUNG: {}-{} / IS LEGAL: {}", runStart, runEnd, isLegal());
 
         int totalStages = currentProfile.data.stages.size();
 
@@ -247,8 +216,6 @@ public:
                 canPlaySound = true;
                 isStageClosed = false;
                 checkedRangeThisRun = true;
-
-                geode::log::debug("CHECKED RANGE {}-{}", toCheck->from, toCheck->to);
             }
 
             // Если закрыли range, проверяем закрыта ли теперь вся стадия
@@ -260,7 +227,6 @@ public:
                 if (allChecked && !stage.checked)
                 {
                     stage.checked = true;
-                    geode::log::debug("Stage closed");
                     canPlaySound = true;
                     isStageClosed = true;
                 }

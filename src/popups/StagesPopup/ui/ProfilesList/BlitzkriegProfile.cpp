@@ -11,6 +11,7 @@ BlitzkriegProfile *BlitzkriegProfile::create(Profile const &profile,
     ret->autorelease();
     return ret;
   }
+
   CC_SAFE_DELETE(ret);
   return nullptr;
 }
