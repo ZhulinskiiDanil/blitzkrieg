@@ -19,8 +19,7 @@
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
 
 #include "../../serialization/profile/index.hpp"
-#include "../../utils/getProfiles.hpp"
-#include "../../utils/getProfileByLevel.hpp"
+#include "../../store/GlobalStore.hpp"
 #include "../../utils/getFirstUncheckedStage.hpp"
 #include "../../utils/generateProfile.hpp"
 

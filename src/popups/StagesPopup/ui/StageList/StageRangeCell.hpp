@@ -5,8 +5,7 @@
 
 #include "../../StagesChangedEvent.hpp"
 #include "../../../../serialization/profile/index.hpp"
-#include "../../../../utils/saveProfile.hpp"
-#include "../../../../utils/getProfileByLevel.hpp"
+#include "../../../../store/GlobalStore.hpp"
 #include "../../../../utils/getFirstUncheckedStage.hpp"
 
 using namespace geode::prelude;

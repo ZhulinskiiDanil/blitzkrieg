@@ -8,4 +8,4 @@
 using namespace geode::prelude;
 
 // Load profiles from MOD Saved Data
-std::vector<Profile> getProfiles();
+std::vector<Profile> getSavedProfiles();

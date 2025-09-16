@@ -70,8 +70,8 @@ void StagesPopup::drawProfilesList()
 
   Padding padding{10.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
 
-  const auto profiles = getProfiles();
-  const auto currentProfile = getProfileByLevel(m_level);
+  const auto profiles = GlobalStore::get()->getProfiles();
+  const auto currentProfile = GlobalStore::get()->getProfileByLevel(m_level);
 
   const auto profileListContainer = CCNode::create();
   profileListContainer->setID("stages-popup-profiles-list"_spr);
@@ -98,7 +98,7 @@ void StagesPopup::drawCurrentStage()
 
   Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
-  Profile profile = getProfileByLevel(m_level);
+  Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
   Stage *currentStage = getFirstUncheckedStage(profile);
 
   if (!currentStage)
@@ -118,7 +118,9 @@ void StagesPopup::drawCurrentStage()
   m_currentStageNode->setTag(2);
 
   // ! --- Title --- !
-  drawCurrentStageTitle(currentStage->stage, profile.data.stages.size(), padding);
+  drawCurrentStageTitle(
+      currentStage ? currentStage->stage : 0,
+      profile.data.stages.size(), padding);
 
   // ! --- StageListLayer --- !
   auto stageListContentSize = CCSize(contentSize.width, contentSize.height);

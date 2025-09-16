@@ -267,7 +267,7 @@ void CreateProfilePopup::onCreateProfile(CCObject *sender)
   matjson::Value profile2 = generateProfile(levelName, m_2_2_percentages);
 
   auto profile = m_checked ? profile1 : profile2;
-  saveProfile(profile.as<Profile>().unwrap());
+  GlobalStore::get()->updateProfile(profile.as<Profile>().unwrap());
 
   this->onClose(sender);
   ProfilesChangedEvent().post();

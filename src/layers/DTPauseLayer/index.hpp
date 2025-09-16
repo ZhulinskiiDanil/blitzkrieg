@@ -7,9 +7,9 @@
 #include "../../popups/StagesPopup/ProfilesChangedEvent.hpp"
 #include "../../popups/StagesPopup/index.hpp"
 
+#include "../../store/GlobalStore.hpp"
 #include "../../serialization/profile/index.hpp"
 #include "../../utils/selectJsonFile.hpp"
-#include "../../utils/saveProfiles.hpp"
 
 using namespace geode::prelude;
 

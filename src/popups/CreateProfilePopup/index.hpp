@@ -6,7 +6,7 @@
 
 #include "../StagesPopup/ProfilesChangedEvent.hpp"
 
-#include "../../utils/saveProfile.hpp"
+#include "../../store/GlobalStore.hpp"
 #include "../../utils/generateProfile.hpp"
 
 using namespace geode::prelude;

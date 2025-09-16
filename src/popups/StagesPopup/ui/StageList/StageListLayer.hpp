@@ -6,7 +6,9 @@
 #include "StageRangeCell.hpp"
 #include "../../StageChangedEvent.hpp"
 #include "../../StagesChangedEvent.hpp"
+
 #include "../../../../serialization/profile/index.hpp"
+#include "../../../../store/GlobalStore.hpp"
 
 using namespace geode::prelude;
 

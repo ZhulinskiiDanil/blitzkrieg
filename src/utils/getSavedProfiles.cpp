@@ -1,7 +1,7 @@
-#include "getProfiles.hpp"
+#include "getSavedProfiles.hpp"
 #include "../serialization/profile/index.hpp"
 
-std::vector<Profile> getProfiles()
+std::vector<Profile> getSavedProfiles()
 {
     std::string saved = Mod::get()->getSavedValue<std::string>("profiles", "[]");
 

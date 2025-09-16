@@ -106,7 +106,7 @@ bool ProfilesListLayer::init(
   m_listener = EventListener<EventFilter<ProfilesChangedEvent>>(
       [this](ProfilesChangedEvent *)
       {
-        m_profiles = getProfiles();
+        m_profiles = GlobalStore::get()->getProfiles();
         reload();
         return ListenerResult::Propagate;
       });
@@ -174,7 +174,7 @@ void ProfilesListLayer::onImport(CCObject *obj)
             return;
         }
 
-        saveProfiles(profiles);
+        GlobalStore::get()->addProfiles(profiles);
         ProfilesChangedEvent().post();
 
         // Update profiles list
@@ -183,7 +183,7 @@ void ProfilesListLayer::onImport(CCObject *obj)
 
 void ProfilesListLayer::onExport(CCObject *obj)
 {
-  const auto profiles = getProfiles();
+  const auto profiles = GlobalStore::get()->getProfiles();
   auto resourcesDir = geode::Mod::get()->getSaveDir();
 
   // Create Backup folder

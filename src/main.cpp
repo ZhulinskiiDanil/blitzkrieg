@@ -9,9 +9,7 @@
 #include <Geode/modify/PlayLayer.hpp>
 
 #include "./serialization/profile/index.hpp"
-#include "./utils/getProfiles.hpp"
-#include "./utils/saveProfile.hpp"
-#include "./utils/getProfileByLevel.hpp"
+#include "./store/GlobalStore.hpp"
 
 using namespace geode::prelude;
 
@@ -61,7 +59,7 @@ public:
 
     void loadData()
     {
-        m_fields->profiles = getProfiles();
+        m_fields->profiles = GlobalStore::get()->getProfiles();
     }
 
     void resetLevel()
@@ -153,7 +151,7 @@ public:
 
     void checkRun(const Run &run)
     {
-        auto currentProfile = getProfileByLevel(DTPlayLayer::get()->m_level);
+        auto currentProfile = GlobalStore::get()->getProfileByLevel(DTPlayLayer::get()->m_level);
 
         if (!isLegal())
             return;
@@ -241,7 +239,7 @@ public:
         {
             // true если нужно проиграть звук стейджа
             // false если нужно проиграть звук range
-            saveProfile(currentProfile);
+            GlobalStore::get()->updateProfile(currentProfile);
             playSound(isStageClosed);
         }
     }

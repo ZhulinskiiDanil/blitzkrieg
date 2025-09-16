@@ -4,7 +4,7 @@ void DTPauseLayer::customSetup()
 {
     PauseLayer::customSetup();
     auto level = PlayLayer::get()->m_level;
-    m_fields->currentProfile = getProfileByLevel(level);
+    m_fields->currentProfile = GlobalStore::get()->getProfileByLevel(level);
 
     auto sideMenu = this->getChildByID("left-button-menu");
 
@@ -34,7 +34,7 @@ void DTPauseLayer::customSetup()
         [this](ProfilesChangedEvent *)
         {
             auto level = PlayLayer::get()->m_level;
-            m_fields->currentProfile = getProfileByLevel(level);
+            m_fields->currentProfile = GlobalStore::get()->getProfileByLevel(level);
             updateCurrentProfileLabel(m_fields->currentProfile);
 
             return ListenerResult::Propagate;

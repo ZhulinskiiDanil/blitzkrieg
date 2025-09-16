@@ -7,11 +7,10 @@
 #include "../../ProfilesChangedEvent.hpp"
 
 #include "../../../../serialization/profile/index.hpp"
+#include "../../../../store/GlobalStore.hpp"
 #include "../../../../utils/getProfileStats.hpp"
-#include "../../../../utils/getProfileByLevel.hpp"
 #include "../../../../utils/linkProfileWithLevel.hpp"
 #include "../../../../utils/unlinkProfileFromLevel.hpp"
-#include "../../../../utils/deleteProfile.hpp"
 
 using namespace geode::prelude;
 

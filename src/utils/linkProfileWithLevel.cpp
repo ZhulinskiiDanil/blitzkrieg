@@ -1,6 +1,6 @@
 #include "linkProfileWithLevel.hpp"
 #include "./unlinkProfileFromLevel.hpp"
-#include "./getProfiles.hpp"
+#include "../store/GlobalStore.hpp"
 
 void linkProfileWithLevel(const Profile &profile, GJGameLevel *level)
 {
@@ -12,7 +12,7 @@ void linkProfileWithLevel(const Profile &profile, GJGameLevel *level)
                           : geode::utils::numToString(EditorIDs::getID(level));
 
   // Unlink all profile(s) from current level
-  for (const auto &p : getProfiles())
+  for (const auto &p : GlobalStore::get()->getProfiles())
   {
     unlinkProfileFromLevel(p, lvlId);
   }

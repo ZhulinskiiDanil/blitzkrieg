@@ -66,7 +66,7 @@ void StageRangeCell::onToggle(CCObject *sender)
   if (!m_level || m_disabled)
     return;
 
-  Profile profile = getProfileByLevel(m_level);
+  Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
   Stage *currentStage = getFirstUncheckedStage(profile);
 
   if (currentStage)
@@ -87,7 +87,7 @@ void StageRangeCell::onToggle(CCObject *sender)
     if (everyRangeChecked)
       currentStage->checked = true;
 
-    saveProfile(profile);
+    GlobalStore::get()->updateProfile(profile);
   }
 }
 

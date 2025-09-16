@@ -51,7 +51,7 @@ void BlitzkriegProfile::updateFromCurrentProfile()
   if (!m_level)
     return;
 
-  Profile current = getProfileByLevel(m_level);
+  Profile current = GlobalStore::get()->getProfileByLevel(m_level);
   bool shouldBeCurrent = (!current.id.empty() && current.id == m_profile.id);
 
   if (m_isCurrent != shouldBeCurrent)
@@ -180,7 +180,7 @@ void BlitzkriegProfile::onToggleProfile(CCObject *obj)
 
 void BlitzkriegProfile::onDeleteProfile(CCObject *obj)
 {
-  deleteProfile(m_profile.id);
+  GlobalStore::get()->removeProfileById(m_profile.id);
   this->removeFromParentAndCleanup(true);
   ProfilesChangedEvent().post();
 }
