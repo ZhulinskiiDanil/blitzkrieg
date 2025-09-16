@@ -1,3 +1,7 @@
+# v1.3.4
+- Optimization
+- The game no longer crashes when the user opens the "Current Stage" tab at a level without an attached profile.
+
 # v1.3.3
 - Added the ability to switch between stages as in pages
 
