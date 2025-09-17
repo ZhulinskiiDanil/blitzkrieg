@@ -34,7 +34,7 @@ bool ProfilesListLayer::init(
 
   this->setContentSize(m_contentSize);
 
-  float padding = 3.f;
+  float padding = 5.f;
 
   // ! --- ScrollLayer --- !
   m_scroll = ScrollLayer::create(contentSize);
@@ -43,7 +43,7 @@ bool ProfilesListLayer::init(
 
   m_scroll->m_contentLayer->setLayout(
       ColumnLayout::create()
-          ->setGap(5.f)
+          ->setGap(2.5f)
           ->setAxisAlignment(AxisAlignment::End)
           ->setAutoGrowAxis(m_scroll->getContentHeight()));
 
@@ -70,18 +70,21 @@ bool ProfilesListLayer::init(
   auto btnCreate = CCMenuItemSpriteExtra::create(
       btnSprCreate, this, menu_selector(ProfilesListLayer::onCreate));
   btnCreate->setScale(.75f);
+  btnCreate->m_baseScale = .75f;
   btnCreate->ignoreAnchorPointForPosition(true);
 
   auto btnSprImport = ButtonSprite::create("Import");
   auto btnImport = CCMenuItemSpriteExtra::create(
       btnSprImport, this, menu_selector(ProfilesListLayer::onImport));
   btnImport->setScale(.75f);
+  btnImport->m_baseScale = .75f;
   btnImport->ignoreAnchorPointForPosition(true);
 
   auto btnSprExport = ButtonSprite::create("Export");
   auto btnExport = CCMenuItemSpriteExtra::create(
       btnSprExport, this, menu_selector(ProfilesListLayer::onExport));
   btnExport->setScale(.75f);
+  btnExport->m_baseScale = .75f;
   btnExport->ignoreAnchorPointForPosition(true);
 
   auto btnMenu = CCMenu::create();

@@ -68,7 +68,7 @@ void StagesPopup::drawProfilesList()
     oldList->removeFromParentAndCleanup(true);
   }
 
-  Padding padding{10.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
+  Padding padding{12.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
 
   const auto profiles = GlobalStore::get()->getProfiles();
   const auto currentProfile = GlobalStore::get()->getProfileByLevel(m_level);
@@ -81,6 +81,7 @@ void StagesPopup::drawProfilesList()
       m_size.width - padding.left - padding.right,
       m_size.height - padding.top - padding.bottom);
 
+  // ! --- ProfilesListLayer --- !
   auto listLayer = ProfilesListLayer::create(m_level, profiles, currentProfile, contentSize);
   listLayer->setPosition({padding.left, padding.bottom});
   profileListContainer->addChild(listLayer);

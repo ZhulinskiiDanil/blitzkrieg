@@ -66,10 +66,10 @@ void BlitzkriegProfile::createMenu()
 {
   m_buttonMenu = CCMenu::create();
   m_buttonMenu->setAnchorPoint({1.f, 0.5f});
-  m_buttonMenu->setPosition({m_size.width - 10.f, m_size.height / 2});
+  m_buttonMenu->setPosition({m_size.width - 5.f, m_size.height / 2});
   m_buttonMenu->setLayout(
       RowLayout::create()
-          ->setGap(5.f)
+          ->setGap(2.5f)
           ->setAutoScale(false)
           ->setAutoGrowAxis(true)
           ->setAxisAlignment(AxisAlignment::End)
@@ -91,6 +91,7 @@ void BlitzkriegProfile::updateSelectButton()
   m_selectButton = CCMenuItemSpriteExtra::create(selectSongBtnSpr, this, menu_selector(BlitzkriegProfile::onToggleProfile));
   m_selectButton->ignoreAnchorPointForPosition(true);
   m_selectButton->setScale(.75f);
+  m_selectButton->m_baseScale = .75f;
 
   m_buttonMenu->addChild(m_selectButton, 1);
   m_buttonMenu->updateLayout();
@@ -104,7 +105,8 @@ void BlitzkriegProfile::updateTrashButton()
   auto spr = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
   m_trashButton = CCMenuItemSpriteExtra::create(spr, this, menu_selector(BlitzkriegProfile::onDeleteProfile));
   m_trashButton->ignoreAnchorPointForPosition(true);
-  m_trashButton->setScale(.75f);
+  m_trashButton->setScale(.65f);
+  m_trashButton->m_baseScale = .65f;
 
   m_buttonMenu->addChild(m_trashButton, 2);
   m_buttonMenu->updateLayout();
