@@ -44,6 +44,7 @@ bool ProfilesListLayer::init(
   m_scroll->m_contentLayer->setLayout(
       ColumnLayout::create()
           ->setGap(2.5f)
+          ->setAxisReverse(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setAutoGrowAxis(m_scroll->getContentHeight()));
 
@@ -111,6 +112,7 @@ bool ProfilesListLayer::init(
       {
         m_profiles = GlobalStore::get()->getProfiles();
         reload();
+
         return ListenerResult::Propagate;
       });
 
@@ -125,10 +127,43 @@ void ProfilesListLayer::reload()
 
   m_scroll->m_contentLayer->removeAllChildrenWithCleanup(true);
 
+  std::stable_sort(m_profiles.begin(), m_profiles.end(),
+                   [](const Profile &a, const Profile &b)
+                   {
+                     return GlobalStore::get()->isProfilePinned(a.id) &&
+                            !GlobalStore::get()->isProfilePinned(b.id);
+                   });
+
+  bool hasPinned = std::any_of(m_profiles.begin(), m_profiles.end(),
+                               [](const Profile &p)
+                               { return GlobalStore::get()->isProfilePinned(p.id); });
+
+  bool hasDefault = std::any_of(m_profiles.begin(), m_profiles.end(),
+                                [](const Profile &p)
+                                { return !GlobalStore::get()->isProfilePinned(p.id); });
+
+  bool headerPinnedAdded = false;
+  bool headerOtherAdded = false;
+
   for (size_t i = 0; i < m_profiles.size(); ++i)
   {
     const auto &profile = m_profiles[i];
     bool isCurrentProfile = (!m_currentProfile.id.empty() && m_currentProfile.id == profile.id);
+    bool pinned = GlobalStore::get()->isProfilePinned(profile.id);
+
+    if (hasPinned && hasDefault)
+    {
+      if (pinned && !headerPinnedAdded)
+      {
+        drawSectionHeader("Pinned");
+        headerPinnedAdded = true;
+      }
+      else if (!pinned && !headerOtherAdded)
+      {
+        drawSectionHeader("Other");
+        headerOtherAdded = true;
+      }
+    }
 
     auto profileItem = BlitzkriegProfile::create(
         profile,
@@ -144,6 +179,34 @@ void ProfilesListLayer::reload()
 
   m_scroll->m_contentLayer->updateLayout();
   scrollToTop();
+}
+
+void ProfilesListLayer::drawSectionHeader(const std::string &title)
+{
+  float height = 20.f;
+  float padding = 4.f;
+
+  auto header = CCNode::create();
+  header->setLayout(ColumnLayout::create()
+                        ->setGap(2.5f)
+                        ->setAutoScale(false)
+                        ->setAutoGrowAxis(true)
+                        ->setAxisReverse(true)
+                        ->setCrossAxisLineAlignment(AxisAlignment::Start));
+
+  auto label = CCLabelBMFont::create(title.c_str(), "bigFont.fnt");
+  label->setScale(0.6f);
+  header->addChild(label);
+  header->updateLayout();
+
+  auto line = CCLayerColor::create({255, 255, 255, 50},
+                                   m_scroll->m_contentLayer->getContentSize().width - padding * 2,
+                                   1.f);
+  header->addChild(line);
+  header->updateLayout();
+
+  m_scroll->m_contentLayer->addChild(header);
+  header->updateLayout();
 }
 
 void ProfilesListLayer::scrollToTop()

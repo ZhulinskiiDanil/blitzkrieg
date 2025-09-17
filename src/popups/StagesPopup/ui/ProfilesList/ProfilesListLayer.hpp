@@ -29,6 +29,9 @@ private:
   void onImport(CCObject *sender);
   void onExport(CCObject *sender);
 
+  void drawSectionHeader(const std::string &title);
+  void drawDivider();
+
 public:
   static ProfilesListLayer *create(
       GJGameLevel *level,

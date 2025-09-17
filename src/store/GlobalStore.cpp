@@ -74,6 +74,30 @@ void GlobalStore::removeProfileById(std::string const &id)
       m_profiles.end());
 }
 
+void GlobalStore::upProfileById(const std::string &profileId)
+{
+  auto it = std::find_if(m_profiles.begin(), m_profiles.end(),
+                         [&](const Profile &p)
+                         {
+                           return p.id == profileId;
+                         });
+
+  if (it != m_profiles.end() && it != m_profiles.begin())
+    std::rotate(m_profiles.begin(), it, it + 1);
+
+  saveProfiles();
+}
+
+void GlobalStore::pinProfileById(std::string profileId, bool isPinned)
+{
+  Mod::get()->setSavedValue<bool>(fmt::format("{}-pinned", profileId), isPinned);
+}
+
+bool GlobalStore::isProfilePinned(std::string profileId)
+{
+  return Mod::get()->getSavedValue<bool>(fmt::format("{}-pinned", profileId));
+}
+
 // ! --- Search API ---
 Profile GlobalStore::getProfileByLevel(GJGameLevel *level) const
 {

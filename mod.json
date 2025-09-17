@@ -36,8 +36,10 @@
 		],
 		"spritesheets": {
 			"Borders": [
-				"resources/sprites/borders/*.png",
 				"resources/sprites/borders/*.png"
+			],
+			"Buttons": [
+				"resources/sprites/buttons/*.png"
 			]
 		},
 		"files": [

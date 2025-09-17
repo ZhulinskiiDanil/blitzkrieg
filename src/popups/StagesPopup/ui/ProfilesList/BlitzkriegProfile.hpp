@@ -20,6 +20,7 @@ protected:
   Profile m_profile;
   ProfileStats m_stats;
   bool m_isCurrent = false;
+  bool m_isPinned = false;
   bool m_profileToggleDisabled = false;
   std::chrono::steady_clock::time_point m_lastToggleTime;
 
@@ -30,18 +31,19 @@ protected:
 
   CCSize m_size;
   CCMenu *m_buttonMenu = nullptr;
-  CCMenuItemSpriteExtra *m_selectButton = nullptr;
-  CCMenuItemSpriteExtra *m_trashButton = nullptr;
 
   void createBackground();
   void createLabels();
   void createMenu();
-  void updateSelectButton();
-  void updateTrashButton();
+  void createButton(const char *spriteFrameName, cocos2d::SEL_MenuHandler callback);
+
+  void updateButtons();
   void updateFromCurrentProfile();
 
   // --- Handlers ---
   void onToggleProfile(CCObject *obj);
+  void onTogglePinProfile(CCObject *obj);
+  void onUpProfile(CCObject *obj);
   void onDeleteProfile(CCObject *obj);
 
 public:

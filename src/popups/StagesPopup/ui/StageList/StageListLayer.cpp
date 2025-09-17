@@ -59,8 +59,8 @@ bool StageListLayer::init(
   m_scroll->m_contentLayer->setLayout(
       ColumnLayout::create()
           ->setGap(5.f)
-          ->setAxisAlignment(AxisAlignment::End)
           ->setAxisReverse(true)
+          ->setAxisAlignment(AxisAlignment::End)
           ->setAutoGrowAxis(m_scroll->getContentHeight()));
 
   this->addChild(m_scroll);

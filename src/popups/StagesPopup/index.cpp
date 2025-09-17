@@ -147,9 +147,7 @@ void StagesPopup::drawCurrentStageTitle(int currStage, int totalStages, Padding 
     m_currentStageTitleLabel = CCLabelBMFont::create(
         title.c_str(),
         "goldFont.fnt");
-    m_currentStageTitleLabel->setScale(1.f);
-    m_currentStageTitleLabel->setAnchorPoint({0.f, 0.5f});
-    m_currentStageTitleLabel->setPosition({padding.left + 5.f, m_size.height - padding.top / 2 - 2.5f});
+    m_currentStageTitleLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 - 2.5f});
 
     m_currentStageNode->addChild(m_currentStageTitleLabel);
 

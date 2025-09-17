@@ -29,6 +29,7 @@ bool BlitzkriegProfile::init(Profile const &profile,
   m_isCurrent = isCurrent;
   m_level = level;
   m_size = size;
+  m_isPinned = GlobalStore::get()->isProfilePinned(m_profile.id);
 
   this->setContentSize(size);
 
@@ -57,7 +58,7 @@ void BlitzkriegProfile::updateFromCurrentProfile()
   if (m_isCurrent != shouldBeCurrent)
   {
     m_isCurrent = shouldBeCurrent;
-    updateSelectButton();
+    updateButtons();
     m_buttonMenu->updateLayout();
   }
 }
@@ -77,38 +78,43 @@ void BlitzkriegProfile::createMenu()
   m_buttonMenu->getLayout()->ignoreInvisibleChildren(true);
   this->addChild(m_buttonMenu);
 
-  updateSelectButton();
-  updateTrashButton();
+  updateButtons();
   m_buttonMenu->updateLayout();
 }
 
-void BlitzkriegProfile::updateSelectButton()
+void BlitzkriegProfile::updateButtons()
 {
-  if (auto btn = typeinfo_cast<CCMenuItemSpriteExtra *>(m_selectButton))
-    btn->removeFromParentAndCleanup(true);
+  m_buttonMenu->removeAllChildrenWithCleanup(true);
 
-  auto selectSongBtnSpr = CCSprite::createWithSpriteFrameName(m_isCurrent ? "GJ_selectSongOnBtn_001.png" : "GJ_selectSongBtn_001.png");
-  m_selectButton = CCMenuItemSpriteExtra::create(selectSongBtnSpr, this, menu_selector(BlitzkriegProfile::onToggleProfile));
-  m_selectButton->ignoreAnchorPointForPosition(true);
-  m_selectButton->setScale(.75f);
-  m_selectButton->m_baseScale = .75f;
-
-  m_buttonMenu->addChild(m_selectButton, 1);
-  m_buttonMenu->updateLayout();
+  // ! Select Button
+  createButton(
+      m_isCurrent ? "link-profile-btn.png"_spr : "unlink-profile-btn.png"_spr,
+      menu_selector(BlitzkriegProfile::onToggleProfile));
+  // ! Up Button
+  createButton(
+      "up-profile-btn.png"_spr,
+      menu_selector(BlitzkriegProfile::onUpProfile));
+  // ! Pin/Unpin Button
+  createButton(
+      m_isPinned ? "unpin-profile-btn.png"_spr : "pin-profile-btn.png"_spr,
+      menu_selector(BlitzkriegProfile::onTogglePinProfile));
+  // ! Delete Button
+  createButton(
+      "delete-profile-btn.png"_spr,
+      menu_selector(BlitzkriegProfile::onDeleteProfile));
 }
 
-void BlitzkriegProfile::updateTrashButton()
+void BlitzkriegProfile::createButton(
+    const char *spriteFrameName,
+    cocos2d::SEL_MenuHandler callback)
 {
-  if (auto btn = typeinfo_cast<CCMenuItemSpriteExtra *>(m_trashButton))
-    btn->removeFromParentAndCleanup(true);
+  auto spr = CCSprite::createWithSpriteFrameName(spriteFrameName);
+  const auto btn = CCMenuItemSpriteExtra::create(spr, this, callback);
+  btn->ignoreAnchorPointForPosition(true);
+  btn->setScale(.75f);
+  btn->m_baseScale = .75f;
 
-  auto spr = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
-  m_trashButton = CCMenuItemSpriteExtra::create(spr, this, menu_selector(BlitzkriegProfile::onDeleteProfile));
-  m_trashButton->ignoreAnchorPointForPosition(true);
-  m_trashButton->setScale(.65f);
-  m_trashButton->m_baseScale = .65f;
-
-  m_buttonMenu->addChild(m_trashButton, 2);
+  m_buttonMenu->addChild(btn);
   m_buttonMenu->updateLayout();
 }
 
@@ -175,14 +181,40 @@ void BlitzkriegProfile::onToggleProfile(CCObject *obj)
   else
     linkProfileWithLevel(m_profile, m_level);
 
-  updateSelectButton();
+  updateButtons();
   m_buttonMenu->updateLayout();
   ProfileChangedEvent().post();
 }
 
+void BlitzkriegProfile::onTogglePinProfile(CCObject *obj)
+{
+  m_isPinned = !m_isPinned;
+  GlobalStore::get()->pinProfileById(m_profile.id, m_isPinned);
+  updateButtons();
+
+  ProfilesChangedEvent().post();
+}
+
+void BlitzkriegProfile::onUpProfile(CCObject *obj)
+{
+  GlobalStore::get()->upProfileById(m_profile.id);
+  ProfilesChangedEvent().post();
+}
+
 void BlitzkriegProfile::onDeleteProfile(CCObject *obj)
 {
-  GlobalStore::get()->removeProfileById(m_profile.id);
-  this->removeFromParentAndCleanup(true);
-  ProfilesChangedEvent().post();
+  geode::createQuickPopup(
+      "Delete Profile",
+      fmt::format("Are you sure you want to delete profile \"{}\"?", m_profile.profileName), // message text
+      "Cancel",
+      "Delete",
+      [this](auto, bool confirmed)
+      {
+        if (confirmed)
+        {
+          GlobalStore::get()->removeProfileById(m_profile.id);
+          this->removeFromParentAndCleanup(true);
+          ProfilesChangedEvent().post();
+        }
+      });
 }

@@ -17,7 +17,10 @@ public:
   void addProfiles(std::vector<Profile> const &newProfiles, bool overwrite = false);
   void setProfiles(std::vector<Profile> const &profiles);
   void updateProfile(Profile const &profile);
+  void upProfileById(const std::string &profileId);
   void removeProfileById(std::string const &id);
+  void pinProfileById(std::string profileId, bool isPinned);
+  bool isProfilePinned(std::string profileId);
 
   // --- Search API ---
   Profile getProfileByLevel(GJGameLevel *level) const;
