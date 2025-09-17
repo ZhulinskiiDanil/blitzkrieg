@@ -1,3 +1,6 @@
+# v1.4.1
+- Fixed incorrect display of the profile connection button
+
 # v1.4.0
 - Added the ability to add profiles to favorites (pinned profiles)
 - Implemented manual reordering of profiles

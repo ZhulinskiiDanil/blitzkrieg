@@ -88,7 +88,7 @@ void BlitzkriegProfile::updateButtons()
 
   // ! Select Button
   createButton(
-      m_isCurrent ? "link-profile-btn.png"_spr : "unlink-profile-btn.png"_spr,
+      m_isCurrent ? "unlink-profile-btn.png"_spr : "link-profile-btn.png"_spr,
       menu_selector(BlitzkriegProfile::onToggleProfile));
   // ! Up Button
   createButton(
