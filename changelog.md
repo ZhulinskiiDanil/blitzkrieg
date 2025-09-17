@@ -1,3 +1,8 @@
+# v1.4.0
+- Added the ability to add profiles to favorites (pinned profiles)
+- Implemented manual reordering of profiles
+- Added a confirmation modal when deleting a profile
+
 # v1.3.4
 - Optimization
 - The game no longer crashes when the user opens the "Current Stage" tab at a level without an attached profile.
