@@ -27,9 +27,6 @@ public:
   bool isProfilePinned(std::string profileId);
 
   // ! --- Current Run API --- !
-  float runStart = 0.f;
-  float runEnd = 0.f;
-
   void setRunStart(float start);
   void setRunEnd(float end);
   void resetRun();
@@ -39,6 +36,7 @@ public:
   Profile getProfileById(std::string &profileId);
   Profile getProfileByLevel(GJGameLevel *level);
   Profile getProfileByLevel(std::string const &levelId);
+  Range getCurrentRange(std::string &profileId);
 
   // ! --- Persistence --- !
   void saveProfiles() const;
@@ -47,4 +45,6 @@ private:
   GlobalStore();
 
   std::vector<Profile> m_profiles;
+  float runStart = 0.f;
+  float runEnd = 0.f;
 };

@@ -30,9 +30,8 @@
 	},
 	"resources": {
 		"sprites": [
-			"resources/sprites/GJ_square01_custom.png",
-			"resources/sprites/logo.png",
-			"resources/sprites/tab-gradient-mask.png"
+			"resources/sprites/*.png",
+			"resources/sprites/range/*.png"
 		],
 		"spritesheets": {
 			"Borders": [

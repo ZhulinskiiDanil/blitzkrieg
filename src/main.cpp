@@ -52,12 +52,11 @@ public:
     void resetLevel()
     {
         PlayLayer::resetLevel();
+        resetState();
 
         m_fields->hasRespawned = true;
         GlobalStore::get()->setRunStart(this->getCurrentPercent());
         GlobalStore::get()->setRunEnd(0.f);
-
-        resetState();
     }
 
     void levelComplete()

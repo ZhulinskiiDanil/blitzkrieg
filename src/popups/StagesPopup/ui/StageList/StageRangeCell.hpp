@@ -20,8 +20,10 @@ private:
   GJGameLevel *m_level = nullptr;
   bool m_checked = false;
   bool m_disabled = false;
+  bool m_isCurrent = false;
 
   void onToggle(CCObject *sender);
+  void updateBackgroundTexture();
 
 public:
   static StageRangeCell *create(Range *range, GJGameLevel *level, const CCSize &cellSize);

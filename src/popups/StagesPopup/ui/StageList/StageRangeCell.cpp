@@ -22,37 +22,62 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   m_range = range;
   m_checked = m_range->checked;
   m_level = level;
+  Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
 
-  // --- Background ---
-  m_background = CCScale9Sprite::create("square02b_small.png");
-  m_background->setContentSize(cellSize);
-  m_background->setPosition({cellSize.width / 2, cellSize.height / 2});
-  m_background->setColor({17, 16, 16});
-  m_background->setOpacity(255 * 0.3f);
-  this->addChild(m_background);
+  if (!profile.id.empty())
+  {
+    const auto currentRange = GlobalStore::get()->getCurrentRange(profile.id);
 
-  // --- Range Label ---
+    if (!currentRange.id.empty())
+      m_isCurrent = currentRange.id == m_range->id;
+  }
+
+  // ! --- Background --- !
+  updateBackgroundTexture();
+
+  // ! --- Range Label --- !
   m_rangeLabel = RangeLabel::create(m_range);
   m_rangeLabel->setPosition({25.f, cellSize.height / 2});
+  m_rangeLabel->setZOrder(1);
   this->addChild(m_rangeLabel);
 
-  // --- Checkbox ---
+  // ! --- Checkbox --- !
   auto toggleOn = CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png");
   auto toggleOff = CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png");
 
   m_checkbox = CCMenuItemToggler::create(toggleOn, toggleOff, this, menu_selector(StageRangeCell::onToggle));
   m_checkbox->setAnchorPoint({0.5f, 0.5f});
   m_checkbox->setCascadeColorEnabled(true);
+  m_checkbox->setZOrder(1);
   m_checkbox->toggle(!m_checked);
 
+  // ! --- Menu --- !
   auto menu = CCMenu::createWithItem(m_checkbox);
   menu->setScale(0.5f);
   menu->setAnchorPoint({0.5f, 0.f});
   menu->setContentSize({32.f, 32.f});
   menu->setPosition({5.f, cellSize.height / 2});
+  menu->setZOrder(1);
   this->addChild(menu);
 
   return true;
+}
+
+void StageRangeCell::updateBackgroundTexture()
+{
+  const auto cellSize = this->getContentSize();
+  const auto bg_spr = m_disabled
+                          ? "range-disabled-bg.png"_spr
+                      : m_checked   ? "range-completed-bg.png"_spr
+                      : m_isCurrent ? "range-current-bg.png"_spr
+                                    : "range-default-bg.png"_spr;
+
+  m_background = CCScale9Sprite::create(bg_spr);
+  m_background->setContentSize(cellSize);
+  m_background->setPosition({cellSize.width / 2, cellSize.height / 2});
+  m_background->setZOrder(0);
+
+  this->addChild(m_background);
 }
 
 void StageRangeCell::onToggle(CCObject *sender)
@@ -62,6 +87,7 @@ void StageRangeCell::onToggle(CCObject *sender)
 
   m_checkbox->toggle(m_checked);
   m_rangeLabel->setEnabled(m_checked);
+  updateBackgroundTexture();
 
   if (!m_level || m_disabled)
     return;
@@ -94,9 +120,16 @@ void StageRangeCell::onToggle(CCObject *sender)
 void StageRangeCell::setDisabled(bool disabled)
 {
   m_disabled = disabled;
+  m_rangeLabel->setDisabled(disabled);
 
   if (disabled)
+  {
+    updateBackgroundTexture();
     m_checkbox->setColor({100, 100, 100});
+  }
   else
+  {
+    updateBackgroundTexture();
     m_checkbox->setColor({255, 255, 255});
+  }
 }

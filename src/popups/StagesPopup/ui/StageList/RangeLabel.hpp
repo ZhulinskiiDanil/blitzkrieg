@@ -13,9 +13,11 @@ private:
   CCLabelBMFont *m_label;
   CCLabelBMFont *m_noteLabel;
   bool enabled = false;
+  bool disabled = false;
 
   const ccColor3B enabledColor = {99, 224, 110};
-  const ccColor3B disabledColor = {253, 165, 106};
+  const ccColor3B defaultColor = {255, 196, 157};
+  const ccColor3B disabledColor = {253, 106, 106};
 
   void updateColor();
 
@@ -29,6 +31,6 @@ public:
   CCLabelBMFont *getLabel() const { return m_label; }
 
   void setRange(int from, int to);
-
   void setEnabled(bool value);
+  void setDisabled(bool value);
 };

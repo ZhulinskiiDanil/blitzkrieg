@@ -249,6 +249,45 @@ Profile GlobalStore::getProfileByLevel(std::string const &levelId)
   return Profile{};
 }
 
+Range GlobalStore::getCurrentRange(std::string &profileId)
+{
+  Range *maxRange = nullptr;
+  int currentStage = 0;
+
+  for (auto &profile : m_profiles)
+  {
+    if (profile.id != profileId)
+      continue;
+
+    for (auto &stage : profile.data.stages)
+    {
+      if (stage.checked)
+        continue;
+
+      if (currentStage == 0)
+        currentStage = stage.stage;
+      else
+        break;
+
+      for (auto &range : stage.ranges)
+      {
+        if (!range.checked && range.from <= (runStart + 0.1f))
+        {
+          if (!maxRange || range.from > maxRange->from)
+          {
+            maxRange = &range;
+          }
+        }
+      }
+    }
+  }
+
+  if (maxRange)
+    return *maxRange;
+
+  return {};
+}
+
 // ! --- Persistence ---
 void GlobalStore::saveProfiles() const
 {

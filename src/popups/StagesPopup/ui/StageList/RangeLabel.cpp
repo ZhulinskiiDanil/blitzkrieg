@@ -68,10 +68,18 @@ void RangeLabel::setEnabled(bool value)
   updateColor();
 }
 
+void RangeLabel::setDisabled(bool value)
+{
+  disabled = value;
+  updateColor();
+}
+
 void RangeLabel::updateColor()
 {
-  if (!enabled)
+  if (disabled)
     m_label->setColor(disabledColor);
-  else
+  else if (enabled)
     m_label->setColor(enabledColor);
+  else
+    m_label->setColor(defaultColor);
 }
