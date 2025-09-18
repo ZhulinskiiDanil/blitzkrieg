@@ -1,6 +1,4 @@
 #include "GlobalStore.hpp"
-#include <Geode/Geode.hpp>
-#include <Geode/utils/file.hpp>
 
 using namespace geode::prelude;
 
@@ -98,8 +96,133 @@ bool GlobalStore::isProfilePinned(std::string profileId)
   return Mod::get()->getSavedValue<bool>(fmt::format("{}-pinned", profileId));
 }
 
+// ! --- Current Run API --- !
+void GlobalStore::setRunStart(float val)
+{
+  if (val >= 0 && val <= 100)
+    runStart = val;
+}
+
+void GlobalStore::setRunEnd(float val)
+{
+  if (val >= 0 && val <= 100)
+    runEnd = val;
+}
+
+void GlobalStore::resetRun()
+{
+  runStart = 0.f;
+  runEnd = 0.f;
+}
+
+int GlobalStore::checkRun(std::string profileId)
+{
+  auto currentProfile = getProfileById(profileId);
+
+  if (currentProfile.id.empty())
+    return -1;
+
+  bool canPlaySound = false;
+  bool isStageClosed = false;
+
+  int totalStages = currentProfile.data.stages.size();
+
+  for (auto &stage : currentProfile.data.stages)
+  {
+    if (stage.checked)
+      continue;
+
+    bool checkedRangeThisRun = false;
+
+    std::vector<Range *> candidates;
+
+    for (auto &range : stage.ranges)
+    {
+      if (range.checked)
+        continue;
+
+      if (runStart <= range.from && runEnd >= range.to)
+      {
+        candidates.push_back(&range);
+      }
+    }
+
+    if (!candidates.empty())
+    {
+      auto *toCheck = *std::min_element(candidates.begin(), candidates.end(),
+                                        [](Range *a, Range *b)
+                                        { return a->from < b->from; });
+
+      std::string fromTo = fmt::format(
+          "Stage {}/{}: {:.2f} - {:.2f}",
+          stage.stage,
+          totalStages,
+          toCheck->from,
+          toCheck->to);
+      std::string currentRunNote = fmt::format(
+          "{:.2f} - {:.2f}",
+          runStart,
+          runEnd);
+
+      AchievementNotifier::sharedState()->notifyAchievement(
+          "New run closed",
+          fromTo.c_str(),
+          "GJ_completesIcon_001.png",
+          true);
+
+      toCheck->checked = true;
+      toCheck->note = currentRunNote;
+      canPlaySound = true;
+      isStageClosed = false;
+      checkedRangeThisRun = true;
+    }
+
+    // Если закрыли range, проверяем закрыта ли теперь вся стадия
+    if (checkedRangeThisRun)
+    {
+      bool allChecked = std::all_of(stage.ranges.begin(), stage.ranges.end(), [](const Range &r)
+                                    { return r.checked; });
+
+      if (allChecked && !stage.checked)
+      {
+        stage.checked = true;
+        canPlaySound = true;
+        isStageClosed = true;
+      }
+
+      break;
+    }
+    else
+      break;
+  }
+
+  if (canPlaySound)
+  {
+    updateProfile(currentProfile);
+    return isStageClosed;
+  }
+
+  return -1;
+}
+
 // ! --- Search API ---
-Profile GlobalStore::getProfileByLevel(GJGameLevel *level) const
+Profile GlobalStore::getProfileById(std::string &profileId)
+{
+  auto it = std::find_if(m_profiles.begin(), m_profiles.end(),
+                         [&](const Profile &p)
+                         {
+                           return p.id == profileId;
+                         });
+
+  if (it != m_profiles.end())
+  {
+    return *it;
+  }
+
+  return {};
+}
+
+Profile GlobalStore::getProfileByLevel(GJGameLevel *level)
 {
   if (!level)
     return Profile{};
@@ -111,7 +234,7 @@ Profile GlobalStore::getProfileByLevel(GJGameLevel *level) const
   return getProfileByLevel(levelId);
 }
 
-Profile GlobalStore::getProfileByLevel(std::string const &levelId) const
+Profile GlobalStore::getProfileByLevel(std::string const &levelId)
 {
   for (const auto &profile : m_profiles)
   {
