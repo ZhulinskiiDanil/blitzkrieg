@@ -30,13 +30,9 @@ class $modify(DTPlayLayer, PlayLayer)
     {
         CCObject *disabledCheat = nullptr;
 
-        std::vector<Profile> profiles; // Все профили
+        std::vector<Profile> profiles;
         bool hasRespawned = false;
         bool isNoclip = false;
-
-        // Звуки закрытия ранов и стадий
-        FMOD::Sound *rangeCompleteSound = nullptr;
-        FMOD::Sound *stageCompleteSound = nullptr;
     };
 
 public:
@@ -70,18 +66,27 @@ public:
         if (!m_level->isPlatformer())
         {
             GlobalStore::get()->setRunEnd(100.f);
-            auto currentProfile = GlobalStore::get()->getProfileByLevel(DTPlayLayer::get()->m_level);
-
-            if (isLegal() && !currentProfile.id.empty())
-            {
-                int res = GlobalStore::get()->checkRun(currentProfile.id);
-
-                if (res != -1)
-                    playSound(!!res);
-            };
+            checkRun();
         }
 
         resetState();
+    }
+
+    void checkRun()
+    {
+        auto currentProfile = GlobalStore::get()->getProfileByLevel(DTPlayLayer::get()->m_level);
+        const bool ignorePractice = Mod::get()->getSettingValue<bool>("ignore-practice-mode");
+
+        if (ignorePractice && this->m_isPracticeMode)
+            return;
+
+        if (isLegal() && !currentProfile.id.empty())
+        {
+            int res = GlobalStore::get()->checkRun(currentProfile.id);
+
+            if (res != -1)
+                playSound(!!res);
+        }
     }
 
     void destroyPlayer(PlayerObject *player, GameObject *p1)
@@ -108,24 +113,28 @@ public:
         if (!m_level->isPlatformer())
         {
             GlobalStore::get()->setRunEnd(this->getCurrentPercent());
-            auto currentProfile = GlobalStore::get()->getProfileByLevel(DTPlayLayer::get()->m_level);
-
-            if (isLegal() && !currentProfile.id.empty())
-            {
-                int res = GlobalStore::get()->checkRun(currentProfile.id);
-
-                if (res != -1)
-                    playSound(!!res);
-            };
+            checkRun();
         }
     }
 
     void playSound(bool isStage)
     {
+        auto sfxProgressPath = Mod::get()->getSettingValue<std::filesystem::path>("sfx-progress-path");
+        auto sfxStagePath = Mod::get()->getSettingValue<std::filesystem::path>("sfx-stage-path");
+        auto sfxUseCustomSounds = Mod::get()->getSettingValue<bool>("sfx-use-custom-sounds");
+
         if (isStage)
-            FMODAudioEngine::sharedEngine()->playEffect("stage_complete.mp3"_spr);
+        {
+            FMODAudioEngine::sharedEngine()
+                ->playEffect(!sfxStagePath.empty() && sfxUseCustomSounds
+                                 ? geode::utils::string::pathToString(sfxStagePath)
+                                 : "stage_complete.mp3"_spr);
+        }
         else
-            FMODAudioEngine::sharedEngine()->playEffect("range_complete.mp3"_spr);
+            FMODAudioEngine::sharedEngine()
+                ->playEffect(!sfxProgressPath.empty() && sfxUseCustomSounds
+                                 ? geode::utils::string::pathToString(sfxProgressPath)
+                                 : "range_complete.mp3"_spr);
     }
 
     void resetState()

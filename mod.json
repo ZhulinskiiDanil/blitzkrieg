@@ -8,11 +8,13 @@
 	},
 	"id": "zhulis.blitzkrieg",
 	"name": "Blitzkrieg",
-	"version": "v1.4.1",
+	"version": "v1.4.2",
 	"developer": "Zhulis",
 	"description": "Blitzkrieg Notifier",
 	"tags": [
-		"gameplay", "interface", "enhancement"
+		"gameplay",
+		"interface",
+		"enhancement"
 	],
 	"dependencies": {
 		"cvolton.level-id-api": {
@@ -50,6 +52,71 @@
 				"path": "resources/fonts/PusabFull.ttf",
 				"size": 64,
 				"charset": "32-500,8226,1040-1103"
+			}
+		}
+	},
+	"settings": {
+		"ignore-practice-mode": {
+			"type": "bool",
+			"name": "Ignore Practice Mode",
+			"default": false
+		},
+		"sfx-settings": {
+			"type": "title",
+			"name": "SFX Settings"
+		},
+		"sfx-use-custom-sounds": {
+			"name": "Use Custom SFX's",
+			"type": "bool",
+			"default": false,
+			"description": "Use custom sounds for the SFX's!"
+		},
+		"sfx-progress-path": {
+			"name": "Progress-Pass SFX",
+			"type": "file",
+			"description": "Path for the Progress-Pass sound effect.\n<cr>Requires restarting the game to apply</c>",
+      "enable-if": "sfx-use-custom-sounds",
+			"default": {
+				"android": "",
+				"mac": "",
+				"win": "",
+				"ios": ""
+			},
+			"control": {
+				"dialog": "open",
+				"filters": [
+					{
+						"files": [
+							"*.mp3",
+							"*.ogg"
+						],
+						"description": "Sound Files"
+					}
+				]
+			}
+		},
+		"sfx-stage-path": {
+			"name": "Stage-Pass SFX",
+			"type": "file",
+			"description": "Path for the Stage-Pass sound effect.\n<cr>Requires restarting the game to apply</c>",
+      "enable-if": "sfx-use-custom-sounds",
+			"default": {
+				"android": "",
+				"mac": "",
+				"win": "",
+				"ios": ""
+			},
+			"control": {
+				"dialog": "open",
+				"filters": [
+					{
+						"files": [
+							"*.mp3",
+							"*.ogg"
+						],
+						"description": "Sound Files"
+					}
+				]
 			}
 		}
 	}
