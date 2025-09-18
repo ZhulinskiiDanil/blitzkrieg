@@ -1,3 +1,8 @@
+# v1.4.2
+- Ability to load custom SFX sounds
+- Option to disable tracking in practice mode
+- Four visual states for **RangeCell**: *default*, *completed*, *current*, *disabled*
+
 # v1.4.1
 - Fixed incorrect display of the profile connection button
 
