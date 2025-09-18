@@ -82,62 +82,92 @@ bool CreateProfilePopup::setup(GJGameLevel *level)
   m_input->setAnchorPoint({0.f, 1.f});
   m_input->setPosition(10.f, m_size.height - 40.f);
 
+  // ! --- Lists Container --- !
   const auto lists = CCLayer::create();
-  lists->setContentWidth(m_size.width - 20.f);
-  lists->setAnchorPoint({0.f, 1.f});
-  lists->setPosition(10.f, m_input->getPositionY() - m_input->getContentHeight() - 10.f);
+  lists->setAnchorPoint({.5f, 1.f});
+  lists->setPosition(m_size.width / 2, m_input->getPositionY() - m_input->getContentHeight() - 10.f);
   lists->setLayout(
       ColumnLayout::create()
-          ->setGap(8.f)
+          ->setGap(4.f)
           ->setAutoScale(false)
           ->setAutoGrowAxis(true)
           ->setAxisAlignment(AxisAlignment::Start)
           ->setCrossAxisAlignment(AxisAlignment::Start));
 
+  // ! --- Draw Lists --- !
   for (size_t i = 0; i < 2; i++)
   {
-    auto list = CCLayer::create();
+    auto leftList = CCLayer::create();
+    auto rightList = CCLayer::create();
     auto percentages = i == 0 ? m_2_1_percentages : m_2_2_percentages;
+    // 5 cell will be in center with "..." text
+    std::vector<float> leftPercentages(percentages.begin(), percentages.begin() + 5);
+    std::vector<float> rightPercentages(percentages.end() - 4, percentages.end());
+    std::vector<float> combined;
+    combined.reserve(leftPercentages.size() + rightPercentages.size());
+    combined.insert(combined.end(), leftPercentages.begin(), leftPercentages.end());
+    combined.insert(combined.end(), rightPercentages.begin(), rightPercentages.end());
+
+    bool useCompactLayout = percentages.size() > 9;
 
     const auto listCell = CCLayer::create();
-    listCell->setContentSize({lists->getContentWidth(), 16.f});
+    listCell->setContentSize({m_size.width - 20.f - 8.f, 20.f});
     listCell->setAnchorPoint({0.f, .5f});
 
-    list->setContentWidth(listCell->getContentWidth() - 5.f);
-    list->setPosition({2.5f, 2.5f});
-    list->setLayout(
+    leftList->setContentSize({listCell->getContentWidth() - 4.f, listCell->getContentHeight() - 4.f});
+    leftList->setPosition({2.f, 2.f});
+    leftList->setLayout(
         RowLayout::create()
             ->setGap(2.f)
             ->setAxisAlignment(AxisAlignment::Start)
-            ->setCrossAxisAlignment(AxisAlignment::Center)
-            ->setAutoScale(true));
+            ->setCrossAxisAlignment(AxisAlignment::Center));
 
-    for (size_t j = 0; j < percentages.size(); j++)
+    rightList->setContentSize({listCell->getContentWidth() - 4.f, listCell->getContentHeight() - 4.f});
+    rightList->setPosition({2.f, 2.f});
+    rightList->setLayout(
+        RowLayout::create()
+            ->setGap(2.f)
+            ->setAxisAlignment(AxisAlignment::End)
+            ->setCrossAxisAlignment(AxisAlignment::Center));
+    rightList->setVisible(useCompactLayout);
+
+    const auto targetPercentages = useCompactLayout ? combined : percentages;
+    for (size_t j = 0; j < targetPercentages.size(); j++)
     {
-      // ! --- Cell ---
+      // ! --- Cell --- !
       const auto cell = CCLayer::create();
-      cell->setPosition({0, 0});
-      cell->setContentSize({20.f, listCell->getContentHeight() - 5.f});
+      cell->setContentSize({32.f, leftList->getContentHeight()});
+      cell->ignoreAnchorPointForPosition(false);
+
+      if (useCompactLayout && j == 4)
+        cell->setPosition(listCell->getContentSize() / 2);
+      else
+        cell->setPosition({0, 0});
 
       // ! --- Background --- !
-      auto background = CCScale9Sprite::create("square02b_small.png");
+      auto background = CCScale9Sprite::create("range-default-bg.png"_spr);
       background->setContentSize(cell->getContentSize());
       background->setColor({17, 16, 16});
       background->setOpacity(255 * 0.3f);
       background->ignoreAnchorPointForPosition(true);
 
       // ! --- Text --- !
-      auto rangeLabel = CCLabelBMFont::create(
-          fmt::format("{:.2f}", percentages[j]).c_str(),
-          "gjFont17.fnt");
-      rangeLabel->setScale(.2f);
+      std::string text = j == 4 && useCompactLayout ? "..." : fmt::format("{:.2f}", targetPercentages[j]);
+      auto rangeLabel = CCLabelBMFont::create(text.c_str(), "gjFont17.fnt");
+      rangeLabel->setScale(.25f);
       rangeLabel->setAnchorPoint({.5f, .5f});
       rangeLabel->setPosition({background->getContentWidth() / 2 + background->getPositionX(),
                                background->getContentHeight() / 2 + background->getPositionY()});
 
       cell->addChild(background);
       cell->addChild(rangeLabel);
-      list->addChild(cell);
+
+      if (!useCompactLayout || (useCompactLayout && j < 4))
+        leftList->addChild(cell);
+      else if (j != 4)
+        rightList->addChild(cell);
+      else
+        listCell->addChild(cell);
     }
 
     // ! --- Borders --- !
@@ -156,19 +186,21 @@ bool CreateProfilePopup::setup(GJGameLevel *level)
     }
 
     for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
-    {
       child->setColor(ccc3(75, 210, 75));
-    }
 
-    listCell->addChild(list);
+    listCell->addChild(leftList);
+    listCell->addChild(rightList);
     listCell->addChild(borders);
 
     lists->addChild(listCell);
-    list->updateLayout();
-    list->ignoreAnchorPointForPosition(true);
+    leftList->updateLayout();
+    rightList->updateLayout();
+    leftList->ignoreAnchorPointForPosition(true);
+    rightList->ignoreAnchorPointForPosition(true);
 
-    borders->setContentSize(listCell->getContentSize());
-    borders->ignoreAnchorPointForPosition(true);
+    borders->setContentSize({listCell->getContentWidth() + 2.f,
+                             listCell->getContentHeight()});
+    borders->setPosition({(m_size.width - 20.f) / 2 - 4.f, listCell->getContentHeight() / 2});
   }
 
   // ! --- Checkbox --- !
@@ -187,11 +219,11 @@ bool CreateProfilePopup::setup(GJGameLevel *level)
   m_checkbox->toggle(!m_checked);
 
   auto menu = CCMenu::createWithItem(m_checkbox);
-  menu->setScale(0.6f);
-  menu->setAnchorPoint({.5f, .5f});
+  menu->setScale(.6f);
+  menu->setAnchorPoint({.0f, .5f});
   menu->setContentSize(m_checkbox->getContentSize());
   menu->ignoreAnchorPointForPosition(false);
-  menu->setPosition({lists->getPositionX() + 8.f,
+  menu->setPosition({10.f + 2.f,
                      lists->getPositionY() - lists->getContentHeight() - 8.f - 12.f});
   menu->setLayout(RowLayout::create());
 
@@ -202,7 +234,7 @@ bool CreateProfilePopup::setup(GJGameLevel *level)
   auto noteLabel = CCLabelBMFont::create("Old 2.1 percentages", "bigFont.fnt");
   noteLabel->setScale(0.4f);
   noteLabel->setAnchorPoint({0, .5f});
-  noteLabel->setPosition({menu->getPositionX() + m_checkbox->getContentWidth() / 2,
+  noteLabel->setPosition({menu->getPositionX() + menu->getContentWidth() / 2 + 8.f,
                           menu->getPositionY()});
 
   m_mainLayer->addChild(noteLabel);
