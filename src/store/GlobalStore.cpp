@@ -166,22 +166,11 @@ int GlobalStore::checkRun(std::string profileId)
         break;
       }
 
-      std::string fromTo = fmt::format(
-          "Stage {}/{}: {:.2f} - {:.2f}",
-          stage.stage,
-          totalStages,
-          toCheck->from,
-          toCheck->to);
-      std::string currentRunNote = fmt::format(
-          "{:.2f} - {:.2f}",
-          runStart,
-          runEnd);
-
-      AchievementNotifier::sharedState()->notifyAchievement(
-          "New run closed",
-          fromTo.c_str(),
-          "GJ_completesIcon_001.png",
-          true);
+      geode::Notification::create(
+          fmt::format("Passed {:.2f}-{:.2f} run", toCheck->from, toCheck->to),
+          geode::NotificationIcon::Success,
+          geode::NOTIFICATION_DEFAULT_TIME)
+          ->show();
 
       toCheck->firstRunFrom = runStart;
       toCheck->firstRunTo = runEnd;
@@ -189,7 +178,6 @@ int GlobalStore::checkRun(std::string profileId)
       toCheck->bestRunTo = runEnd;
       toCheck->checked = true;
       toCheck->completionCounter++;
-      toCheck->note = currentRunNote;
       canPlaySound = true;
       checkedRangeThisRun = true;
       break;
