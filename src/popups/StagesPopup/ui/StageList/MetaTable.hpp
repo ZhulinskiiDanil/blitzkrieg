@@ -2,7 +2,7 @@
 
 #include <Geode/Geode.hpp>
 #include "MetaLabel.hpp"
-#include "../../../../UI/Include.hpp"
+#include "../../../../ui/Include.hpp"
 
 using namespace geode::prelude;
 
