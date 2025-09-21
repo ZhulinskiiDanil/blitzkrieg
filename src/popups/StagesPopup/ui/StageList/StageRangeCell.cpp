@@ -99,7 +99,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   bool isBestRunExists = m_range->bestRunFrom >= 0 && m_range->bestRunTo > 0;
 
   std::string attempts = fmt::format("{}", m_range->attempts);
-  std::string completions = fmt::format("{}<small>times</small>", m_range->completionCounter);
+  std::string completions = fmt::format("{} <small>times</small>", m_range->completionCounter);
   std::string firstRun = !isFirstRunExists
                              ? "<small>None</small>"
                              : fmt::format(

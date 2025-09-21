@@ -117,6 +117,7 @@ void GlobalStore::resetRun()
 
 int GlobalStore::checkRun(std::string profileId)
 {
+  const float runDiff = std::abs(runEnd - runStart);
   auto currentProfile = getProfileById(profileId);
 
   if (currentProfile.id.empty())
@@ -145,39 +146,69 @@ int GlobalStore::checkRun(std::string profileId)
       auto *toCheck = *std::min_element(candidates.begin(), candidates.end(),
                                         [](Range *a, Range *b)
                                         { return a->from < b->from; });
-      toCheck->attempts++;
-
-      if (toCheck->bestRunTo < runEnd)
+      Range *toCheckActual = nullptr;
+      for (auto *r : candidates)
       {
-        toCheck->bestRunFrom = runStart;
-        toCheck->bestRunTo = runEnd;
+        if (!r->checked && runEnd >= r->to)
+        {
+          toCheckActual = r;
+          break;
+        }
       }
 
-      if (runEnd < toCheck->to)
+      // geode::log::debug("toCheck / {:.2f}-{:.2f} / {}", toCheck->from, toCheck->to, toCheck->checked);
+      // geode::log::debug("toCheckActual / {:.2f}-{:.2f} / {}", toCheckActual->from, toCheckActual->to, toCheckActual->checked);
+
+      if (!toCheckActual)
       {
-        updateProfile(currentProfile);
+        toCheck->attempts++;
+
+        auto bestRunDiff = std::abs(toCheck->bestRunFrom - toCheck->bestRunTo);
+
+        if (bestRunDiff < runDiff)
+        {
+          toCheck->bestRunFrom = runStart;
+          toCheck->bestRunTo = runEnd;
+        }
+
+        if (toCheck->checked)
+        {
+          toCheck->completionCounter++;
+          updateProfile(currentProfile);
+          break;
+        }
+      }
+
+      if (toCheck->id != toCheckActual->id)
+        toCheckActual->attempts++;
+
+      if (!toCheckActual || toCheckActual->checked)
         break;
+
+      auto bestRunDiff = std::abs(toCheckActual->bestRunFrom - toCheckActual->bestRunTo);
+
+      if (bestRunDiff < runDiff)
+      {
+        toCheckActual->bestRunFrom = runStart;
+        toCheckActual->bestRunTo = runEnd;
       }
 
-      if (toCheck->checked)
+      if (runEnd < toCheckActual->to)
       {
-        toCheck->completionCounter++;
         updateProfile(currentProfile);
         break;
       }
 
       geode::Notification::create(
-          fmt::format("Passed {:.2f}-{:.2f} run", toCheck->from, toCheck->to),
+          fmt::format("Passed {:.2f}-{:.2f} run", toCheckActual->from, toCheckActual->to),
           geode::NotificationIcon::Success,
           geode::NOTIFICATION_DEFAULT_TIME)
           ->show();
 
-      toCheck->firstRunFrom = runStart;
-      toCheck->firstRunTo = runEnd;
-      toCheck->bestRunFrom = runStart;
-      toCheck->bestRunTo = runEnd;
-      toCheck->checked = true;
-      toCheck->completionCounter++;
+      toCheckActual->firstRunFrom = runStart;
+      toCheckActual->firstRunTo = runEnd;
+      toCheckActual->checked = true;
+      toCheckActual->completionCounter++;
       canPlaySound = true;
       checkedRangeThisRun = true;
       break;
