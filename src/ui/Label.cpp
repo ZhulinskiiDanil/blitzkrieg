@@ -1,10 +1,11 @@
 #include "Label.hpp"
 
 Label *Label::create(const std::string &text,
-                     const std::string &font)
+                     const std::string &font,
+                     float fontSize)
 {
   Label *ret = new Label();
-  if (ret && ret->init(text, font))
+  if (ret && ret->init(text, font, fontSize))
   {
     ret->autorelease();
     return ret;
@@ -14,13 +15,16 @@ Label *Label::create(const std::string &text,
 }
 
 bool Label::init(const std::string &text,
-                 const std::string &font)
+                 const std::string &font,
+                 float fontSize)
 {
   if (!CCNode::init())
     return false;
 
+  m_fontSize = fontSize;
   m_font = font;
-  parseAndBuild(text);
+  m_text = text;
+  parseAndBuild();
   return true;
 }
 
@@ -30,7 +34,9 @@ void Label::setText(const std::string &text)
     lbl->removeFromParentAndCleanup(true);
   m_parts.clear();
 
-  parseAndBuild(text);
+  m_text = text;
+
+  parseAndBuild();
   updateColor();
 }
 
@@ -65,7 +71,7 @@ void Label::updateColor()
     lbl->setColor(color);
 }
 
-void Label::parseAndBuild(const std::string &text)
+void Label::parseAndBuild()
 {
   for (auto lbl : m_parts)
     lbl->removeFromParent();
@@ -85,17 +91,17 @@ void Label::parseAndBuild(const std::string &text)
   size_t pos = 0;
   bool inSmall = false;
 
-  while (pos < text.size())
+  while (pos < m_text.size())
   {
-    size_t tagOpen = text.find("<small>", pos);
-    size_t tagClose = text.find("</small>", pos);
+    size_t tagOpen = m_text.find("<small>", pos);
+    size_t tagClose = m_text.find("</small>", pos);
 
     if (inSmall && tagClose != std::string::npos)
     {
-      std::string part = text.substr(pos, tagClose - pos);
+      std::string part = m_text.substr(pos, tagClose - pos);
 
       auto label = CCLabelBMFont::create(part.c_str(), m_font.c_str());
-      label->setScale(0.3f);
+      label->setScale(m_fontSize * 0.75f);
       label->setOpacity(255 * 0.7f);
       label->setAnchorPoint({0, 0.5f});
 
@@ -108,12 +114,12 @@ void Label::parseAndBuild(const std::string &text)
     }
     else if (!inSmall && tagOpen != std::string::npos)
     {
-      std::string part = text.substr(pos, tagOpen - pos);
+      std::string part = m_text.substr(pos, tagOpen - pos);
 
       if (!part.empty())
       {
         auto label = CCLabelBMFont::create(part.c_str(), m_font.c_str());
-        label->setScale(0.4f);
+        label->setScale(m_fontSize);
         label->setAnchorPoint({0, 0.5f});
 
         this->addChild(label);
@@ -125,11 +131,11 @@ void Label::parseAndBuild(const std::string &text)
     }
     else
     {
-      std::string part = text.substr(pos);
+      std::string part = m_text.substr(pos);
       if (!part.empty())
       {
         auto label = CCLabelBMFont::create(part.c_str(), m_font.c_str());
-        label->setScale(0.4f);
+        label->setScale(m_fontSize);
         label->setAnchorPoint({0, 0.5f});
 
         this->addChild(label);
@@ -140,4 +146,10 @@ void Label::parseAndBuild(const std::string &text)
   }
 
   this->updateLayout();
+}
+
+void Label::setFontSize(float fontSize)
+{
+  m_fontSize = fontSize;
+  parseAndBuild();
 }

@@ -33,11 +33,6 @@ struct Padding
   float right;
 };
 
-// class StagesPopupDelegate {
-// public:
-//   virtual void onFolderCreate(std::string);
-// };
-
 class StagesPopup : public geode::Popup<GJGameLevel *>
 {
 private:

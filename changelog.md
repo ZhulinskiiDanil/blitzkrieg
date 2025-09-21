@@ -1,6 +1,7 @@
 # v?.?.?
 - Improved dispaly of percentages in the "Create Profile" popup
 - Improved display of decimals in the stage progresses
+- Every stage progress now shows run statistics (first run, best run, completions, attempts)
 
 # v1.4.2
 - Ability to load custom SFX sounds

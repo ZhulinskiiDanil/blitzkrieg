@@ -137,21 +137,34 @@ int GlobalStore::checkRun(std::string profileId)
     std::vector<Range *> candidates;
 
     for (auto &range : stage.ranges)
-    {
-      if (range.checked)
-        continue;
-
-      if (runStart <= range.from && runEnd >= range.to)
-      {
+      if (runStart <= range.from)
         candidates.push_back(&range);
-      }
-    }
 
     if (!candidates.empty())
     {
       auto *toCheck = *std::min_element(candidates.begin(), candidates.end(),
                                         [](Range *a, Range *b)
                                         { return a->from < b->from; });
+      toCheck->attempts++;
+
+      if (toCheck->bestRunTo < runEnd)
+      {
+        toCheck->bestRunFrom = runStart;
+        toCheck->bestRunTo = runEnd;
+      }
+
+      if (runEnd < toCheck->to)
+      {
+        updateProfile(currentProfile);
+        break;
+      }
+
+      if (toCheck->checked)
+      {
+        toCheck->completionCounter++;
+        updateProfile(currentProfile);
+        break;
+      }
 
       std::string fromTo = fmt::format(
           "Stage {}/{}: {:.2f} - {:.2f}",
@@ -170,11 +183,16 @@ int GlobalStore::checkRun(std::string profileId)
           "GJ_completesIcon_001.png",
           true);
 
+      toCheck->firstRunFrom = runStart;
+      toCheck->firstRunTo = runEnd;
+      toCheck->bestRunFrom = runStart;
+      toCheck->bestRunTo = runEnd;
       toCheck->checked = true;
+      toCheck->completionCounter++;
       toCheck->note = currentRunNote;
       canPlaySound = true;
-      isStageClosed = false;
       checkedRangeThisRun = true;
+      break;
     }
 
     // Если закрыли range, проверяем закрыта ли теперь вся стадия

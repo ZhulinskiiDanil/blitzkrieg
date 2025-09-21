@@ -6,6 +6,7 @@
 #include "StageRangeCell.hpp"
 #include "../../StageChangedEvent.hpp"
 #include "../../StagesChangedEvent.hpp"
+#include "../../UpdateScrollLayoutEvent.hpp"
 
 #include "../../../../serialization/profile/index.hpp"
 #include "../../../../store/GlobalStore.hpp"
@@ -25,6 +26,7 @@ private:
   CCMenuItemSpriteExtra *m_buttonRight = nullptr;
 
   EventListener<EventFilter<StagesChangedEvent>> m_listener;
+  EventListener<EventFilter<UpdateScrollLayoutEvent>> m_listenerUpdateScrollLayout;
 
   Profile m_profile;
   GJGameLevel *m_level = nullptr;

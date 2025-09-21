@@ -99,6 +99,21 @@ bool StageListLayer::init(
         reload();
         return ListenerResult::Propagate;
       });
+  m_listenerUpdateScrollLayout = EventListener<EventFilter<UpdateScrollLayoutEvent>>(
+      [this](UpdateScrollLayoutEvent *)
+      {
+        const auto arr = m_scroll->m_contentLayer->getChildren();
+        CCObject *child;
+
+        CCARRAY_FOREACH(arr, child)
+        {
+          if (auto obj = typeinfo_cast<CCLayer *>(child))
+            obj->updateLayout();
+        };
+
+        m_scroll->m_contentLayer->updateLayout();
+        return ListenerResult::Propagate;
+      });
 
   reload();
   drawArrows();
@@ -131,7 +146,8 @@ void StageListLayer::reload()
     row->setLayout(
         RowLayout::create()
             ->setGap(5.f)
-            ->setAutoScale(false));
+            ->setAutoScale(false)
+            ->setCrossAxisLineAlignment(AxisAlignment::End));
     row->setContentSize({totalWidth, cellHeight});
 
     for (size_t j = 0; j < cellsInRow; ++j, ++i)
