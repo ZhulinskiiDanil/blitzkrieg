@@ -1,3 +1,7 @@
+# v?.?.?
+- Improved dispaly of percentages in the "Create Profile" popup
+- Improved display of decimals in the stage progresses
+
 # v1.4.2
 - Ability to load custom SFX sounds
 - Option to disable tracking in practice mode

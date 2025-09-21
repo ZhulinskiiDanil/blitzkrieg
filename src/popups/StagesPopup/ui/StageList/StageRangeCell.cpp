@@ -32,14 +32,23 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
       m_isCurrent = currentRange.id == m_range->id;
   }
 
-  // ! --- Background --- !
   updateBackgroundTexture();
 
   // ! --- Range Label --- !
-  m_rangeLabel = RangeLabel::create(m_range);
+  const float diff = std::abs(m_range->from - m_range->to);
+
+  m_rangeLabel = Label::create(
+      fmt::format(
+          "{:.0f}<small>.{:02.0f}%</small> - {:.0f}<small>.{:02.0f}%</small>",
+          std::floor(m_range->from),
+          std::round((m_range->from - std::floor(m_range->from)) * 100),
+          std::floor(m_range->to),
+          std::round((m_range->to - std::floor(m_range->to)) * 100)));
   m_rangeLabel->setPosition({25.f, cellSize.height / 2});
+  m_rangeLabel->setAnchorPoint({0.f, .5f});
   m_rangeLabel->setZOrder(1);
   this->addChild(m_rangeLabel);
+  updateTextColors();
 
   // ! --- Checkbox --- !
   auto toggleOn = CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png");
@@ -86,7 +95,8 @@ void StageRangeCell::onToggle(CCObject *sender)
     m_checked = !m_checked;
 
   m_checkbox->toggle(m_checked);
-  m_rangeLabel->setEnabled(m_checked);
+
+  updateTextColors();
   updateBackgroundTexture();
 
   if (!m_level || m_disabled)
@@ -117,19 +127,28 @@ void StageRangeCell::onToggle(CCObject *sender)
   }
 }
 
+void StageRangeCell::updateTextColors()
+{
+  if (m_rangeLabel)
+  {
+    if (m_checked)
+      m_rangeLabel->setVariant(Label::Variant::Green);
+    else if (m_disabled)
+      m_rangeLabel->setVariant(Label::Variant::Red);
+    else
+      m_rangeLabel->setVariant(Label::Variant::Orange);
+  }
+}
+
 void StageRangeCell::setDisabled(bool disabled)
 {
   m_disabled = disabled;
-  m_rangeLabel->setDisabled(disabled);
 
-  if (disabled)
-  {
-    updateBackgroundTexture();
+  if (m_disabled)
     m_checkbox->setColor({100, 100, 100});
-  }
   else
-  {
-    updateBackgroundTexture();
     m_checkbox->setColor({255, 255, 255});
-  }
+
+  updateTextColors();
+  updateBackgroundTexture();
 }

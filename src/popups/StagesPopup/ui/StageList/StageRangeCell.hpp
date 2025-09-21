@@ -1,7 +1,7 @@
 #pragma once
 #include <Geode/Geode.hpp>
 #include <Geode/loader/Event.hpp>
-#include "RangeLabel.hpp"
+#include "../../../../ui/Include.hpp"
 
 #include "../../StagesChangedEvent.hpp"
 #include "../../../../serialization/profile/index.hpp"
@@ -14,7 +14,7 @@ class StageRangeCell : public CCLayer
 {
 private:
   Range *m_range;
-  RangeLabel *m_rangeLabel = nullptr;
+  Label *m_rangeLabel = nullptr;
   CCMenuItemToggler *m_checkbox = nullptr;
   CCScale9Sprite *m_background = nullptr;
   GJGameLevel *m_level = nullptr;
@@ -24,6 +24,7 @@ private:
 
   void onToggle(CCObject *sender);
   void updateBackgroundTexture();
+  void updateTextColors();
 
 public:
   static StageRangeCell *create(Range *range, GJGameLevel *level, const CCSize &cellSize);
