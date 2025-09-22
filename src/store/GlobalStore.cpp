@@ -126,8 +126,6 @@ int GlobalStore::checkRun(std::string profileId)
   bool canPlaySound = false;
   bool isStageClosed = false;
 
-  int totalStages = currentProfile.data.stages.size();
-
   for (auto &stage : currentProfile.data.stages)
   {
     if (stage.checked)
@@ -156,13 +154,9 @@ int GlobalStore::checkRun(std::string profileId)
         }
       }
 
-      // geode::log::debug("toCheck / {:.2f}-{:.2f} / {}", toCheck->from, toCheck->to, toCheck->checked);
-      // geode::log::debug("toCheckActual / {:.2f}-{:.2f} / {}", toCheckActual->from, toCheckActual->to, toCheckActual->checked);
-
       if (!toCheckActual)
       {
         toCheck->attempts++;
-
         auto bestRunDiff = std::abs(toCheck->bestRunFrom - toCheck->bestRunTo);
 
         if (bestRunDiff < runDiff)
@@ -171,15 +165,14 @@ int GlobalStore::checkRun(std::string profileId)
           toCheck->bestRunTo = runEnd;
         }
 
-        if (toCheck->checked)
-        {
+        if (toCheck->checked && runEnd >= toCheck->to)
           toCheck->completionCounter++;
-          updateProfile(currentProfile);
-          break;
-        }
+
+        updateProfile(currentProfile);
+        break;
       }
 
-      if (toCheck->id != toCheckActual->id)
+      if (toCheckActual)
         toCheckActual->attempts++;
 
       if (!toCheckActual || toCheckActual->checked)
@@ -214,7 +207,6 @@ int GlobalStore::checkRun(std::string profileId)
       break;
     }
 
-    // Если закрыли range, проверяем закрыта ли теперь вся стадия
     if (checkedRangeThisRun)
     {
       bool allChecked = std::all_of(stage.ranges.begin(), stage.ranges.end(), [](const Range &r)
@@ -226,11 +218,9 @@ int GlobalStore::checkRun(std::string profileId)
         canPlaySound = true;
         isStageClosed = true;
       }
-
-      break;
     }
-    else
-      break;
+
+    break;
   }
 
   if (canPlaySound)

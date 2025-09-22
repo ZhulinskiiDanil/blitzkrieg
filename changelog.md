@@ -1,3 +1,6 @@
+# v1.5.1
+- Fixed incorrect completions counting
+
 # v1.5.0
 - Improved dispaly of percentages in the "Create Profile" popup
 - Improved display of decimals in the stage progresses
