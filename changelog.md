@@ -1,3 +1,6 @@
+# v1.5.2
+- Fixed incorrect progress checking
+
 # v1.5.1
 - Fixed incorrect completions counting
 
