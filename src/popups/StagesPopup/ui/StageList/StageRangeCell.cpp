@@ -20,6 +20,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
 
   this->setContentSize(cellSize);
   m_range = range;
+  m_id = range->id;
   m_checked = m_range->checked;
   m_level = level;
   Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
@@ -227,38 +228,33 @@ void StageRangeCell::onToggle(CCObject *sender)
   updateTextColors();
   updateBackgroundTexture();
 
-  if (!m_level || m_disabled)
+  if (!m_level || m_disabled || m_id.empty())
     return;
 
   Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
   Stage *currentStage = getFirstUncheckedStage(profile);
 
-  if (currentStage)
+  if (!currentStage)
+    return;
+
+  for (auto &range : currentStage->ranges)
   {
-    for (auto &range : currentStage->ranges)
+
+    if (range.id == m_id)
     {
-      if (range.id == m_range->id)
-      {
-        range.checked = !range.checked;
+      range.checked = !range.checked;
 
-        if (range.checked && range.completionCounter <= 0)
-          range.completionCounter = 1;
-        else if (!range.checked)
-          currentStage->checked = false;
-
-        break;
-      }
+      if (range.checked && range.completionCounter <= 0)
+        range.completionCounter = 1;
     }
-
-    bool everyRangeChecked = std::all_of(currentStage->ranges.begin(), currentStage->ranges.end(),
-                                         [](auto &r)
-                                         { return r.checked; });
-
-    if (everyRangeChecked)
-      currentStage->checked = true;
-
-    GlobalStore::get()->updateProfile(profile);
   }
+
+  bool everyRangeChecked = std::all_of(currentStage->ranges.begin(), currentStage->ranges.end(),
+                                       [](auto &r)
+                                       { return r.checked; });
+  currentStage->checked = everyRangeChecked;
+
+  GlobalStore::get()->updateProfile(profile);
 }
 
 void StageRangeCell::onExpand(CCObject *sender)

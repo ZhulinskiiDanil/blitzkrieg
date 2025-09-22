@@ -17,6 +17,7 @@ class StageRangeCell : public CCLayer
 {
 private:
   Range *m_range;
+  std::string m_id;
   Label *m_rangeLabel = nullptr;
   CCLayer *m_content = nullptr;
   CCLayer *m_metaContent = nullptr;
