@@ -123,7 +123,7 @@ int GlobalStore::checkRun(std::string profileId)
   if (currentProfile.id.empty())
     return -1;
 
-  bool canPlaySound = false;
+  bool progressHasChecked = false;
   bool isStageClosed = false;
 
   for (auto &stage : currentProfile.data.stages)
@@ -165,10 +165,15 @@ int GlobalStore::checkRun(std::string profileId)
           toCheck->bestRunTo = runEnd;
         }
 
+        if (toCheck->firstRunTo <= 0 && runEnd >= toCheck->to)
+        {
+          toCheck->firstRunFrom = runStart;
+          toCheck->firstRunTo = runEnd;
+        }
+
         if (toCheck->checked && runEnd >= toCheck->to)
           toCheck->completionCounter++;
 
-        updateProfile(currentProfile);
         break;
       }
 
@@ -187,10 +192,7 @@ int GlobalStore::checkRun(std::string profileId)
       }
 
       if (runEnd < toCheckActual->to)
-      {
-        updateProfile(currentProfile);
         break;
-      }
 
       geode::Notification::create(
           fmt::format("Passed {:.2f}-{:.2f} run", toCheckActual->from, toCheckActual->to),
@@ -202,7 +204,7 @@ int GlobalStore::checkRun(std::string profileId)
       toCheckActual->firstRunTo = runEnd;
       toCheckActual->checked = true;
       toCheckActual->completionCounter++;
-      canPlaySound = true;
+      progressHasChecked = true;
       checkedRangeThisRun = true;
       break;
     }
@@ -215,7 +217,6 @@ int GlobalStore::checkRun(std::string profileId)
       if (allChecked && !stage.checked)
       {
         stage.checked = true;
-        canPlaySound = true;
         isStageClosed = true;
       }
     }
@@ -223,11 +224,10 @@ int GlobalStore::checkRun(std::string profileId)
     break;
   }
 
-  if (canPlaySound)
-  {
-    updateProfile(currentProfile);
+  updateProfile(currentProfile);
+
+  if (progressHasChecked)
     return isStageClosed;
-  }
 
   return -1;
 }

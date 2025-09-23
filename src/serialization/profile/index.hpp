@@ -49,6 +49,10 @@ struct matjson::Serialize<Range>
     obj["id"] = r.id;
     obj["from"] = r.from;
     obj["to"] = r.to;
+    obj["firstRunFrom"] = r.firstRunFrom;
+    obj["firstRunTo"] = r.firstRunTo;
+    obj["bestRunFrom"] = r.bestRunFrom;
+    obj["bestRunTo"] = r.bestRunTo;
     obj["checked"] = r.checked;
     obj["note"] = r.note;
     obj["attempts"] = r.attempts;

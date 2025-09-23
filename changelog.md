@@ -1,3 +1,6 @@
+# v1.5.3
+- Fixed an issue where the profile was not saved correctly after an attempt in the game
+
 # v1.5.2
 - Fixed incorrect progress checking
 
