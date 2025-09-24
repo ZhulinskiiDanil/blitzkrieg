@@ -1,3 +1,6 @@
+# v1.5.4
+- Fixed issues with auto-switching stages
+
 # v1.5.3
 - Fixed an issue where the profile was not saved correctly after an attempt in the game
 

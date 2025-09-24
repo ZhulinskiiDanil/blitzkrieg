@@ -123,6 +123,7 @@ int GlobalStore::checkRun(std::string profileId)
   if (currentProfile.id.empty())
     return -1;
 
+  Stage *targetStage = nullptr;
   bool progressHasChecked = false;
   bool isStageClosed = false;
 
@@ -131,8 +132,7 @@ int GlobalStore::checkRun(std::string profileId)
     if (stage.checked)
       continue;
 
-    bool checkedRangeThisRun = false;
-
+    targetStage = &stage;
     std::vector<Range *> candidates;
 
     for (auto &range : stage.ranges)
@@ -205,29 +205,28 @@ int GlobalStore::checkRun(std::string profileId)
       toCheckActual->checked = true;
       toCheckActual->completionCounter++;
       progressHasChecked = true;
-      checkedRangeThisRun = true;
       break;
-    }
-
-    if (checkedRangeThisRun)
-    {
-      bool allChecked = std::all_of(stage.ranges.begin(), stage.ranges.end(), [](const Range &r)
-                                    { return r.checked; });
-
-      if (allChecked && !stage.checked)
-      {
-        stage.checked = true;
-        isStageClosed = true;
-      }
     }
 
     break;
   }
 
+  if (targetStage)
+  {
+    bool allChecked = std::all_of(targetStage->ranges.begin(), targetStage->ranges.end(), [](const Range &r)
+                                  { return r.checked; });
+
+    if (allChecked)
+    {
+      targetStage->checked = true;
+      isStageClosed = true;
+    }
+  }
+
   updateProfile(currentProfile);
 
   if (progressHasChecked)
-    return isStageClosed;
+    return isStageClosed ? 1 : 0;
 
   return -1;
 }
