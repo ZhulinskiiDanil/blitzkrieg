@@ -12,7 +12,9 @@ struct Range
   float bestRunFrom;
   float bestRunTo;
   bool checked;
-  std::string note;
   int attempts;
+  std::string note;
+  std::time_t completedAt;
+  int attemptsToComplete;
   int completionCounter;
 };

@@ -1,11 +1,13 @@
 #pragma once
 
 #include <Geode/Geode.hpp>
+#include <Geode/modify/PauseLayer.hpp>
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 #include <vector>
 
 #include "../serialization/profile/index.hpp"
 #include "../utils/getSavedProfiles.hpp"
+#include "../utils/linkProfileWithLevel.hpp"
 
 using namespace geode::prelude;
 

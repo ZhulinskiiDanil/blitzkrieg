@@ -15,7 +15,6 @@ class CreateProfilePopup : public geode::Popup<GJGameLevel *>
 {
 private:
   GJGameLevel *m_level = nullptr;
-  CCMenuItemToggler *m_checkbox = nullptr;
 
   ListBorders *m_borders1 = nullptr;
   ListBorders *m_borders2 = nullptr;
@@ -25,10 +24,20 @@ private:
   std::vector<float>
       m_2_1_percentages = {};
   std::vector<float> m_2_2_percentages = {};
-  bool m_checked = false;
+
+  CCMenuItemToggler *m_percentagesCheckbox = nullptr;
+  bool m_percentagesChecked = false;
+
+  CCMenuItemToggler *m_useCheckbox = nullptr;
+  bool m_useChecked = false;
+
+  CCMenuItemToggler *m_pinCheckbox = nullptr;
+  bool m_pinChecked = false;
 
   void onCreateProfile(CCObject *);
-  void onToggle(CCObject *);
+  void onTogglePercentages(CCObject *);
+  void onToggleUse(CCObject *);
+  void onTogglePin(CCObject *);
 
   void findStartPoses();
 

@@ -23,7 +23,6 @@ private:
   CCSize m_contentSize;
 
   std::vector<Profile> m_profiles;
-  Profile m_currentProfile;
 
   void onCreate(CCObject *sender);
   void onImport(CCObject *sender);
@@ -36,13 +35,11 @@ public:
   static ProfilesListLayer *create(
       GJGameLevel *level,
       std::vector<Profile> const &profiles,
-      Profile const &current,
       const CCSize &contentSize);
 
   bool init(
       GJGameLevel *level,
       std::vector<Profile> const &profiles,
-      Profile const &current,
       const CCSize &contentSize);
 
   void reload();

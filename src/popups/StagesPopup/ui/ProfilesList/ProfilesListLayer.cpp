@@ -3,11 +3,10 @@
 ProfilesListLayer *ProfilesListLayer::create(
     GJGameLevel *level,
     std::vector<Profile> const &profiles,
-    Profile const &current,
     const CCSize &contentSize)
 {
   auto ret = new ProfilesListLayer();
-  if (ret && ret->init(level, profiles, current, contentSize))
+  if (ret && ret->init(level, profiles, contentSize))
   {
     ret->autorelease();
 
@@ -21,16 +20,14 @@ ProfilesListLayer *ProfilesListLayer::create(
 bool ProfilesListLayer::init(
     GJGameLevel *level,
     std::vector<Profile> const &profiles,
-    Profile const &current,
     const CCSize &contentSize)
 {
   if (!CCLayer::init())
     return false;
 
   m_contentSize = contentSize;
-  m_profiles = profiles;
-  m_currentProfile = current;
   m_level = level;
+  m_profiles = profiles;
 
   this->setContentSize(m_contentSize);
 
@@ -148,7 +145,6 @@ void ProfilesListLayer::reload()
   for (size_t i = 0; i < m_profiles.size(); ++i)
   {
     const auto &profile = m_profiles[i];
-    bool isCurrentProfile = (!m_currentProfile.id.empty() && m_currentProfile.id == profile.id);
     bool pinned = GlobalStore::get()->isProfilePinned(profile.id);
 
     if (hasPinned && hasDefault)
@@ -168,7 +164,6 @@ void ProfilesListLayer::reload()
     auto profileItem = BlitzkriegProfile::create(
         profile,
         m_level,
-        isCurrentProfile,
         CCSize(m_scroll->getContentWidth(), 40.f));
 
     if (profileItem)

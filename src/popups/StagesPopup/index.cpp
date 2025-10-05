@@ -71,7 +71,6 @@ void StagesPopup::drawProfilesList()
   Padding padding{12.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
 
   const auto profiles = GlobalStore::get()->getProfiles();
-  const auto currentProfile = GlobalStore::get()->getProfileByLevel(m_level);
 
   const auto profileListContainer = CCNode::create();
   profileListContainer->setID("stages-popup-profiles-list"_spr);
@@ -82,7 +81,7 @@ void StagesPopup::drawProfilesList()
       m_size.height - padding.top - padding.bottom);
 
   // ! --- ProfilesListLayer --- !
-  auto listLayer = ProfilesListLayer::create(m_level, profiles, currentProfile, contentSize);
+  auto listLayer = ProfilesListLayer::create(m_level, profiles, contentSize);
   listLayer->setPosition({padding.left, padding.bottom});
   profileListContainer->addChild(listLayer);
 

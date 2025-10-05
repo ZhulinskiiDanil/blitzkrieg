@@ -2,11 +2,10 @@
 
 BlitzkriegProfile *BlitzkriegProfile::create(Profile const &profile,
                                              GJGameLevel *level,
-                                             bool isCurrent,
                                              CCSize const &size)
 {
   auto ret = new BlitzkriegProfile();
-  if (ret && ret->init(profile, level, isCurrent, size))
+  if (ret && ret->init(profile, level, size))
   {
     ret->autorelease();
     return ret;
@@ -18,15 +17,16 @@ BlitzkriegProfile *BlitzkriegProfile::create(Profile const &profile,
 
 bool BlitzkriegProfile::init(Profile const &profile,
                              GJGameLevel *level,
-                             bool isCurrent,
                              CCSize const &size)
 {
   if (!CCLayer::init())
     return false;
 
+  const auto linkedProfile = GlobalStore::get()->getProfileByLevel(level);
+
   m_profile = profile;
   m_stats = getProfileStats(profile);
-  m_isCurrent = isCurrent;
+  m_isCurrent = !linkedProfile.id.empty() && linkedProfile.id == profile.id;
   m_level = level;
   m_size = size;
   m_isPinned = GlobalStore::get()->isProfilePinned(m_profile.id);

@@ -100,6 +100,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   bool isBestRunExists = m_range->bestRunFrom >= 0 && m_range->bestRunTo > 0;
 
   std::string attempts = fmt::format("{}", m_range->attempts);
+  std::string attemptsToComplete = fmt::format("{} <small>attempt(s)</small>", m_range->attemptsToComplete);
   std::string completions = fmt::format("{} <small>times</small>", m_range->completionCounter);
   std::string firstRun = !isFirstRunExists
                              ? "<small>None</small>"
@@ -120,6 +121,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
 
   std::vector<MetaData> tableData = {
       {"Attempts:", attempts},
+      {"Completed in:", attemptsToComplete},
       {"Completions:", completions},
       {"Best Run:", bestRun},
       {"First Run:", firstRun},
@@ -244,15 +246,22 @@ void StageRangeCell::onToggle(CCObject *sender)
     {
       range.checked = !range.checked;
 
+      if (!range.checked)
+      {
+        range.attempts--;
+        range.completionCounter--;
+        range.attemptsToComplete = 0;
+        range.firstRunFrom = 0;
+        range.firstRunTo = 0;
+        range.completedAt = 0;
+
+        currentStage->checked = false;
+      }
+
       if (range.checked && range.completionCounter <= 0)
         range.completionCounter = 1;
     }
   }
-
-  bool everyRangeChecked = std::all_of(currentStage->ranges.begin(), currentStage->ranges.end(),
-                                       [](auto &r)
-                                       { return r.checked; });
-  currentStage->checked = everyRangeChecked;
 
   GlobalStore::get()->updateProfile(profile);
 }

@@ -1,3 +1,13 @@
+# v1.5.5
+Features:
+- Added ability to pin and bind profile in "Create Profile" popup
+- Shows the number of attempts for the first completion
+
+Improvements/Fixes:
+- Now the new profile will be created on top of the list
+- When progress is marked as not closed, 1 completion is removed, 1 attempt is decremented and the first run is reset
+- Fixed bug when deleted profiles visible again after restarting the game
+
 # v1.5.4
 - Fixed issues with auto-switching stages
 

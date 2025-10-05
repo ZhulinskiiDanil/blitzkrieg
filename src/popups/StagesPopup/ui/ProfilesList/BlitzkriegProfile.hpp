@@ -49,12 +49,10 @@ protected:
 public:
   static BlitzkriegProfile *create(Profile const &profile,
                                    GJGameLevel *level,
-                                   bool isCurrent,
                                    CCSize const &size);
 
   bool init(Profile const &profile,
             GJGameLevel *level,
-            bool isCurrent,
             CCSize const &size);
 
   Profile const &getProfile() const { return m_profile; }

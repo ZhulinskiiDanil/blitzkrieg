@@ -11,7 +11,7 @@
 
 using namespace geode::prelude;
 
-// Вспомогательная функция для безопасного получения значения
+// Additional function for safely parsing value
 template <class T>
 T getOr(matjson::Value const &value, std::string_view key, T fallback)
 {
@@ -23,7 +23,7 @@ T getOr(matjson::Value const &value, std::string_view key, T fallback)
   return fallback;
 }
 
-// ------------------ Range ------------------
+// ! --- Range ---- !
 template <>
 struct matjson::Serialize<Range>
 {
@@ -38,8 +38,10 @@ struct matjson::Serialize<Range>
         .bestRunFrom = getOr<float>(value, "bestRunFrom", 0.f),
         .bestRunTo = getOr<float>(value, "bestRunTo", 0.f),
         .checked = getOr<bool>(value, "checked", false),
-        .note = getOr<std::string>(value, "note", ""),
         .attempts = getOr<int>(value, "attempts", 0),
+        .note = getOr<std::string>(value, "note", ""),
+        .completedAt = getOr<std::time_t>(value, "completedAt", 0),
+        .attemptsToComplete = getOr<int>(value, "attemptsToComplete", 0),
         .completionCounter = getOr<int>(value, "completionCounter", 0)});
   }
 
@@ -56,6 +58,8 @@ struct matjson::Serialize<Range>
     obj["checked"] = r.checked;
     obj["note"] = r.note;
     obj["attempts"] = r.attempts;
+    obj["completedAt"] = r.completedAt;
+    obj["attemptsToComplete"] = r.attemptsToComplete;
     obj["completionCounter"] = r.completionCounter;
     return obj;
   }
@@ -86,7 +90,7 @@ struct matjson::Serialize<std::vector<Range>>
   }
 };
 
-// ------------------ Stage ------------------
+// ! --- Stage ---- !
 template <>
 struct matjson::Serialize<Stage>
 {
@@ -143,7 +147,7 @@ struct matjson::Serialize<std::vector<Stage>>
   }
 };
 
-// ------------------ Tags ------------------
+// ! --- Tags ---- !
 template <>
 struct matjson::Serialize<std::vector<int>>
 {
@@ -174,7 +178,7 @@ struct matjson::Serialize<std::vector<int>>
   }
 };
 
-// ------------------ ProfileData ------------------
+// ! --- ProfileData ---- !
 template <>
 struct matjson::Serialize<ProfileData>
 {
@@ -199,7 +203,7 @@ struct matjson::Serialize<ProfileData>
   }
 };
 
-// ------------------ Profile ------------------
+// ! --- Profile ---- !
 template <>
 struct matjson::Serialize<Profile>
 {
@@ -218,12 +222,12 @@ struct matjson::Serialize<Profile>
     auto obj = matjson::Value::object();
     obj["id"] = p.id;
     obj["profileName"] = p.profileName;
-    obj["data"] = p.data; // Serialize<ProfileData>
+    obj["data"] = p.data;
     return obj;
   }
 };
 
-// --------------- Profiles Array ---------------
+// ! --- Profiles Array ---- !
 template <>
 struct matjson::Serialize<std::vector<Profile>>
 {

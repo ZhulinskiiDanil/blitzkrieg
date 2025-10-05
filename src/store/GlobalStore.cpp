@@ -58,7 +58,7 @@ void GlobalStore::updateProfile(Profile const &profile)
   if (it != m_profiles.end())
     *it = profile;
   else
-    m_profiles.push_back(profile);
+    m_profiles.insert(m_profiles.begin(), profile);
 
   saveProfiles();
 }
@@ -70,6 +70,8 @@ void GlobalStore::removeProfileById(std::string const &id)
                      [&](Profile const &p)
                      { return p.id == id; }),
       m_profiles.end());
+
+  saveProfiles();
 }
 
 void GlobalStore::upProfileById(const std::string &profileId)
@@ -200,9 +202,11 @@ int GlobalStore::checkRun(std::string profileId)
           geode::NOTIFICATION_DEFAULT_TIME)
           ->show();
 
+      toCheckActual->checked = true;
       toCheckActual->firstRunFrom = runStart;
       toCheckActual->firstRunTo = runEnd;
-      toCheckActual->checked = true;
+      toCheckActual->completedAt = std::time(nullptr);
+      toCheckActual->attemptsToComplete = toCheckActual->attempts;
       toCheckActual->completionCounter++;
       progressHasChecked = true;
       break;
@@ -264,14 +268,13 @@ Profile GlobalStore::getProfileByLevel(std::string const &levelId)
 {
   for (const auto &profile : m_profiles)
   {
-    std::string key = levelId + "-" + profile.profileName;
+    std::string key = levelId + "-" + profile.id;
     auto savedStr = Mod::get()->getSavedValue<std::string>(key);
 
     if (!savedStr.empty())
-    {
       return profile;
-    }
   }
+
   return Profile{};
 }
 
