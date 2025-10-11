@@ -1,3 +1,6 @@
+# v1.5.6
+- Fixed switching between stages
+
 # v1.5.5
 Features:
 - Added ability to pin and bind profile in "Create Profile" popup

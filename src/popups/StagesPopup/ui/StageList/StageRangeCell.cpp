@@ -236,6 +236,9 @@ void StageRangeCell::onToggle(CCObject *sender)
   Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
   Stage *currentStage = getFirstUncheckedStage(profile);
 
+  if (!currentStage && !profile.data.stages.empty())
+    currentStage = &profile.data.stages.back();
+
   if (!currentStage)
     return;
 

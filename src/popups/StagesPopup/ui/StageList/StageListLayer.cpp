@@ -34,6 +34,9 @@ bool StageListLayer::init(
     m_stages = &m_profile.data.stages;
     m_currentIndex = m_stage->stage - 1;
     m_uncheckedStage = getFirstUncheckedStage(m_profile);
+
+    if (!m_uncheckedStage && !m_profile.data.stages.empty())
+      m_uncheckedStage = &m_profile.data.stages.back();
   }
 
   this->setContentSize(m_contentSize);
@@ -116,13 +119,14 @@ bool StageListLayer::init(
       });
 
   reload();
-  drawArrows();
 
   return true;
 }
 
 void StageListLayer::reload()
 {
+  drawArrows();
+
   if (!m_stage || !m_uncheckedStage)
     return;
 
@@ -185,8 +189,8 @@ void StageListLayer::drawArrows()
   // ! --- Left Arrow Button --- !
   m_buttonMenuLeft = CCMenu::create();
   m_buttonMenuLeft->setAnchorPoint({1.f, .5f});
-  m_buttonMenuLeft->setPosition({this->getPositionX() - 20.f,
-                                 this->getPositionY() + this->getContentHeight() / 2});
+  m_buttonMenuLeft->setPosition({-15.f,
+                                 this->getContentHeight() / 2});
   m_buttonMenuLeft->setLayout(
       RowLayout::create()
           ->setAutoScale(false)
@@ -202,14 +206,14 @@ void StageListLayer::drawArrows()
   m_buttonMenuLeft->addChild(m_buttonLeft);
   m_buttonMenuLeft->updateLayout();
 
-  m_buttonMenuLeft->setVisible(m_stage->stage > 0);
+  m_buttonMenuLeft->setVisible(m_stage->stage > 1);
   this->addChild(m_buttonMenuLeft);
 
   // ! --- Right Arrow Button --- !
   m_buttonMenuRight = CCMenu::create();
   m_buttonMenuRight->setAnchorPoint({0.f, .5f});
-  m_buttonMenuRight->setPosition({this->getPositionX() + this->getContentWidth() + 20.f,
-                                  this->getPositionY() + this->getContentHeight() / 2});
+  m_buttonMenuRight->setPosition({this->getContentWidth() + 15.f,
+                                  this->getContentHeight() / 2});
   m_buttonMenuRight->setLayout(
       m_buttonMenuLeft->getLayout());
 

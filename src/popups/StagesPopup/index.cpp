@@ -101,13 +101,8 @@ void StagesPopup::drawCurrentStage()
   Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
   Stage *currentStage = getFirstUncheckedStage(profile);
 
-  if (!currentStage)
-  {
-    if (!profile.data.stages.empty())
-      currentStage = &profile.data.stages.back();
-    else
-      currentStage = nullptr;
-  }
+  if (!currentStage && !profile.data.stages.empty())
+    currentStage = &profile.data.stages.back();
 
   const auto contentSize = CCSize(
       m_size.width - padding.left - padding.right,
