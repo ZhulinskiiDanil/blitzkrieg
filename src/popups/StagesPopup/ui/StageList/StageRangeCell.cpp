@@ -234,35 +234,30 @@ void StageRangeCell::onToggle(CCObject *sender)
     return;
 
   Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
-  Stage *currentStage = getFirstUncheckedStage(profile);
 
-  if (!currentStage && !profile.data.stages.empty())
-    currentStage = &profile.data.stages.back();
-
-  if (!currentStage)
-    return;
-
-  for (auto &range : currentStage->ranges)
+  for (auto &stage : profile.data.stages)
   {
-
-    if (range.id == m_id)
+    for (auto &range : stage.ranges)
     {
-      range.checked = !range.checked;
-
-      if (!range.checked)
+      if (range.id == m_id)
       {
-        range.attempts--;
-        range.completionCounter--;
-        range.attemptsToComplete = 0;
-        range.firstRunFrom = 0;
-        range.firstRunTo = 0;
-        range.completedAt = 0;
+        range.checked = !range.checked;
 
-        currentStage->checked = false;
+        if (!range.checked)
+        {
+          range.attempts--;
+          range.completionCounter--;
+          range.attemptsToComplete = 0;
+          range.firstRunFrom = 0;
+          range.firstRunTo = 0;
+          range.completedAt = 0;
+
+          stage.checked = false;
+        }
+
+        if (range.checked && range.completionCounter <= 0)
+          range.completionCounter = 1;
       }
-
-      if (range.checked && range.completionCounter <= 0)
-        range.completionCounter = 1;
     }
   }
 

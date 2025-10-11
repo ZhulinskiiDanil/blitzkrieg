@@ -44,7 +44,7 @@
 			]
 		},
 		"files": [
-			"resources/audio/range_complete.mp3",
+			"resources/audio/progress_complete.mp3",
 			"resources/audio/stage_complete.mp3"
 		],
 		"fonts": {

@@ -1,11 +1,8 @@
-#include "./serialization/profile/index.hpp"
-
-#include <fmt/core.h>
-
 #include <Geode/Geode.hpp>
 #include <Geode/binding/FMODAudioEngine.hpp>
 #include <Geode/modify/MenuLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
+#include <fmt/core.h>
 
 #include "./serialization/profile/index.hpp"
 #include "./store/GlobalStore.hpp"
@@ -118,22 +115,21 @@ public:
 
     void playSound(bool isStage)
     {
-        auto sfxProgressPath = Mod::get()->getSettingValue<std::filesystem::path>("sfx-progress-path");
         auto sfxStagePath = Mod::get()->getSettingValue<std::filesystem::path>("sfx-stage-path");
+        auto sfxProgressPath = Mod::get()->getSettingValue<std::filesystem::path>("sfx-progress-path");
         auto sfxUseCustomSounds = Mod::get()->getSettingValue<bool>("sfx-use-custom-sounds");
 
-        if (isStage)
-        {
-            FMODAudioEngine::sharedEngine()
-                ->playEffect(!sfxStagePath.empty() && sfxUseCustomSounds
-                                 ? geode::utils::string::pathToString(sfxStagePath)
-                                 : "stage_complete.mp3"_spr);
-        }
-        else
-            FMODAudioEngine::sharedEngine()
-                ->playEffect(!sfxProgressPath.empty() && sfxUseCustomSounds
+        auto stageSound = !sfxStagePath.empty() && sfxUseCustomSounds
+                              ? geode::utils::string::pathToString(sfxStagePath)
+                              : "stage_complete.mp3"_spr;
+        auto progressSound = !sfxProgressPath.empty() && sfxUseCustomSounds
                                  ? geode::utils::string::pathToString(sfxProgressPath)
-                                 : "range_complete.mp3"_spr);
+                                 : "progress_complete.mp3"_spr;
+
+        if (isStage)
+            FMODAudioEngine::sharedEngine()->playEffect(stageSound);
+        else
+            FMODAudioEngine::sharedEngine()->playEffect(progressSound);
     }
 
     void resetState()

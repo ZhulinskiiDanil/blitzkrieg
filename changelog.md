@@ -1,5 +1,6 @@
 # v1.5.6
 - Fixed switching between stages
+- Fixed switching progress of previous stages
 
 # v1.5.5
 Features:
