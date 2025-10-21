@@ -32,7 +32,7 @@ public:
   void setRunStart(float start);
   void setRunEnd(float end);
   void resetRun();
-  int checkRun(std::string profileId);
+  int checkRun(std::string profileId, float timePlayed = 0.f);
 
   // ! --- Search API --- !
   Profile getProfileById(std::string &profileId);

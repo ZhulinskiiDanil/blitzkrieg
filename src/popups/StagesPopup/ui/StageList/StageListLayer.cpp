@@ -41,7 +41,7 @@ bool StageListLayer::init(
 
   this->setContentSize(m_contentSize);
 
-  float margin = 3.f;
+  float padding = 5.f;
 
   if (!m_stages || m_stages->size() <= 0)
   {
@@ -56,12 +56,12 @@ bool StageListLayer::init(
 
   // ! --- ScrollLayer --- !
   m_scroll = ScrollLayer::create(contentSize);
-  m_scroll->setContentSize({contentSize.width - margin * 2, contentSize.height - margin * 2});
-  m_scroll->setPosition({margin, margin});
+  m_scroll->setContentSize({contentSize.width - padding * 2, contentSize.height - padding * 2});
+  m_scroll->setPosition({padding, padding});
 
   m_scroll->m_contentLayer->setLayout(
       ColumnLayout::create()
-          ->setGap(5.f)
+          ->setGap(2.5f)
           ->setAxisReverse(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setAutoGrowAxis(m_scroll->getContentHeight()));

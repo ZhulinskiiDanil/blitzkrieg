@@ -1,5 +1,8 @@
 #include "StageRangeCell.hpp"
 
+#include <fmt/core.h>
+#include <string>
+
 StageRangeCell *StageRangeCell::create(Range *range, GJGameLevel *level, const CCSize &cellSize)
 {
   StageRangeCell *ret = new StageRangeCell();
@@ -11,6 +14,35 @@ StageRangeCell *StageRangeCell::create(Range *range, GJGameLevel *level, const C
 
   CC_SAFE_DELETE(ret);
   return nullptr;
+}
+
+std::string formatTimePlayed(double seconds)
+{
+  int total = static_cast<int>(seconds);
+
+  int days = total / 86400;
+  int hours = (total % 86400) / 3600;
+  int minutes = (total % 3600) / 60;
+  int secs = total % 60;
+
+  bool onlyMinutes = (days == 0 && hours == 0 && minutes > 0);
+
+  std::string result;
+
+  if (days > 0)
+    result += fmt::format("{} <small>d</small> ", days);
+  if (hours > 0)
+    result += fmt::format("{} <small>h</small> ", hours);
+  if (minutes > 0)
+    result += fmt::format("{} <small>{}</small> ",
+                          minutes, onlyMinutes ? "min" : "m");
+  if (secs > 0 || result.empty())
+    result += fmt::format("{} <small>s</small>", secs);
+
+  if (!result.empty() && result.back() == ' ')
+    result.pop_back();
+
+  return result;
 }
 
 bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSize)
@@ -118,6 +150,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
                                   static_cast<int>(std::round((m_range->bestRunFrom - static_cast<int>(m_range->bestRunFrom)) * 100)),
                                   static_cast<int>(m_range->bestRunTo),
                                   static_cast<int>(std::round((m_range->bestRunTo - static_cast<int>(m_range->bestRunTo)) * 100)));
+  std::string timePlayed = formatTimePlayed(m_range->timePlayed);
 
   std::vector<MetaData> tableData = {
       {"Attempts:", attempts},
@@ -125,8 +158,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
       {"Completions:", completions},
       {"Best Run:", bestRun},
       {"First Run:", firstRun},
-      // {"Time Played:", "5<small>h</small> 20<small>m</small> 32<small>s</small>"},
-      {"Time Played:", "beta"},
+      {"Time Played:", timePlayed},
   };
 
   m_table = MetaTable::create(tableData, m_head->getContentWidth(), {0, 5.f, 5.f, 5.f});

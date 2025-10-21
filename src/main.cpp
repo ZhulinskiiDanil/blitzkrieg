@@ -29,6 +29,9 @@ class $modify(DTPlayLayer, PlayLayer)
         std::vector<Profile> profiles;
         bool hasRespawned = false;
         bool isNoclip = false;
+
+        float attStartTime = 0.f;
+        float attEndTime = 0.f;
     };
 
 public:
@@ -47,8 +50,11 @@ public:
         resetState();
 
         m_fields->hasRespawned = true;
-        GlobalStore::get()->setRunStart(this->getCurrentPercent());
-        GlobalStore::get()->setRunEnd(0.f);
+        m_fields->attStartTime = this->timeForPos(
+            m_player1->getPosition(), 0, 0, true, 0);
+
+        GlobalStore::get()
+            ->setRunStart(this->getCurrentPercent());
     }
 
     void levelComplete()
@@ -61,6 +67,8 @@ public:
 
         if (!m_level->isPlatformer())
         {
+            m_fields->attEndTime = this->timeForPos(
+                {m_levelLength, 0}, 0, 0, true, 0);
             GlobalStore::get()->setRunEnd(100.f);
             checkRun();
         }
@@ -78,7 +86,11 @@ public:
 
         if (isLegal() && !currentProfile.id.empty())
         {
-            int res = GlobalStore::get()->checkRun(currentProfile.id);
+            const auto timePlayedForAttempt =
+                m_fields->attEndTime - m_fields->attStartTime;
+            int res = GlobalStore::get()->checkRun(
+                currentProfile.id,
+                timePlayedForAttempt);
 
             if (res != -1)
                 playSound(!!res);
@@ -87,30 +99,24 @@ public:
 
     void destroyPlayer(PlayerObject *player, GameObject *p1)
     {
-        // First object is anticheat, store it
-        if (!m_fields->disabledCheat)
-        {
-            m_fields->disabledCheat = p1;
-        }
-
         PlayLayer::destroyPlayer(player, p1);
 
-        if (!m_fields->isNoclip && m_fields->disabledCheat != p1 && !player->m_isDead)
-        {
-            m_fields->isNoclip = true;
-        }
+        // First object is anticheat, store it
+        if (!m_fields->disabledCheat)
+            m_fields->disabledCheat = p1;
 
-        if (!player->m_isDead)
+        if (!m_fields->isNoclip && m_fields->disabledCheat != p1 && !player->m_isDead)
+            m_fields->isNoclip = true;
+
+        if (!player->m_isDead || !m_fields->hasRespawned || m_level->isPlatformer())
             return;
-        if (!m_fields->hasRespawned)
-            return;
+
         m_fields->hasRespawned = false;
 
-        if (!m_level->isPlatformer())
-        {
-            GlobalStore::get()->setRunEnd(this->getCurrentPercent());
-            checkRun();
-        }
+        m_fields->attEndTime = this->timeForPos(
+            m_player1->getPosition(), 0, 0, true, 0);
+        GlobalStore::get()->setRunEnd(this->getCurrentPercent());
+        checkRun();
     }
 
     void playSound(bool isStage)
@@ -136,6 +142,8 @@ public:
     {
         m_fields->isNoclip = false;
         m_fields->disabledCheat = nullptr;
+        m_fields->attStartTime = 0;
+        m_fields->attEndTime = 0;
         GlobalStore::get()->resetRun();
     }
 

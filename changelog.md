@@ -1,3 +1,7 @@
+# v1.5.7
+- Added playtime tracking for each individual progress
+- Added safeguard: automatic early data save to prevent total progress loss in case of a crash
+
 # v1.5.6
 - Fixed switching between stages
 - Fixed switching progress of previous stages

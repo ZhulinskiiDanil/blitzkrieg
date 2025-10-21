@@ -13,6 +13,7 @@ struct Range
   float bestRunTo;
   bool checked;
   int attempts;
+  float timePlayed;
   std::string note;
   std::time_t completedAt;
   int attemptsToComplete;

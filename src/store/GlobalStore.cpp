@@ -117,7 +117,7 @@ void GlobalStore::resetRun()
   runEnd = 0.f;
 }
 
-int GlobalStore::checkRun(std::string profileId)
+int GlobalStore::checkRun(std::string profileId, float timePlayed)
 {
   const float runDiff = std::abs(runEnd - runStart);
   auto currentProfile = getProfileById(profileId);
@@ -159,6 +159,7 @@ int GlobalStore::checkRun(std::string profileId)
       if (!toCheckActual)
       {
         toCheck->attempts++;
+        toCheck->timePlayed += timePlayed;
         auto bestRunDiff = std::abs(toCheck->bestRunFrom - toCheck->bestRunTo);
 
         if (bestRunDiff < runDiff)
@@ -180,7 +181,10 @@ int GlobalStore::checkRun(std::string profileId)
       }
 
       if (toCheckActual)
+      {
+        toCheckActual->timePlayed += timePlayed;
         toCheckActual->attempts++;
+      }
 
       if (!toCheckActual || toCheckActual->checked)
         break;
@@ -326,5 +330,6 @@ void GlobalStore::saveProfiles() const
   {
     std::string jsonString = j.dump(matjson::NO_INDENTATION);
     Mod::get()->setSavedValue("profiles", jsonString);
+    Mod::get()->saveData();
   }
 }
