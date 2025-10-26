@@ -18,10 +18,12 @@
 #include "./ui/StageList/StageListLayer.hpp"
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
 
+#include "../../ui/Include.hpp"
 #include "../../serialization/profile/index.hpp"
 #include "../../store/GlobalStore.hpp"
 #include "../../utils/getFirstUncheckedStage.hpp"
 #include "../../utils/generateProfile.hpp"
+#include "../../utils/formatTimePlayed.hpp"
 
 using namespace geode::prelude;
 
@@ -44,13 +46,14 @@ private:
   CCNode *m_currentStageNode = nullptr;
   CCNode *m_profilesListNode = nullptr;
   CCLabelBMFont *m_currentStageTitleLabel = nullptr;
+  Label *m_totalStatLabel = nullptr;
   EventListener<EventFilter<StageChangedEvent>> m_stageChangedListener;
 
   void drawTabs();
   void drawContent();
   void drawProfilesList();
   void drawCurrentStage();
-  void drawCurrentStageTitle(int currentStage, int totalStages, Padding padding);
+  void drawCurrentStageTitle(Stage *currentStage, int totalStages, Padding padding);
   void drawLastRuns();
 
   bool setup(GJGameLevel *) override;

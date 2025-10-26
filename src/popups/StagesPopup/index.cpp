@@ -114,7 +114,7 @@ void StagesPopup::drawCurrentStage()
 
   // ! --- Title --- !
   drawCurrentStageTitle(
-      currentStage ? currentStage->stage : 0,
+      currentStage,
       profile.data.stages.size(), padding);
 
   // ! --- StageListLayer --- !
@@ -127,13 +127,13 @@ void StagesPopup::drawCurrentStage()
   contentContainers.push_back(m_currentStageNode);
 }
 
-void StagesPopup::drawCurrentStageTitle(int currStage, int totalStages, Padding padding)
+void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Padding padding)
 {
   if (m_currentStageNode)
   {
     std::string title = fmt::format(
         "Stage: {}/{}",
-        currStage ? geode::utils::numToString(currStage) : "?",
+        currentStage ? geode::utils::numToString(currentStage->stage) : "?",
         totalStages > 0
             ? geode::utils::numToString(totalStages)
             : "?");
@@ -141,24 +141,64 @@ void StagesPopup::drawCurrentStageTitle(int currStage, int totalStages, Padding 
     m_currentStageTitleLabel = CCLabelBMFont::create(
         title.c_str(),
         "goldFont.fnt");
-    m_currentStageTitleLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 - 2.5f});
-
+    m_currentStageTitleLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 + 5}); // n - 2.5f
     m_currentStageNode->addChild(m_currentStageTitleLabel);
+
+    std::string stat = "";
+
+    float totalAttempts = 0;
+    float totalTimePlayed = 0;
+
+    if (currentStage)
+    {
+      for (const auto &range : currentStage->ranges)
+      {
+        totalAttempts += range.attempts;
+        totalTimePlayed += range.timePlayed;
+      }
+    }
+
+    stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
+    stat += formatTimePlayed(totalTimePlayed);
+
+    m_totalStatLabel = Label::create(stat, "bigFont.fnt", .4f);
+    m_totalStatLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 - 15});
+    m_currentStageNode->addChild(m_totalStatLabel);
 
     m_stageChangedListener = EventListener<EventFilter<StageChangedEvent>>(
         [this](StageChangedEvent *event)
         {
-          const int currentStage = event->getCurrentStage();
+          const Stage *currentStage = event->getCurrentStage();
           const int totalStages = event->getTotalStages();
 
           std::string newTitle = fmt::format(
               "Stage: {}/{}",
-              currentStage ? geode::utils::numToString(currentStage) : "?",
+              currentStage ? geode::utils::numToString(currentStage->stage) : "?",
               totalStages > 0
                   ? geode::utils::numToString(totalStages)
                   : "?");
 
           m_currentStageTitleLabel->setString(newTitle.c_str());
+
+          std::string stat = "";
+
+          float totalAttempts = 0;
+          float totalTimePlayed = 0;
+
+          if (currentStage)
+          {
+            for (const auto &range : currentStage->ranges)
+            {
+              totalAttempts += range.attempts;
+              totalTimePlayed += range.timePlayed;
+            }
+          }
+
+          stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
+          stat += formatTimePlayed(totalTimePlayed);
+
+          m_totalStatLabel->setText(stat);
+
           return ListenerResult::Propagate;
         });
   }

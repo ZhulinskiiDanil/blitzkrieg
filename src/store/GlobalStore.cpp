@@ -330,6 +330,6 @@ void GlobalStore::saveProfiles() const
   {
     std::string jsonString = j.dump(matjson::NO_INDENTATION);
     Mod::get()->setSavedValue("profiles", jsonString);
-    Mod::get()->saveData();
+    (void)Mod::get()->saveData();
   }
 }

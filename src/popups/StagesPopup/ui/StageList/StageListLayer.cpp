@@ -245,7 +245,7 @@ void StageListLayer::onPrevStage(CCObject *sender)
     --m_currentIndex;
 
   m_stage = &m_stages->at(m_currentIndex);
-  StageChangedEvent(m_stage->stage, m_stages->size()).post();
+  StageChangedEvent(m_stage, m_stages->size()).post();
   reload();
 }
 
@@ -258,6 +258,6 @@ void StageListLayer::onNextStage(CCObject *sender)
     ++m_currentIndex;
 
   m_stage = &m_stages->at(m_currentIndex);
-  StageChangedEvent(m_stage->stage, m_stages->size()).post();
+  StageChangedEvent(m_stage, m_stages->size()).post();
   reload();
 }

@@ -1,3 +1,6 @@
+# 1.5.8
+- Added total stage playtime & attempts
+
 # v1.5.7
 - Added playtime tracking for each individual progress
 - Added safeguard: automatic early data save to prevent total progress loss in case of a crash

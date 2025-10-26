@@ -8,7 +8,7 @@
 	},
 	"id": "zhulis.blitzkrieg",
 	"name": "Blitzkrieg",
-	"version": "v1.5.7",
+	"version": "v1.5.8",
 	"developer": "Zhulis",
 	"description": "Blitzkrieg Notifier",
 	"tags": [
@@ -60,6 +60,11 @@
 			"type": "bool",
 			"name": "Ignore Practice Mode",
 			"default": false
+		},
+		"expand-progress-by-default": {
+			"type": "bool",
+			"name": "Expand progress details by default",
+			"default": true
 		},
 		"sfx-settings": {
 			"type": "title",

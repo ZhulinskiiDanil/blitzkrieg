@@ -3,6 +3,8 @@
 #include <fmt/core.h>
 #include <string>
 
+#include "../../../../utils/formatTimePlayed.hpp"
+
 StageRangeCell *StageRangeCell::create(Range *range, GJGameLevel *level, const CCSize &cellSize)
 {
   StageRangeCell *ret = new StageRangeCell();
@@ -16,44 +18,18 @@ StageRangeCell *StageRangeCell::create(Range *range, GJGameLevel *level, const C
   return nullptr;
 }
 
-std::string formatTimePlayed(double seconds)
-{
-  int total = static_cast<int>(seconds);
-
-  int days = total / 86400;
-  int hours = (total % 86400) / 3600;
-  int minutes = (total % 3600) / 60;
-  int secs = total % 60;
-
-  bool onlyMinutes = (days == 0 && hours == 0 && minutes > 0);
-
-  std::string result;
-
-  if (days > 0)
-    result += fmt::format("{} <small>d</small> ", days);
-  if (hours > 0)
-    result += fmt::format("{} <small>h</small> ", hours);
-  if (minutes > 0)
-    result += fmt::format("{} <small>{}</small> ",
-                          minutes, onlyMinutes ? "min" : "m");
-  if (secs > 0 || result.empty())
-    result += fmt::format("{} <small>s</small>", secs);
-
-  if (!result.empty() && result.back() == ' ')
-    result.pop_back();
-
-  return result;
-}
-
 bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSize)
 {
   if (!CCLayer::init())
     return false;
 
   this->setContentSize(cellSize);
+  const bool expandedByDefault = Mod::get()->getSettingValue<bool>("expand-progress-by-default");
+
   m_range = range;
   m_id = range->id;
   m_checked = m_range->checked;
+  m_isExpanded = expandedByDefault;
   m_level = level;
   Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
 
@@ -162,8 +138,11 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   };
 
   m_table = MetaTable::create(tableData, m_head->getContentWidth(), {0, 5.f, 5.f, 5.f});
-  m_table->setVisible(m_isExpanded);
   m_content->addChild(m_table);
+
+  updateMetaContent();
+  updateExpandButton();
+  updateLayoutWrapper();
 
   return true;
 }

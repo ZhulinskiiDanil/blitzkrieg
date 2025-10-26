@@ -24,7 +24,10 @@ bool Label::init(const std::string &text,
   m_fontSize = fontSize;
   m_font = font;
   m_text = text;
+
   parseAndBuild();
+  updateColor();
+
   return true;
 }
 
@@ -65,6 +68,8 @@ void Label::updateColor()
   case Variant::Red:
     color = redColor;
     break;
+  default:
+    color = defaultColor;
   }
 
   for (auto lbl : m_parts)
