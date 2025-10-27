@@ -1,3 +1,6 @@
+# 1.5.9
+- Mark the stage as completed when all progresses are checked
+
 # 1.5.8
 - Added total stage playtime & attempts
 

@@ -248,8 +248,13 @@ void StageRangeCell::onToggle(CCObject *sender)
 
   for (auto &stage : profile.data.stages)
   {
+    bool isEveryProgressChecked = true;
+
     for (auto &range : stage.ranges)
     {
+      if (!range.checked)
+        isEveryProgressChecked = false;
+
       if (range.id == m_id)
       {
         range.checked = !range.checked;
@@ -270,6 +275,9 @@ void StageRangeCell::onToggle(CCObject *sender)
           range.completionCounter = 1;
       }
     }
+
+    if (isEveryProgressChecked)
+      stage.checked = true;
   }
 
   GlobalStore::get()->updateProfile(profile);
