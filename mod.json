@@ -1,5 +1,5 @@
 {
-    "geode": "5.0.0-beta.2",
+    "geode": "5.0.0-beta.3",
     "gd": {
         "win": "2.2081",
         "android": "2.2081",
@@ -8,10 +8,10 @@
     },
     "id": "zhulis.blitzkrieg",
     "name": "Blitzkrieg",
-    "version": "v1.5.9",
+    "version": "v1.6.0",
     "developer": "Zhulis",
-    "description": "Blitzkrieg Notifier",
-    "tags": ["gameplay", "interface", "enhancement"],
+    "description": "Blitzkrieg progression",
+    "tags": ["gameplay", "interface", "enhancement", "offline"],
     "dependencies": {
         "cvolton.level-id-api": {
             "version": "v2.0.0",

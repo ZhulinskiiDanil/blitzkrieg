@@ -1,3 +1,6 @@
+# 1.6.0
+- Migrate to geode v5
+
 # 1.5.9
 - Mark the stage as completed when all progresses are checked
 
