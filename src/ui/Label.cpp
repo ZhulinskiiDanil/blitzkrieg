@@ -91,7 +91,7 @@ void Label::parseAndBuild()
           ->setAutoScale(false)
           ->setAutoGrowAxis(true)
           ->setGrowCrossAxis(false));
-  this->getLayout()->ignoreInvisibleChildren(true);
+  // this->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
 
   size_t pos = 0;
   bool inSmall = false;

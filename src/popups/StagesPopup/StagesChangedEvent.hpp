@@ -4,6 +4,7 @@
 
 using namespace geode::prelude;
 
-class StagesChangedEvent : public Event
+class StagesChangedEvent : public Event<StagesChangedEvent, bool()>
 {
+  using Event::Event;
 };

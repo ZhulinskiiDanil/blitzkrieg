@@ -4,6 +4,7 @@
 
 using namespace geode::prelude;
 
-class ProfileChangedEvent : public Event
+class ProfileChangedEvent : public Event<ProfileChangedEvent, bool()>
 {
+  using Event::Event;
 };

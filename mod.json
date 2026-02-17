@@ -1,128 +1,107 @@
 {
-	"geode": "4.7.0",
-	"gd": {
-		"win": "2.2074",
-		"android": "2.2074",
-		"mac": "2.2074",
-		"ios": "2.2074"
-	},
-	"id": "zhulis.blitzkrieg",
-	"name": "Blitzkrieg",
-	"version": "v1.5.9",
-	"developer": "Zhulis",
-	"description": "Blitzkrieg Notifier",
-	"tags": [
-		"gameplay",
-		"interface",
-		"enhancement"
-	],
-	"dependencies": {
-		"cvolton.level-id-api": {
-			"version": "v1.2.3",
-			"importance": "required"
-		},
-		"alphalaneous.happy_textures": {
-			"version": "v2.0.17",
-			"importance": "required"
-		}
-	},
-	"links": {
-		"homepage": "https://dgkr-community.vercel.app/blitzkrieg",
-		"community": "https://discord.gg/duuG4RqJKh"
-	},
-	"resources": {
-		"sprites": [
-			"resources/sprites/*.png",
-			"resources/sprites/range/*.png"
-		],
-		"spritesheets": {
-			"Borders": [
-				"resources/sprites/borders/*.png"
-			],
-			"Buttons": [
-				"resources/sprites/buttons/*.png"
-			]
-		},
-		"files": [
-			"resources/audio/progress_complete.mp3",
-			"resources/audio/stage_complete.mp3"
-		],
-		"fonts": {
-			"PusabFull": {
-				"path": "resources/fonts/PusabFull.ttf",
-				"size": 64,
-				"charset": "32-500,8226,1040-1103"
-			}
-		}
-	},
-	"settings": {
-		"ignore-practice-mode": {
-			"type": "bool",
-			"name": "Ignore Practice Mode",
-			"default": false
-		},
-		"expand-progress-by-default": {
-			"type": "bool",
-			"name": "Expand progress details by default",
-			"default": true
-		},
-		"sfx-settings": {
-			"type": "title",
-			"name": "SFX Settings"
-		},
-		"sfx-use-custom-sounds": {
-			"name": "Use Custom SFX's",
-			"type": "bool",
-			"default": false,
-			"description": "Use custom sounds for the SFX's!"
-		},
-		"sfx-progress-path": {
-			"name": "Progress-Pass SFX",
-			"type": "file",
-			"description": "Path for the Progress-Pass sound effect.\n<cr>Requires restarting the game to apply</c>",
-      "enable-if": "sfx-use-custom-sounds",
-			"default": {
-				"android": "",
-				"mac": "",
-				"win": "",
-				"ios": ""
-			},
-			"control": {
-				"dialog": "open",
-				"filters": [
-					{
-						"files": [
-							"*.mp3",
-							"*.ogg"
-						],
-						"description": "Sound Files"
-					}
-				]
-			}
-		},
-		"sfx-stage-path": {
-			"name": "Stage-Pass SFX",
-			"type": "file",
-			"description": "Path for the Stage-Pass sound effect.\n<cr>Requires restarting the game to apply</c>",
-      "enable-if": "sfx-use-custom-sounds",
-			"default": {
-				"android": "",
-				"mac": "",
-				"win": "",
-				"ios": ""
-			},
-			"control": {
-				"dialog": "open",
-				"filters": [
-					{
-						"files": [
-							"*.mp3",
-							"*.ogg"
-						],
-						"description": "Sound Files"
-					}
-				]
-			}
-		}
-	}
+    "geode": "5.0.0-beta.2",
+    "gd": {
+        "win": "2.2081",
+        "android": "2.2081",
+        "mac": "2.2081",
+        "ios": "2.2081"
+    },
+    "id": "zhulis.blitzkrieg",
+    "name": "Blitzkrieg",
+    "version": "v1.5.9",
+    "developer": "Zhulis",
+    "description": "Blitzkrieg Notifier",
+    "tags": ["gameplay", "interface", "enhancement"],
+    "dependencies": {
+        "cvolton.level-id-api": {
+            "version": "v2.0.0",
+            "importance": "required"
+        }
+    },
+    "links": {
+        "homepage": "https://dgkr-community.vercel.app/blitzkrieg",
+        "community": "https://discord.gg/duuG4RqJKh"
+    },
+    "resources": {
+        "sprites": ["resources/sprites/*.png", "resources/sprites/range/*.png"],
+        "spritesheets": {
+            "Borders": ["resources/sprites/borders/*.png"],
+            "Buttons": ["resources/sprites/buttons/*.png"]
+        },
+        "files": [
+            "resources/audio/progress_complete.mp3",
+            "resources/audio/stage_complete.mp3"
+        ],
+        "fonts": {
+            "PusabFull": {
+                "path": "resources/fonts/PusabFull.ttf",
+                "size": 64,
+                "charset": "32-500,8226,1040-1103"
+            }
+        }
+    },
+    "settings": {
+        "ignore-practice-mode": {
+            "type": "bool",
+            "name": "Ignore Practice Mode",
+            "default": false
+        },
+        "expand-progress-by-default": {
+            "type": "bool",
+            "name": "Expand progress details by default",
+            "default": true
+        },
+        "sfx-settings": {
+            "type": "title",
+            "name": "SFX Settings"
+        },
+        "sfx-use-custom-sounds": {
+            "name": "Use Custom SFX's",
+            "type": "bool",
+            "default": false,
+            "description": "Use custom sounds for the SFX's!"
+        },
+        "sfx-progress-path": {
+            "name": "Progress-Pass SFX",
+            "type": "file",
+            "description": "Path for the Progress-Pass sound effect.\n<cr>Requires restarting the game to apply</c>",
+            "enable-if": "sfx-use-custom-sounds",
+            "default": {
+                "android": "",
+                "mac": "",
+                "win": "",
+                "ios": ""
+            },
+            "control": {
+                "dialog": "open",
+                "filters": [
+                    {
+                        "files": ["*.mp3", "*.ogg"],
+                        "description": "Sound Files"
+                    }
+                ]
+            }
+        },
+        "sfx-stage-path": {
+            "name": "Stage-Pass SFX",
+            "type": "file",
+            "description": "Path for the Stage-Pass sound effect.\n<cr>Requires restarting the game to apply</c>",
+            "enable-if": "sfx-use-custom-sounds",
+            "default": {
+                "android": "",
+                "mac": "",
+                "win": "",
+                "ios": ""
+            },
+            "control": {
+                "dialog": "open",
+                "filters": [
+                    {
+                        "files": ["*.mp3", "*.ogg"],
+                        "description": "Sound Files"
+                    }
+                ]
+            }
+        }
+    }
 }

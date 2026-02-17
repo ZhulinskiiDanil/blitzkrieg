@@ -53,7 +53,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
           ->setAxisReverse(true)
           ->setAutoScale(false)
           ->setAutoGrowAxis(true));
-  m_content->getLayout()->ignoreInvisibleChildren(true);
+  // m_content->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
   m_content->setID("progress-cell-content"_spr);
   this->addChild(m_content);
   updateLayoutWrapper();
@@ -154,7 +154,7 @@ void StageRangeCell::updateLayoutWrapper()
   this->setContentSize(m_content->getContentSize());
 
   updateBackgroundTexture();
-  UpdateScrollLayoutEvent().post();
+  UpdateScrollLayoutEvent().send();
 }
 
 void StageRangeCell::updateBackgroundTexture()
@@ -195,7 +195,7 @@ void StageRangeCell::updateExpandButton()
           ->setAutoGrowAxis(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setCrossAxisAlignment(AxisAlignment::Center));
-  m_expandBtnMenu->getLayout()->ignoreInvisibleChildren(true);
+  // m_expandBtnMenu->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
   m_head->addChild(m_expandBtnMenu);
 
   // ! ---  Expand Button --- !

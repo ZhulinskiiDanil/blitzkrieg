@@ -8,7 +8,7 @@ void linkProfileWithLevel(const Profile &profile, GJGameLevel *level)
     return;
 
   std::string lvlId = !level->getID().empty()
-                          ? level->getID()
+                          ? std::string(level->getID())
                           : geode::utils::numToString(EditorIDs::getID(level));
 
   // Unlink all profile(s) from current level

@@ -37,12 +37,13 @@ bool BlitzkriegProfile::init(Profile const &profile,
   createLabels();
   createMenu();
 
-  m_listener = EventListener<EventFilter<ProfileChangedEvent>>(
-      [this](ProfileChangedEvent *)
+  m_listener = ProfileChangedEvent().listen(
+      [this]()
       {
         updateFromCurrentProfile();
         return ListenerResult::Propagate;
       });
+  m_listener.leak();
 
   return true;
 }
@@ -75,7 +76,7 @@ void BlitzkriegProfile::createMenu()
           ->setAutoGrowAxis(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setCrossAxisAlignment(AxisAlignment::Center));
-  m_buttonMenu->getLayout()->ignoreInvisibleChildren(true);
+  //m_buttonMenu->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
   this->addChild(m_buttonMenu);
 
   updateButtons();
@@ -183,7 +184,7 @@ void BlitzkriegProfile::onToggleProfile(CCObject *obj)
 
   updateButtons();
   m_buttonMenu->updateLayout();
-  ProfileChangedEvent().post();
+  ProfileChangedEvent().send();
 }
 
 void BlitzkriegProfile::onTogglePinProfile(CCObject *obj)
@@ -192,13 +193,13 @@ void BlitzkriegProfile::onTogglePinProfile(CCObject *obj)
   GlobalStore::get()->pinProfileById(m_profile.id, m_isPinned);
   updateButtons();
 
-  ProfilesChangedEvent().post();
+  ProfilesChangedEvent().send();
 }
 
 void BlitzkriegProfile::onUpProfile(CCObject *obj)
 {
   GlobalStore::get()->upProfileById(m_profile.id);
-  ProfilesChangedEvent().post();
+  ProfilesChangedEvent().send();
 }
 
 void BlitzkriegProfile::onDeleteProfile(CCObject *obj)
@@ -214,7 +215,7 @@ void BlitzkriegProfile::onDeleteProfile(CCObject *obj)
         {
           GlobalStore::get()->removeProfileById(m_profile.id);
           this->removeFromParentAndCleanup(true);
-          ProfilesChangedEvent().post();
+          ProfilesChangedEvent().send();
         }
       });
 }

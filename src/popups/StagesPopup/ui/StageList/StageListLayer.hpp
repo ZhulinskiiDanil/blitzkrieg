@@ -25,8 +25,10 @@ private:
   CCMenuItemSpriteExtra *m_buttonLeft = nullptr;
   CCMenuItemSpriteExtra *m_buttonRight = nullptr;
 
-  EventListener<EventFilter<StagesChangedEvent>> m_listener;
-  EventListener<EventFilter<UpdateScrollLayoutEvent>> m_listenerUpdateScrollLayout;
+  // EventListener<EventFilter<StagesChangedEvent>>
+  ListenerHandle m_listener;
+  // EventListener<EventFilter<UpdateScrollLayoutEvent>>
+  ListenerHandle m_listenerUpdateScrollLayout;
 
   Profile m_profile;
   GJGameLevel *m_level = nullptr;

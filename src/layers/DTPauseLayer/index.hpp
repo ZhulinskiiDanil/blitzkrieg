@@ -19,7 +19,8 @@ class $modify(DTPauseLayer, PauseLayer)
   struct Fields
   {
     Profile currentProfile;
-    EventListener<EventFilter<ProfilesChangedEvent>> m_listener;
+    // EventListener<EventFilter<ProfilesChangedEvent>>
+    ListenerHandle m_listener;
   };
 
 private:

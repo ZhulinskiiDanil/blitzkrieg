@@ -1,10 +1,11 @@
 #include "index.hpp"
+#include "StageChangedEvent.hpp"
 
 StagesPopup *StagesPopup::create(GJGameLevel *level)
 {
   StagesPopup *ret = new StagesPopup();
 
-  if (ret->initAnchored(420, 250, level, "GJ_square01_custom.png"_spr))
+  if (ret->init(level))
   {
     ret->autorelease();
     return ret;
@@ -14,8 +15,13 @@ StagesPopup *StagesPopup::create(GJGameLevel *level)
   return nullptr;
 }
 
-bool StagesPopup::setup(GJGameLevel *level)
+bool StagesPopup::init(GJGameLevel *level)
 {
+  if (!Popup::init(420, 250, "GJ_square01_custom.png"_spr))
+  {
+    return false;
+  }
+
   this->m_level = level;
 
   drawTabs();
@@ -165,12 +171,9 @@ void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Pa
     m_totalStatLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 - 15});
     m_currentStageNode->addChild(m_totalStatLabel);
 
-    m_stageChangedListener = EventListener<EventFilter<StageChangedEvent>>(
-        [this](StageChangedEvent *event)
+    m_stageChangedListener = StageChangedEvent().listen(
+        [this](int totalStages, Stage* currentStage)
         {
-          const Stage *currentStage = event->getCurrentStage();
-          const int totalStages = event->getTotalStages();
-
           std::string newTitle = fmt::format(
               "Stage: {}/{}",
               currentStage ? geode::utils::numToString(currentStage->stage) : "?",
@@ -201,6 +204,7 @@ void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Pa
 
           return ListenerResult::Propagate;
         });
+    m_stageChangedListener.leak();
   }
 }
 

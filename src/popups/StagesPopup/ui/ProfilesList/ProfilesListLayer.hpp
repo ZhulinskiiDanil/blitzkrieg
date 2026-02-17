@@ -19,7 +19,8 @@ class ProfilesListLayer : public CCLayer
 private:
   ScrollLayer *m_scroll = nullptr;
   GJGameLevel *m_level = nullptr;
-  EventListener<EventFilter<ProfilesChangedEvent>> m_listener;
+  // EventListener<EventFilter<ProfilesChangedEvent>>
+  ListenerHandle m_listener;
   CCSize m_contentSize;
 
   std::vector<Profile> m_profiles;
