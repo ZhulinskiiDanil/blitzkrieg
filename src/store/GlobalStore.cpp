@@ -262,7 +262,7 @@ Profile GlobalStore::getProfileByLevel(GJGameLevel *level)
     return Profile{};
 
   std::string levelId = !level->getID().empty()
-                            ? level->getID()
+                            ? std::string(level->getID())
                             : geode::utils::numToString(EditorIDs::getID(level));
 
   return getProfileByLevel(levelId);

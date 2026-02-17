@@ -93,7 +93,7 @@ bool ProfilesListLayer::init(
           ->setAutoGrowAxis(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setCrossAxisAlignment(AxisAlignment::Center));
-  btnMenu->getLayout()->ignoreInvisibleChildren(true);
+  // btnMenu->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
 
   btnMenu->addChild(btnCreate);
   btnMenu->addChild(btnImport);
@@ -104,8 +104,8 @@ bool ProfilesListLayer::init(
   this->addChild(btnMenu);
   btnMenu->updateLayout();
 
-  m_listener = EventListener<EventFilter<ProfilesChangedEvent>>(
-      [this](ProfilesChangedEvent *)
+  m_listener = ProfilesChangedEvent().listen(
+      [this]()
       {
         m_profiles = GlobalStore::get()->getProfiles();
         reload();
@@ -236,7 +236,7 @@ void ProfilesListLayer::onImport(CCObject *obj)
         }
 
         GlobalStore::get()->addProfiles(profiles);
-        ProfilesChangedEvent().post();
+        ProfilesChangedEvent().send();
 
         // Update profiles list
         reload(); });

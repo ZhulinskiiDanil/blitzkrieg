@@ -4,7 +4,8 @@ CreateProfilePopup *CreateProfilePopup::create(GJGameLevel *level)
 {
   CreateProfilePopup *ret = new CreateProfilePopup();
 
-  if (ret->initAnchored(340, 248, level, "GJ_square01_custom.png"_spr))
+  // ret->initAnchored(340, 248, level, "GJ_square01_custom.png"_spr)
+  if (ret->init(level))
   {
     ret->autorelease();
     return ret;
@@ -14,8 +15,13 @@ CreateProfilePopup *CreateProfilePopup::create(GJGameLevel *level)
   return nullptr;
 }
 
-bool CreateProfilePopup::setup(GJGameLevel *level)
+bool CreateProfilePopup::init(GJGameLevel *level)
 {
+  if (!Popup::init(320, 248, "GJ_square01_custom.png"_spr))
+  {
+    return false;
+  }
+
   m_level = level;
   setTitle("Create Profile");
 
@@ -365,7 +371,7 @@ void CreateProfilePopup::onCreateProfile(CCObject *sender)
     GlobalStore::get()->pinProfileById(profile.as<Profile>().unwrap().id, true);
 
   this->onClose(sender);
-  ProfilesChangedEvent().post();
+  ProfilesChangedEvent().send();
 }
 
 void CreateProfilePopup::onTogglePercentages(CCObject *sender)

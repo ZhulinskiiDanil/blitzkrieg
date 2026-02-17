@@ -12,7 +12,7 @@ void unlinkProfileFromLevel(const Profile &profile, GJGameLevel *level)
     return;
 
   std::string levelId = !level->getID().empty()
-                            ? level->getID()
+                            ? std::string(level->getID())
                             : geode::utils::numToString(EditorIDs::getID(level));
 
   std::string key = levelId + "-" + profile.id;

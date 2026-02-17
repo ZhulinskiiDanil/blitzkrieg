@@ -4,6 +4,7 @@
 
 using namespace geode::prelude;
 
-class UpdateScrollLayoutEvent : public Event
+class UpdateScrollLayoutEvent : public Event<UpdateScrollLayoutEvent, bool()>
 {
+  using Event::Event;
 };

@@ -11,7 +11,7 @@
 
 using namespace geode::prelude;
 
-class CreateProfilePopup : public geode::Popup<GJGameLevel *>
+class CreateProfilePopup : public geode::Popup
 {
 private:
   GJGameLevel *m_level = nullptr;
@@ -41,7 +41,7 @@ private:
 
   void findStartPoses();
 
-  bool setup(GJGameLevel *) override;
+  bool init(GJGameLevel *);
 
 public:
   static CreateProfilePopup *create(GJGameLevel *);

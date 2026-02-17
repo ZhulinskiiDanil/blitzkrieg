@@ -96,19 +96,19 @@ bool StageListLayer::init(
     child->setColor(ccc3(15, 15, 15));
   }
 
-  m_listener = EventListener<EventFilter<StagesChangedEvent>>(
-      [this](StagesChangedEvent *)
+  m_listener = StagesChangedEvent().listen(
+      [this]()
       {
         reload();
         return ListenerResult::Propagate;
       });
-  m_listenerUpdateScrollLayout = EventListener<EventFilter<UpdateScrollLayoutEvent>>(
-      [this](UpdateScrollLayoutEvent *)
+  m_listenerUpdateScrollLayout = UpdateScrollLayoutEvent().listen(
+      [this]()
       {
         const auto arr = m_scroll->m_contentLayer->getChildren();
         CCObject *child;
 
-        CCARRAY_FOREACH(arr, child)
+        for (auto child : CCArrayExt(arr))
         {
           if (auto obj = typeinfo_cast<CCLayer *>(child))
             obj->updateLayout();
@@ -245,7 +245,7 @@ void StageListLayer::onPrevStage(CCObject *sender)
     --m_currentIndex;
 
   m_stage = &m_stages->at(m_currentIndex);
-  StageChangedEvent(m_stage, m_stages->size()).post();
+  StageChangedEvent().send(m_stages->size(), m_stage);
   reload();
 }
 
@@ -258,6 +258,6 @@ void StageListLayer::onNextStage(CCObject *sender)
     ++m_currentIndex;
 
   m_stage = &m_stages->at(m_currentIndex);
-  StageChangedEvent(m_stage, m_stages->size()).post();
+  StageChangedEvent().send(m_stages->size(), m_stage);
   reload();
 }
