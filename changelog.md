@@ -1,9 +1,9 @@
-# ???
-- fixed negative number of attempts
-- ...
+# 1.6.2
+- Fixed negative number of attempts
+- Increase the hook priority for destroyPlayer to fix the issue in safe mode
 
 # 1.6.1
-- fixed crashes caused by level IDs.
+- Fixed crashes caused by level IDs.
 
 # 1.6.0
 - Migrate to geode v5

@@ -34,6 +34,12 @@ class $modify(DTPlayLayer, PlayLayer)
         float attEndTime = 0.f;
     };
 
+    static void onModify(auto &self)
+    {
+        if (!self.setHookPriorityPre("PlayLayer::destroyPlayer", Priority::First))
+            geode::log::warn("Failed to set hook priority.");
+    }
+
 public:
     bool init(GJGameLevel *level, bool p1, bool p2)
     {
