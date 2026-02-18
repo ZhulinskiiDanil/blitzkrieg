@@ -76,7 +76,7 @@ void BlitzkriegProfile::createMenu()
           ->setAutoGrowAxis(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setCrossAxisAlignment(AxisAlignment::Center));
-  //m_buttonMenu->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
+  // m_buttonMenu->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
   this->addChild(m_buttonMenu);
 
   updateButtons();

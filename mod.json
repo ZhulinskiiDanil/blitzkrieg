@@ -8,15 +8,12 @@
     },
     "id": "zhulis.blitzkrieg",
     "name": "Blitzkrieg",
-    "version": "v1.6.0",
+    "version": "v1.6.1",
     "developer": "Zhulis",
     "description": "Blitzkrieg progression",
     "tags": ["gameplay", "interface", "enhancement", "offline"],
     "dependencies": {
-        "cvolton.level-id-api": {
-            "version": "v2.0.0",
-            "importance": "required"
-        }
+        "cvolton.level-id-api": "v2.0.0"
     },
     "links": {
         "homepage": "https://dgkr-community.vercel.app/blitzkrieg",

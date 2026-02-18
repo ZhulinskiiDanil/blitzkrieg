@@ -83,6 +83,8 @@ void DTPauseLayer::onPopup(CCObject *)
 {
     const auto level = PlayLayer::get()->m_level;
 
+    std::string levelId = geode::utils::numToString(EditorIDs::getID(level));
+
     StagesPopup::create(level)
         ->show();
 }

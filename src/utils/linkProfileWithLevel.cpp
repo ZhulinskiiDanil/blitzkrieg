@@ -4,21 +4,19 @@
 
 void linkProfileWithLevel(const Profile &profile, GJGameLevel *level)
 {
-  if (!level || !&profile)
+  if (!level)
     return;
 
-  std::string lvlId = !level->getID().empty()
-                          ? std::string(level->getID())
-                          : geode::utils::numToString(EditorIDs::getID(level));
+  std::string levelId = geode::utils::numToString(EditorIDs::getID(level));
 
   // Unlink all profile(s) from current level
   for (const auto &p : GlobalStore::get()->getProfiles())
   {
-    unlinkProfileFromLevel(p, lvlId);
+    unlinkProfileFromLevel(p, levelId);
   }
 
   // Link new profile
-  std::string key = lvlId + "-" + profile.id;
+  std::string key = levelId + "-" + profile.id;
   matjson::Value profileJson = profile;
   Mod::get()->setSavedValue(key, profileJson.dump(matjson::NO_INDENTATION));
 }

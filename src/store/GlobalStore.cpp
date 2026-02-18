@@ -261,9 +261,7 @@ Profile GlobalStore::getProfileByLevel(GJGameLevel *level)
   if (!level)
     return Profile{};
 
-  std::string levelId = !level->getID().empty()
-                            ? std::string(level->getID())
-                            : geode::utils::numToString(EditorIDs::getID(level));
+  std::string levelId = geode::utils::numToString(EditorIDs::getID(level));
 
   return getProfileByLevel(levelId);
 }

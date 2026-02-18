@@ -1,3 +1,6 @@
+# 1.6.1
+- fixed crashes caused by level IDs.
+
 # 1.6.0
 - Migrate to geode v5
 
