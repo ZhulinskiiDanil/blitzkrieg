@@ -1,3 +1,7 @@
+# ???
+- fixed negative number of attempts
+- ...
+
 # 1.6.1
 - fixed crashes caused by level IDs.
 

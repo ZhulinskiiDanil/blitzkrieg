@@ -261,7 +261,7 @@ void StageRangeCell::onToggle(CCObject *sender)
 
         if (!range.checked)
         {
-          range.attempts--;
+          range.attempts = range.attempts - 1 >= 0 ? range.attempts - 1 : 0;
           range.completionCounter--;
           range.attemptsToComplete = 0;
           range.firstRunFrom = 0;
