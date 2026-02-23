@@ -1,3 +1,6 @@
+# 1.6.3
+- update to stable geode v5
+
 # 1.6.2
 - Fixed negative number of attempts
 - Increase the hook priority for destroyPlayer to fix the issue in safe mode
@@ -6,7 +9,7 @@
 - Fixed crashes caused by level IDs.
 
 # 1.6.0
-- Migrate to geode v5
+- Migrate to geode v5 beta
 
 # 1.5.9
 - Mark the stage as completed when all progresses are checked
