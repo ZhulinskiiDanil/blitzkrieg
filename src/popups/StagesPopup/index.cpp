@@ -172,7 +172,7 @@ void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Pa
     m_currentStageNode->addChild(m_totalStatLabel);
 
     m_stageChangedListener = StageChangedEvent().listen(
-        [this](int totalStages, Stage* currentStage)
+        [this](int totalStages, Stage *currentStage)
         {
           std::string newTitle = fmt::format(
               "Stage: {}/{}",
@@ -204,7 +204,7 @@ void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Pa
 
           return ListenerResult::Propagate;
         });
-    m_stageChangedListener.leak();
+    // m_stageChangedListener.leak();
   }
 }
 

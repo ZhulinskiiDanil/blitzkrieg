@@ -39,7 +39,7 @@ void DTPauseLayer::customSetup()
 
             return ListenerResult::Propagate;
         });
-    m_fields->m_listener.leak();
+    // m_fields->m_listener.leak();
 }
 
 void DTPauseLayer::onQuit(CCObject *sender)

@@ -64,7 +64,8 @@ bool StageListLayer::init(
           ->setGap(2.5f)
           ->setAxisReverse(true)
           ->setAxisAlignment(AxisAlignment::End)
-          ->setAutoGrowAxis(m_scroll->getContentHeight()));
+          ->setAutoGrowAxis(m_scroll->getContentHeight())
+          ->ignoreInvisibleChildren(false));
 
   this->addChild(m_scroll);
 

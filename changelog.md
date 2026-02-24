@@ -1,5 +1,10 @@
+# 1.6.4
+- Fixed a crash caused by an event listener not being properly cleaned up
+- Fixed a bug with the calculation of the scroll height for the progress list in the "Current Stage" section
+- Update geode v5.0.1
+
 # 1.6.3
-- update to stable geode v5
+- Update to stable geode v5
 
 # 1.6.2
 - Fixed negative number of attempts

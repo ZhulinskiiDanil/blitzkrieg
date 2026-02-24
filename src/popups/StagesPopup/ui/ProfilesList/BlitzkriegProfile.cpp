@@ -43,7 +43,6 @@ bool BlitzkriegProfile::init(Profile const &profile,
         updateFromCurrentProfile();
         return ListenerResult::Propagate;
       });
-  m_listener.leak();
 
   return true;
 }
@@ -85,6 +84,9 @@ void BlitzkriegProfile::createMenu()
 
 void BlitzkriegProfile::updateButtons()
 {
+  if (!m_buttonMenu)
+    return;
+
   m_buttonMenu->removeAllChildrenWithCleanup(true);
 
   // ! Select Button

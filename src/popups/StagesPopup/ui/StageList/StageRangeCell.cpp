@@ -153,8 +153,8 @@ void StageRangeCell::updateLayoutWrapper()
   m_content->setPositionY(m_content->getContentHeight());
   this->setContentSize(m_content->getContentSize());
 
-  updateBackgroundTexture();
   UpdateScrollLayoutEvent().send();
+  updateBackgroundTexture();
 }
 
 void StageRangeCell::updateBackgroundTexture()
