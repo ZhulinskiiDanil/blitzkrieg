@@ -87,6 +87,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   m_input->getInputNode()->setMaxLabelLength(32);
   m_input->setAnchorPoint({0.f, 1.f});
   m_input->setPosition(10.f, m_size.height - 40.f);
+  m_input->setString(m_level->m_levelName, false);
 
   // ! --- Lists Container --- !
   const auto lists = CCLayer::create();

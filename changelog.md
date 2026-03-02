@@ -1,3 +1,7 @@
+# 1.6.5
+- Added node-ids dependency
+- Autofill profile name with level name
+
 # 1.6.4
 - Fixed a crash caused by an event listener not being properly cleaned up
 - Fixed a bug with the calculation of the scroll height for the progress list in the "Current Stage" section
