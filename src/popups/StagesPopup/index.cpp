@@ -237,7 +237,7 @@ void StagesPopup::drawTabs()
   tabBtnProfilesList->toggle(true);
 
   auto tabBtnCurrentStage = TabButton::create(
-      "Current Stage",
+      "Stage Browser",
       this,
       menu_selector(StagesPopup::onCurrentStageToggle));
   tabBtnCurrentStage->setAnchorPoint({0.5f, 0.f});
