@@ -57,13 +57,13 @@ Stage statistics also include **<cg>total attempts and total playtime</c>**.
 
 **<cg>English Tutorial</c>**
 
-[▶ Watch the English tutorial](https://youtu.be/v2CqPpV1kds)
+[Watch the English tutorial](https://youtu.be/v2CqPpV1kds)
 
 **<cg>Russian Tutorial</c>**
 
-[▶ Watch the Russian tutorial](https://www.youtube.com/watch?v=d6jAYVD1144)
+[Watch the Russian tutorial](https://www.youtube.com/watch?v=d6jAYVD1144)
 
 **<cr>Important:</c>**  
 If the Russian tutorial ever gets removed by the author, the previous tutorial is still available as a fallback:
 
-[▶ Watch the legacy tutorial](https://www.youtube.com/watch?v=f02eTJmPgBI)
+[Watch the legacy tutorial](https://www.youtube.com/watch?v=f02eTJmPgBI)
