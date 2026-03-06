@@ -37,13 +37,13 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   m_button2 = ButtonSprite::create("Cancel", 0, 0, "goldFont.fnt", "GJ_button_01.png", 0.0f, .8f);
   m_button2->setScale(.8f);
 
-  auto btnOK = CCMenuItemSpriteExtra::create(
+  auto btnCancel = CCMenuItemSpriteExtra::create(
       m_button2,
       this,
       menu_selector(CreateProfilePopup::onBtn2));
 
-  m_buttonMenu->addChild(btnOK);
-  btnOK->ignoreAnchorPointForPosition(true);
+  m_buttonMenu->addChild(btnCancel);
+  btnCancel->ignoreAnchorPointForPosition(true);
 
   // ! --- Button Menu --- !
   m_buttonMenu->setLayout(

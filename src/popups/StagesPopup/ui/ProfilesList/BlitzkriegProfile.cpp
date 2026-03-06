@@ -101,6 +101,10 @@ void BlitzkriegProfile::updateButtons()
   createButton(
       m_isPinned ? "unpin-profile-btn.png"_spr : "pin-profile-btn.png"_spr,
       menu_selector(BlitzkriegProfile::onTogglePinProfile));
+  // ! Edit Button
+  createButton(
+      "edit-profile-btn.png"_spr,
+      menu_selector(BlitzkriegProfile::onEditProfile));
   // ! Delete Button
   createButton(
       "delete-profile-btn.png"_spr,
@@ -202,6 +206,11 @@ void BlitzkriegProfile::onUpProfile(CCObject *obj)
 {
   GlobalStore::get()->upProfileById(m_profile.id);
   ProfilesChangedEvent().send();
+}
+
+void BlitzkriegProfile::onEditProfile(CCObject *obj)
+{
+  EditProfilePopup::create(&m_profile)->show();
 }
 
 void BlitzkriegProfile::onDeleteProfile(CCObject *obj)

@@ -11,6 +11,7 @@
 #include "../../../../utils/getProfileStats.hpp"
 #include "../../../../utils/linkProfileWithLevel.hpp"
 #include "../../../../utils/unlinkProfileFromLevel.hpp"
+#include "../../../EditProfilePopup/index.hpp"
 
 using namespace geode::prelude;
 
@@ -45,6 +46,7 @@ protected:
   void onToggleProfile(CCObject *obj);
   void onTogglePinProfile(CCObject *obj);
   void onUpProfile(CCObject *obj);
+  void onEditProfile(CCObject *obj);
   void onDeleteProfile(CCObject *obj);
 
 public:
