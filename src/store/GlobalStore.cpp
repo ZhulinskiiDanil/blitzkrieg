@@ -119,6 +119,7 @@ void GlobalStore::resetRun()
 
 int GlobalStore::checkRun(std::string profileId, float timePlayed)
 {
+  const float eps = 0.001f;
   const float runDiff = std::abs(runEnd - runStart);
   auto currentProfile = getProfileById(profileId);
 
@@ -144,8 +145,14 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
     if (!candidates.empty())
     {
       auto *toCheck = *std::min_element(candidates.begin(), candidates.end(),
-                                        [](Range *a, Range *b)
-                                        { return a->from < b->from; });
+                                        [eps](Range *a, Range *b)
+                                        {
+                                          if (std::fabs(a->from - b->from) < eps)
+                                          {
+                                            return a->to < b->to; // if from are almost equal, look at to
+                                          }
+                                          return a->from < b->from;
+                                        });
       Range *toCheckActual = nullptr;
       for (auto *r : candidates)
       {

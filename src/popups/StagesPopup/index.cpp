@@ -228,7 +228,7 @@ void StagesPopup::drawTabs()
 
   // ! --- BUTTONS --- !
   auto tabBtnProfilesList = TabButton::create(
-      "Profiles List",
+      "Profiles",
       this,
       menu_selector(StagesPopup::onProfilesListToggle));
   tabBtnProfilesList->setAnchorPoint({0.5f, 0.f});

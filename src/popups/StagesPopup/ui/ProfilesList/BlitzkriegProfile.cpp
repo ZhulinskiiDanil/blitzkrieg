@@ -210,7 +210,7 @@ void BlitzkriegProfile::onUpProfile(CCObject *obj)
 
 void BlitzkriegProfile::onEditProfile(CCObject *obj)
 {
-  EditProfilePopup::create(&m_profile)->show();
+  EditProfilePopup::create(&m_profile, m_level)->show();
 }
 
 void BlitzkriegProfile::onDeleteProfile(CCObject *obj)

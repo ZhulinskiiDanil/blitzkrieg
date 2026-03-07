@@ -1,10 +1,10 @@
 #include "index.hpp"
 
-EditProfilePopup *EditProfilePopup::create(Profile *profile)
+EditProfilePopup *EditProfilePopup::create(Profile *profile, GJGameLevel *level)
 {
   EditProfilePopup *ret = new EditProfilePopup();
 
-  if (ret->init(profile))
+  if (ret->init(profile, level))
   {
     ret->autorelease();
     return ret;
@@ -14,12 +14,15 @@ EditProfilePopup *EditProfilePopup::create(Profile *profile)
   return nullptr;
 }
 
-bool EditProfilePopup::init(Profile *profile)
+bool EditProfilePopup::init(Profile *profile, GJGameLevel *level)
 {
   if (!Popup::init(320, 114, "GJ_square01_custom.png"_spr))
     return false;
 
+  findStartPoses();
+
   m_profile = profile;
+  m_level = level;
 
   setTitle("Edit Profile");
 
@@ -83,14 +86,65 @@ void EditProfilePopup::onCancel(CCObject *)
 
 void EditProfilePopup::onSave(CCObject *)
 {
-  if (!m_profile)
+  if (!m_profile || !m_level)
     return;
 
-  auto newProfile = *m_profile;
-  newProfile.profileName = m_input->getString();
-  GlobalStore::get()->updateProfile(newProfile);
+  auto profileWithNewName = *m_profile;
+  profileWithNewName.profileName = m_input->getString();
+
+  auto regeneratedProfile = generateProfile("_mergeProfile", m_2_1_percentages);
+  auto mergedProfile = mergeProfiles(profileWithNewName, regeneratedProfile.as<Profile>().unwrap(), true);
+
+  // Save to test
+  auto resourcesDir = geode::Mod::get()->getSaveDir();
+
+  // Create Backup folder
+  auto backupDir = resourcesDir / "backups";
+  auto backupFile = backupDir / backup::generateBackupFilename();
+
+  const auto res = geode::utils::file::createDirectory(backupDir);
+
+  if (!res)
+  {
+    geode::log::error("Unable to create backup directory: {}", res.unwrapErr());
+    return;
+  }
+
+  GlobalStore::get()->updateProfile(mergedProfile);
+
+  matjson::Value jProfiles = mergedProfile;
+  auto jsonString = jProfiles.dump(matjson::NO_INDENTATION);
+  auto result = geode::utils::file::writeString(backupFile, jsonString);
+
+  // if (result)
+  //   geode::utils::file::openFolder(backupFile);
+  // else
+  //   geode::log::error("Unable to save JSON: {}", result.unwrapErr());
 
   ProfilesChangedEvent().send();
-
   this->onClose(nullptr);
+}
+
+void EditProfilePopup::findStartPoses()
+{
+  for (auto child : CCArrayExt<StartPosObject *>(PlayLayer::get()->m_objects))
+  {
+    if (auto startPos = typeinfo_cast<StartPosObject *>(child))
+    {
+      const float levelLength = PlayLayer::get()->m_levelLength;
+      const float levelTime = PlayLayer::get()->timeForPos({levelLength, 0.f}, 0.f, 0.f, true, 0.f);
+
+      const float startPosX = startPos->getPositionX();
+      const float startPosPercentByPosX = (startPosX / levelLength) * 100.f;
+
+      const float startPosTime = PlayLayer::get()->timeForPos({startPosX, 0.f}, 0.f, 0.f, true, 0.f);
+      const float startPosPercentByTime = (startPosTime / levelTime) * 100.f;
+
+      m_2_1_percentages.push_back(startPosPercentByPosX);
+      m_2_2_percentages.push_back(startPosPercentByTime);
+    }
+  }
+
+  std::sort(m_2_1_percentages.begin(), m_2_1_percentages.end());
+  std::sort(m_2_2_percentages.begin(), m_2_2_percentages.end());
 }

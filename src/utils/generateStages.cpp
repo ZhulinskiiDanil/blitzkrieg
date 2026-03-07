@@ -39,6 +39,7 @@ matjson::Value generateStages(std::vector<float> sps)
           .from = from1,
           .to = to1,
           .checked = false,
+          .consider = true,
           .attempts = 0,
           .note = "",
           .completedAt = 0,

@@ -21,8 +21,7 @@ private:
   CCMenu *m_buttonMenu = nullptr;
   TextInput *m_input = nullptr;
 
-  std::vector<float>
-      m_2_1_percentages = {};
+  std::vector<float> m_2_1_percentages = {};
   std::vector<float> m_2_2_percentages = {};
 
   CCMenuItemToggler *m_percentagesCheckbox = nullptr;

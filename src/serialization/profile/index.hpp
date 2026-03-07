@@ -38,6 +38,8 @@ struct matjson::Serialize<Range>
         .bestRunFrom = getOr<float>(value, "bestRunFrom", 0.f),
         .bestRunTo = getOr<float>(value, "bestRunTo", 0.f),
         .checked = getOr<bool>(value, "checked", false),
+        .consider = getOr<bool>(value, "consider", true),
+        .automaticallyClosed = getOr<bool>(value, "automaticallyClosed", false),
         .attempts = getOr<int>(value, "attempts", 0),
         .timePlayed = getOr<float>(value, "timePlayed", 0.f),
         .note = getOr<std::string>(value, "note", ""),
@@ -57,6 +59,8 @@ struct matjson::Serialize<Range>
     obj["bestRunFrom"] = r.bestRunFrom;
     obj["bestRunTo"] = r.bestRunTo;
     obj["checked"] = r.checked;
+    obj["consider"] = r.consider;
+    obj["automaticallyClosed"] = r.automaticallyClosed;
     obj["note"] = r.note;
     obj["attempts"] = r.attempts;
     obj["timePlayed"] = r.timePlayed;
