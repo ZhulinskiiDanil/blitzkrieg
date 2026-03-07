@@ -5,6 +5,6 @@
 
 struct ProfileData
 {
-  std::vector<int> tags;
+  std::vector<float> tags;
   std::vector<Stage> stages;
 };

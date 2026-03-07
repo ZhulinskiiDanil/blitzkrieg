@@ -155,27 +155,27 @@ struct matjson::Serialize<std::vector<Stage>>
 
 // ! --- Tags ---- !
 template <>
-struct matjson::Serialize<std::vector<int>>
+struct matjson::Serialize<std::vector<float>>
 {
-  static geode::Result<std::vector<int>> fromJson(matjson::Value const &value)
+  static geode::Result<std::vector<float>> fromJson(matjson::Value const &value)
   {
-    std::vector<int> result;
+    std::vector<float> result;
     if (value.isArray())
     {
       for (auto const &t : value)
       {
         if (t.isNumber())
-          result.push_back(t.asInt().unwrapOr(0));
+          result.push_back(t.asDouble().unwrapOr(0.f));
         else if (t.isString())
-          result.push_back(geode::utils::numFromString<int>(t.asString().unwrapOr("")).unwrapOr(0));
+          result.push_back(geode::utils::numFromString<float>(t.asString().unwrapOr("")).unwrapOr(0.f));
         else
-          result.push_back(0);
+          result.push_back(0.f);
       }
     }
     return geode::Ok(result);
   }
 
-  static matjson::Value toJson(std::vector<int> const &vec)
+  static matjson::Value toJson(std::vector<float> const &vec)
   {
     auto arr = matjson::Value::array();
     for (auto const &i : vec)
@@ -193,7 +193,7 @@ struct matjson::Serialize<ProfileData>
     ProfileData pd;
 
     if (auto arr = value.get("tags"))
-      pd.tags = arr.unwrap().as<std::vector<int>>().unwrap();
+      pd.tags = arr.unwrap().as<std::vector<float>>().unwrap();
     if (auto arr = value.get("stages"))
       pd.stages = arr.unwrap().as<std::vector<Stage>>().unwrap();
 

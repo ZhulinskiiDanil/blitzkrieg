@@ -13,13 +13,13 @@ class ToggablePercentagesList : public CCLayer
   std::vector<float> m_enabledStartposes;
 
 public:
-  static ToggablePercentagesList *create(CCSize size, std::vector<float> startposes);
+  static ToggablePercentagesList *create(CCSize size, std::vector<float> startposes, std::vector<float> disabledStartposes = {});
 
   void reload();
   void setStartposes(std::vector<float> startposes);
   std::vector<float> getEnabledStartposes();
 
 protected:
-  bool init(CCSize size, std::vector<float> startposes);
+  bool init(CCSize size, std::vector<float> startposes, std::vector<float> disabledStartposes);
   void onToggleStartpos(CCObject *);
 };

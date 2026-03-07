@@ -9,6 +9,7 @@
 #include "../../store/GlobalStore.hpp"
 #include "../../utils/generateProfile.hpp"
 #include "../../utils/mergeProfiles.hpp"
+#include "../../utils/findStartposesFromCurrentLevel.hpp"
 
 #include "../../ui/ToggablePercentagesList.hpp"
 

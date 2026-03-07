@@ -1,9 +1,9 @@
 #include "ToggablePercentagesList.hpp"
 
-ToggablePercentagesList *ToggablePercentagesList::create(CCSize size, std::vector<float> startposes)
+ToggablePercentagesList *ToggablePercentagesList::create(CCSize size, std::vector<float> startposes, std::vector<float> disabledStartposes)
 {
 	auto *ret = new ToggablePercentagesList();
-	if (ret && ret->init(size, startposes))
+	if (ret && ret->init(size, startposes, disabledStartposes))
 	{
 		ret->autorelease();
 		return ret;
@@ -13,14 +13,20 @@ ToggablePercentagesList *ToggablePercentagesList::create(CCSize size, std::vecto
 	return nullptr;
 }
 
-bool ToggablePercentagesList::init(CCSize size, std::vector<float> startposes) {
-    if (!CCLayer::init()) return false;
-    this->setContentSize(size);
-    this->setAnchorPoint({0.5f, 1.0f});
-    this->ignoreAnchorPointForPosition(false);
+bool ToggablePercentagesList::init(CCSize size, std::vector<float> startposes, std::vector<float> disabledStartposes)
+{
+	if (!CCLayer::init())
+		return false;
+	this->setContentSize(size);
+	this->setAnchorPoint({0.5f, 1.0f});
+	this->ignoreAnchorPointForPosition(false);
 
 	m_startposes = startposes;
 	m_enabledStartposes = startposes;
+	std::sort(m_startposes.begin(), m_startposes.end());
+
+	for (float disabledStartpos : disabledStartposes)
+		m_enabledStartposes.erase(std::remove(m_enabledStartposes.begin(), m_enabledStartposes.end(), disabledStartpos), m_enabledStartposes.end());
 
 	// ! --- Sroll Border --- !
 	auto scrollBorder = ListBorders::create();
@@ -42,7 +48,7 @@ bool ToggablePercentagesList::init(CCSize size, std::vector<float> startposes) {
 	scrollBG->setOpacity(96);
 	scrollBG->setContentSize(scrollBorder->getContentSize() + ccp(0, 5));
 	scrollBG->setAnchorPoint({0.5f, 0.5f});
-    scrollBG->setPosition(scrollBorder->getPosition());
+	scrollBG->setPosition(scrollBorder->getPosition());
 	scrollBG->ignoreAnchorPointForPosition(false);
 	scrollBorder->setZOrder(scrollBG->getZOrder() + 1);
 	this->addChild(scrollBG);
@@ -77,41 +83,51 @@ void ToggablePercentagesList::reload()
 
 		for (int j = i * 2; j < std::min(static_cast<int>(m_startposes.size()), 2 * (i + 1)); j++)
 		{
+			auto isStartposEnabled = std::find(m_enabledStartposes.begin(), m_enabledStartposes.end(), m_startposes[j]) != m_enabledStartposes.end();
 			auto cell = CCMenu::create();
 			cell->setContentSize({m_scroll->getContentWidth() / 2.0f, 24.0f});
 			if (static_cast<int>(m_startposes.size()) < 2 * (i + 1))
 				cell->setContentSize({m_scroll->getContentWidth(), 24.0f});
 
+			// ! --- Cell Content --- !
 			auto EnabledCellBG = CCScale9Sprite::create("range-completed-bg.png"_spr);
 			EnabledCellBG->setPosition(cell->getContentSize() / 2.0f);
 			EnabledCellBG->setContentSize(cell->getContentSize() - ccp(1, 1));
+			EnabledCellBG->setVisible(isStartposEnabled);
 			EnabledCellBG->setID("enabled-cell-bg");
 			cell->addChild(EnabledCellBG);
 
+			// ! --- Disabled Cell Background --- !
 			auto DisabledCellBG = CCScale9Sprite::create("range-disabled-bg.png"_spr);
 			DisabledCellBG->setPosition(cell->getContentSize() / 2.0f);
 			DisabledCellBG->setContentSize(cell->getContentSize() - ccp(1, 1));
-			DisabledCellBG->setVisible(false);
+			DisabledCellBG->setVisible(!isStartposEnabled);
 			DisabledCellBG->setID("disabled-cell-bg");
 			cell->addChild(DisabledCellBG);
 
+			// ! --- Checkbox --- !
 			auto checkbox = CCMenuItemToggler::createWithStandardSprites(
 					this, menu_selector(ToggablePercentagesList::onToggleStartpos), 1.0f);
 			checkbox->setScale(0.4f);
 			checkbox->setPosition({checkbox->getContentWidth() * checkbox->getScale() / 2.0f + 6.0f, cell->getContentHeight() / 2.0f});
-			checkbox->toggle(true);
+
+			if (isStartposEnabled)
+				checkbox->toggle(true);
+
 			checkbox->setTag(j);
 			checkbox->setUserObject(cell);
 			cell->addChild(checkbox);
 
+			// ! --- Percentage Label --- !
 			auto percentLabel = Label::create(fmt::format("{:.2f}%", m_startposes[j]).c_str(), "gjFont17.fnt");
-			percentLabel->setVariant(Label::Variant::Green);
+			percentLabel->setVariant(isStartposEnabled ? Label::Variant::Green : Label::Variant::Red);
 			percentLabel->setPosition({checkbox->getPositionX() + checkbox->getContentWidth() * checkbox->getScale() / 2.0f + 4.0f, cell->getContentHeight() / 2.0f});
 			percentLabel->setAnchorPoint({0.0f, 0.5f});
 			percentLabel->setScale(0.3f);
 			percentLabel->setID("percent-label");
 			cell->addChild(percentLabel);
 
+			// ! --- Range Labels --- !
 			auto runFromLabel = Label::create(
 					j == m_startposes.size() - 1 ? fmt::format("<small>{:.2f}% - 100.00%</small>", m_startposes[j]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", m_startposes[j], m_startposes[j + 1]).c_str(), "gjFont17.fnt");
 			runFromLabel->setScale(0.25f);
@@ -119,6 +135,7 @@ void ToggablePercentagesList::reload()
 			runFromLabel->setPosition({cell->getContentWidth() - 6.0f, 4.0f});
 			cell->addChild(runFromLabel);
 
+			// ! --- Run To Label --- !
 			auto runToLabel = Label::create(j == 0 ? fmt::format("<small>0.00% - {:.2f}%</small>", m_startposes[0]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", m_startposes[j - 1], m_startposes[j]).c_str(), "gjFont17.fnt");
 			runToLabel->setScale(0.25f);
 			runToLabel->setAnchorPoint({1.0f, 1.0f});
