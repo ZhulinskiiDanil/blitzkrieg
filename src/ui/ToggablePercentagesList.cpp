@@ -15,13 +15,14 @@ ToggablePercentagesList* ToggablePercentagesList::create(CCSize size, std::vecto
 bool ToggablePercentagesList::init(CCSize size, std::vector<float> startposes) {
     if (!CCLayer::init()) return false;
     this->setContentSize(size);
+    this->setAnchorPoint({0.5f, 1.0f});
     this->ignoreAnchorPointForPosition(false);
 
     auto scrollBorder = ListBorders::create();
     scrollBorder->setSpriteFrames("list-top.png"_spr, "list-side.png"_spr, 2.f);
     scrollBorder->updateLayout();
     scrollBorder->setContentSize(size);
-    scrollBorder->setAnchorPoint({0.5f, 1.0f});
+    scrollBorder->setAnchorPoint({0.5f, 0.5f});
     scrollBorder->setPosition(size / 2.0f);
     this->addChild(scrollBorder);
 
@@ -34,7 +35,8 @@ bool ToggablePercentagesList::init(CCSize size, std::vector<float> startposes) {
     scrollBG->setOpacity(96);
 	scrollBG->setContentSize(scrollBorder->getContentSize() + ccp(0, 5));
 	scrollBG->setAnchorPoint({0.5f, 0.5f});
-	scrollBG->setPosition({scrollBorder->getPositionX(), scrollBorder->getPositionY() - scrollBorder->getContentHeight() / 2.0f});
+    scrollBG->setPosition(scrollBorder->getPosition());
+	// scrollBG->setPosition({scrollBorder->getPositionX(), scrollBorder->getPositionY() - scrollBorder->getContentHeight() / 2.0f});
 	scrollBG->ignoreAnchorPointForPosition(false);
     scrollBorder->setZOrder(scrollBG->getZOrder() + 1);
     this->addChild(scrollBG);
@@ -42,7 +44,8 @@ bool ToggablePercentagesList::init(CCSize size, std::vector<float> startposes) {
     auto startposEditScroll = ScrollLayer::create(scrollBorder->getContentSize() - ccp(10, 10));
     startposEditScroll->m_contentLayer->setLayout(ScrollLayer::createDefaultListLayout());
 	startposEditScroll->setAnchorPoint({0.5f, 0.5f});
-	startposEditScroll->setPosition({scrollBorder->getPositionX(), scrollBorder->getPositionY() - scrollBorder->getContentHeight() / 2.0f});
+	startposEditScroll->setPosition(scrollBorder->getPosition());
+	// startposEditScroll->setPosition({scrollBorder->getPositionX(), scrollBorder->getPositionY() - scrollBorder->getContentHeight() / 2.0f});
 	startposEditScroll->ignoreAnchorPointForPosition(false);
     startposEditScroll->setZOrder(scrollBG->getZOrder() + 1);
   
