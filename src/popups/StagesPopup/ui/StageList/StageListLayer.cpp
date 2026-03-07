@@ -92,11 +92,6 @@ bool StageListLayer::init(
     child->setColor(ccc3(15, 15, 15));
   }
 
-  for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
-  {
-    child->setColor(ccc3(15, 15, 15));
-  }
-
   m_listener = StagesChangedEvent().listen(
       [this]()
       {

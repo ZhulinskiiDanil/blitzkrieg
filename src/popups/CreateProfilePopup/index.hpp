@@ -23,6 +23,7 @@ private:
 
   std::vector<float> m_2_1_percentages = {};
   std::vector<float> m_2_2_percentages = {};
+  std::vector<float> m_enabled_percentages = {};
 
   CCMenuItemToggler *m_percentagesCheckbox = nullptr;
   bool m_percentagesChecked = false;

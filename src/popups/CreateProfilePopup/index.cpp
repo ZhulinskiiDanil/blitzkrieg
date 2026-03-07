@@ -1,7 +1,6 @@
 #include "index.hpp"
-#include <alphalaneous.alphas-ui-pack/include/API.hpp>
-
-using namespace alpha::prelude;
+#include "..\..\utils\mergeProfiles.hpp"
+#include "..\..\ui\ToggablePercentagesList.hpp"
 
 CreateProfilePopup *CreateProfilePopup::create(GJGameLevel *level)
 {
@@ -307,86 +306,12 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   checkboxesMenu->updateLayout();
   m_mainLayer->addChild(checkboxesMenu);
 
-  auto scrollBorder = ListBorders::create();
-  scrollBorder->setSpriteFrames("list-top.png"_spr, "list-side.png"_spr, 2.f);
-  scrollBorder->updateLayout();
-  scrollBorder->setContentSize({m_mainLayer->getContentWidth() - 24.0f, 80.0f});
-  scrollBorder->setAnchorPoint({0.5f, 1.0f});
-	scrollBorder->setPosition({m_mainLayer->getContentWidth() / 2.0f, lists->getPositionY() - lists->getContentHeight() - 10.0f});
-  m_mainLayer->addChild(scrollBorder);
-
-  for (auto child : CCArrayExt<CCNodeRGBA *>(scrollBorder->getChildren())) {
-    child->setColor(ccc3(15, 15, 15));
-  }
-
-  auto scrollBG = CCScale9Sprite::create("square02b_001.png");
-	scrollBG->setColor({ 0, 0, 0 });
-  scrollBG->setOpacity(96);
-	scrollBG->setContentSize(scrollBorder->getContentSize() + ccp(0, 5));
-	scrollBG->setAnchorPoint({0.5f, 0.5f});
-	scrollBG->setPosition({scrollBorder->getPositionX(), scrollBorder->getPositionY() - scrollBorder->getContentHeight() / 2.0f});
-	scrollBG->ignoreAnchorPointForPosition(false);
-  scrollBorder->setZOrder(scrollBG->getZOrder() + 1);
-  m_mainLayer->addChild(scrollBG);
-
-  m_startposEditScroll = ScrollLayer::create(scrollBorder->getContentSize() - ccp(10, 10));
-  m_startposEditScroll->m_contentLayer->setLayout(ScrollLayer::createDefaultListLayout());
-	m_startposEditScroll->setAnchorPoint({0.5f, 0.5f});
-	m_startposEditScroll->setPosition({scrollBorder->getPositionX(), scrollBorder->getPositionY() - scrollBorder->getContentHeight() / 2.0f});
-	m_startposEditScroll->ignoreAnchorPointForPosition(false);
-  m_startposEditScroll->setZOrder(scrollBG->getZOrder() + 1);
-  
   auto percentages = m_percentagesChecked ? m_2_1_percentages : m_2_2_percentages;
-  for (int i = 0; i < percentages.size() / 2 + 1; i++) {
-    auto row = CCMenu::create();
-    row->setContentSize({m_startposEditScroll->getContentWidth(), 24.0f});
-    row->setLayout(RowLayout::create()
-      ->setAxisAlignment(AxisAlignment::Between));
-    
-    for (int j = i * 2; j < std::min(static_cast<int>(percentages.size()), 2 * (i + 1)); j++) {
-      auto cell = CCMenu::create();
-      cell->setContentSize({m_startposEditScroll->getContentWidth() / 2.0f, 24.0f});
-      if (static_cast<int>(percentages.size()) < 2 * (i + 1)) cell->setContentSize({m_startposEditScroll->getContentWidth(), 24.0f});
-
-      auto EnabledCellBG = CCScale9Sprite::create("range-completed-bg.png"_spr);
-      EnabledCellBG->setPosition(cell->getContentSize() / 2.0f);
-      EnabledCellBG->setContentSize(cell->getContentSize() - ccp(1, 1));
-      EnabledCellBG->setID("enabled-cell-bg");
-      cell->addChild(EnabledCellBG);
-
-      auto DisabledCellBG = CCScale9Sprite::create("range-disabled-bg.png"_spr);
-      DisabledCellBG->setPosition(cell->getContentSize() / 2.0f);
-      DisabledCellBG->setContentSize(cell->getContentSize() - ccp(1, 1));
-      DisabledCellBG->setVisible(false);
-      DisabledCellBG->setID("disabled-cell-bg");
-      cell->addChild(DisabledCellBG);
-
-      auto checkbox = CCMenuItemToggler::createWithStandardSprites(
-        this, menu_selector(CreateProfilePopup::onToggleStartpos), 1.0f);
-      checkbox->setScale(0.4f);
-      checkbox->setPosition({checkbox->getContentWidth() * checkbox->getScale() / 2.0f + 6.0f, cell->getContentHeight() / 2.0f});
-      checkbox->toggle(true);
-      checkbox->setTag(j);
-      checkbox->setUserObject(cell);
-      cell->addChild(checkbox);
-
-      auto percentLabel = CCLabelBMFont::create(fmt::format("{:.2f}", percentages[j]).c_str(), "gjFont17.fnt");
-      percentLabel->setPosition({checkbox->getPositionX() + checkbox->getContentWidth() * checkbox->getScale() / 2.0f + 6.0f, cell->getContentHeight() / 2.0f});
-      percentLabel->setAnchorPoint({0.0f, 0.5f});
-      percentLabel->setScale(0.3f);
-      cell->addChild(percentLabel);
-
-      row->addChild(cell);
-      row->updateLayout();
-    }
-
-    m_startposEditScroll->m_contentLayer->addChild(row);
-  }
-  m_startposEditScroll->m_contentLayer->updateLayout();
-  m_startposEditScroll->moveToTop();
-  m_startposEditScroll->m_peekLimitTop = 24.0f;
-  m_startposEditScroll->m_peekLimitBottom = 24.0f;
-  m_mainLayer->addChild(m_startposEditScroll);
+  auto scrollMenu = ToggablePercentagesList::create(
+    {m_mainLayer->getContentWidth() - 24.0f, 80.0f},
+    percentages);
+  scrollMenu->setPosition({m_mainLayer->getContentWidth() / 2.0f, lists->getPositionY() - lists->getContentHeight() - 10.0f});
+  m_mainLayer->addChild(scrollMenu);
 
   // ! --- Other --- !
   this->setKeypadEnabled(true);
@@ -434,13 +359,16 @@ void CreateProfilePopup::onCreateProfile(CCObject *sender)
     return;
   }
 
-  auto profile = generateProfile(levelName, m_percentagesChecked ? m_2_1_percentages : m_2_2_percentages);
-  GlobalStore::get()->updateProfile(profile.as<Profile>().unwrap());
+  auto profile1 = generateProfile(levelName, m_percentagesChecked ? m_2_1_percentages : m_2_2_percentages).as<Profile>().unwrap();
+  auto profile2 = generateProfile(levelName, m_enabled_percentages).as<Profile>().unwrap();
+
+  auto profile = mergeProfiles(profile1, profile2, false);
+  GlobalStore::get()->updateProfile(profile);
 
   if (m_useChecked)
-    linkProfileWithLevel(profile.as<Profile>().unwrap(), m_level);
+    linkProfileWithLevel(profile, m_level);
   if (m_pinChecked)
-    GlobalStore::get()->pinProfileById(profile.as<Profile>().unwrap().id, true);
+    GlobalStore::get()->pinProfileById(profile.id, true);
 
   this->onClose(sender);
   ProfilesChangedEvent().send();
@@ -465,21 +393,4 @@ void CreateProfilePopup::onToggleUse(CCObject *sender)
 void CreateProfilePopup::onTogglePin(CCObject *sender)
 {
   if (m_pinCheckbox) m_pinChecked = !m_pinChecked;
-}
-
-void CreateProfilePopup::onToggleStartpos(CCObject *sender)
-{
-  auto checkbox = static_cast<CCMenuItemToggler*>(sender);
-  auto cell = static_cast<CCMenu*>(checkbox->getUserObject());
-  auto EnabledCellBG = cell->getChildByID("enabled-cell-bg");
-  auto DisabledCellBG = cell->getChildByID("disabled-cell-bg");
-
-  if (!checkbox->isToggled()) {
-    EnabledCellBG->setVisible(true);
-    DisabledCellBG->setVisible(false);
-  }
-  else {
-    EnabledCellBG->setVisible(false);
-    DisabledCellBG->setVisible(true);
-  }
 }

@@ -14,8 +14,7 @@
     "tags": ["gameplay", "interface", "enhancement", "offline"],
     "dependencies": {
         "cvolton.level-id-api": "v2.0.0",
-        "geode.node-ids": ">=v1.23.0",
-        "alphalaneous.alphas-ui-pack": ">=v1.0.4"
+        "geode.node-ids": ">=v1.23.0"
     },
     "links": {
         "homepage": "https://dgkr-community.vercel.app/blitzkrieg",
