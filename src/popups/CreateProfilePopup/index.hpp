@@ -34,14 +34,18 @@ private:
   CCMenuItemToggler *m_pinCheckbox = nullptr;
   bool m_pinChecked = false;
 
+  ScrollLayer* m_startposEditScroll;
+
   void onCreateProfile(CCObject *);
   void onTogglePercentages(CCObject *);
   void onToggleUse(CCObject *);
   void onTogglePin(CCObject *);
+  void onToggleStartpos(CCObject*);
 
   void findStartPoses();
 
   bool init(GJGameLevel *);
+  // void update(float delta);
 
 public:
   static CreateProfilePopup *create(GJGameLevel *);

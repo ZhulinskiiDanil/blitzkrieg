@@ -12,6 +12,7 @@ struct Range
   float bestRunFrom;
   float bestRunTo;
   bool checked;
+  bool consider;
   int attempts;
   float timePlayed;
   std::string note;
