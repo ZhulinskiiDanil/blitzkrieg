@@ -140,7 +140,12 @@ void StageListLayer::reload()
   const float totalWidth = m_scroll->getContentWidth();
   const float cellWidth = (totalWidth - gap) / 2.f;
 
-  size_t total = m_stage->ranges.size();
+  std::vector<Range *> visibleRanges;
+  for (auto &r : m_stage->ranges)
+    if (r.consider)
+      visibleRanges.push_back(&r);
+
+  size_t total = visibleRanges.size();
 
   for (size_t i = 0; i < total;)
   {
@@ -157,7 +162,7 @@ void StageListLayer::reload()
 
     for (size_t j = 0; j < cellsInRow; ++j, ++i)
     {
-      auto &range = m_stage->ranges[i];
+      auto &range = *visibleRanges[i];
       CCSize cellSize = (cellsInRow == 1)
                             ? CCSize(totalWidth, cellHeight)
                             : CCSize(cellWidth, cellHeight);
