@@ -5,10 +5,21 @@
 
 using namespace geode::prelude;
 
-class ToggablePercentagesList : public CCLayer {
+class ToggablePercentagesList : public CCLayer
+{
+  ScrollLayer *m_scroll = nullptr;
+  ScrollLayer *m_endposEditScroll = nullptr;
+  std::vector<float> m_startposes;
+  std::vector<float> m_enabledStartposes;
+
 public:
-    static ToggablePercentagesList* create(CCSize size, std::vector<float> startposes);
+  static ToggablePercentagesList *create(CCSize size, std::vector<float> startposes);
+
+  void reload();
+  void setStartposes(std::vector<float> startposes);
+  std::vector<float> getEnabledStartposes();
+
 protected:
-    bool init(CCSize size, std::vector<float> startposes);
-    void onToggleStartpos(CCObject*);
+  bool init(CCSize size, std::vector<float> startposes);
+  void onToggleStartpos(CCObject *);
 };

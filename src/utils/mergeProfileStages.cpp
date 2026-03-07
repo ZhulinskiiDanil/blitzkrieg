@@ -5,7 +5,7 @@
 
 static bool sameRange(const Range &a, const Range &b)
 {
-  const float eps = 0.001f;
+  const float eps = 0.01f;
   return std::fabs(a.from - b.from) < eps && std::fabs(a.to - b.to) < eps;
 }
 
@@ -51,16 +51,16 @@ std::vector<Stage> mergeProfileStages(
             [&](const Range &rOld)
             { return sameRange(rOld, rNew); });
 
-        rNew.consider = true;
-
         // Совпадает → переносим прогресс
         if (itR != stageOld.ranges.end())
         {
           rNew = *itR;
+          rNew.consider = true;
         }
         else
         {
           // Новый range
+          rNew.consider = true;
           if (automaticallyCloseRuns && stageNew.checked)
           {
             rNew.checked = true;
@@ -93,6 +93,7 @@ std::vector<Stage> mergeProfileStages(
       for (auto &r : stageNew.ranges)
       {
         r.consider = true;
+
         if (automaticallyCloseRuns && stageNew.checked)
         {
           r.checked = true;
