@@ -27,12 +27,13 @@ protected:
 
   const std::chrono::milliseconds debounceDuration{300};
 
-  GJGameLevel *m_level = nullptr;
+  GJGameLevel *m_level;
   // EventListener<EventFilter<ProfileChangedEvent>>
   ListenerHandle m_listener;
 
   CCSize m_size;
-  CCMenu *m_buttonMenu = nullptr;
+  CCMenu *m_toolsMenu;
+  CCMenu *m_buttonMenu;
 
   void createBackground();
   void createLabels();

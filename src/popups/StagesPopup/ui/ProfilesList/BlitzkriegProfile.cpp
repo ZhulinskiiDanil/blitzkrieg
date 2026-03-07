@@ -65,9 +65,21 @@ void BlitzkriegProfile::updateFromCurrentProfile()
 
 void BlitzkriegProfile::createMenu()
 {
+  m_toolsMenu = CCMenu::create();
+  m_toolsMenu->setAnchorPoint({1.f, 0.5f});
+  m_toolsMenu->setPosition({m_size.width - 5.f, m_size.height / 2});
+  m_toolsMenu->setLayout(
+      RowLayout::create()
+          ->setGap(8.0f)
+          ->setAutoScale(false)
+          ->setAutoGrowAxis(true)
+          ->setAxisAlignment(AxisAlignment::End)
+          ->setCrossAxisAlignment(AxisAlignment::Center));
+  this->addChild(m_toolsMenu);
+
   m_buttonMenu = CCMenu::create();
-  m_buttonMenu->setAnchorPoint({1.f, 0.5f});
-  m_buttonMenu->setPosition({m_size.width - 5.f, m_size.height / 2});
+  m_buttonMenu->setAnchorPoint({1.0f, 0.5f});
+  m_buttonMenu->setPosition({m_toolsMenu->getContentWidth(), m_toolsMenu->getContentHeight() / 2.0f});
   m_buttonMenu->setLayout(
       RowLayout::create()
           ->setGap(2.5f)
@@ -76,7 +88,7 @@ void BlitzkriegProfile::createMenu()
           ->setAxisAlignment(AxisAlignment::End)
           ->setCrossAxisAlignment(AxisAlignment::Center));
   // m_buttonMenu->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
-  this->addChild(m_buttonMenu);
+  m_toolsMenu->addChild(m_buttonMenu);
 
   updateButtons();
   m_buttonMenu->updateLayout();
@@ -88,7 +100,21 @@ void BlitzkriegProfile::updateButtons()
     return;
 
   m_buttonMenu->removeAllChildrenWithCleanup(true);
+  m_toolsMenu->removeAllChildrenWithCleanup(true);
 
+  // ! Pin/Unpin Button
+  auto pinnedSpr = CCSprite::createWithSpriteFrameName("pin.png"_spr);
+  pinnedSpr->setColor({245, 174, 125});
+  auto unpinnedSpr = CCSprite::createWithSpriteFrameName("pin.png"_spr);
+  unpinnedSpr->setOpacity(128);
+  auto pinBtn = CCMenuItemToggler::create(unpinnedSpr, pinnedSpr, this,
+    menu_selector(BlitzkriegProfile::onTogglePinProfile));
+  pinBtn->toggle(m_isPinned);
+  pinBtn->ignoreAnchorPointForPosition(true);
+  pinBtn->setScale(.5f);
+
+  m_toolsMenu->addChild(pinBtn);
+  m_toolsMenu->updateLayout();
   // ! Select Button
   createButton(
       m_isCurrent ? "unlink-profile-btn.png"_spr : "link-profile-btn.png"_spr,
@@ -97,10 +123,6 @@ void BlitzkriegProfile::updateButtons()
   createButton(
       "up-profile-btn.png"_spr,
       menu_selector(BlitzkriegProfile::onUpProfile));
-  // ! Pin/Unpin Button
-  createButton(
-      m_isPinned ? "unpin-profile-btn.png"_spr : "pin-profile-btn.png"_spr,
-      menu_selector(BlitzkriegProfile::onTogglePinProfile));
   // ! Edit Button
   createButton(
       "edit-profile-btn.png"_spr,
@@ -109,6 +131,9 @@ void BlitzkriegProfile::updateButtons()
   createButton(
       "delete-profile-btn.png"_spr,
       menu_selector(BlitzkriegProfile::onDeleteProfile));
+
+  m_toolsMenu->addChild(m_buttonMenu);
+  m_toolsMenu->updateLayout();
 }
 
 void BlitzkriegProfile::createButton(
@@ -197,9 +222,9 @@ void BlitzkriegProfile::onTogglePinProfile(CCObject *obj)
 {
   m_isPinned = !m_isPinned;
   GlobalStore::get()->pinProfileById(m_profile.id, m_isPinned);
-  updateButtons();
-
   ProfilesChangedEvent().send();
+  
+  updateButtons();
 }
 
 void BlitzkriegProfile::onUpProfile(CCObject *obj)
