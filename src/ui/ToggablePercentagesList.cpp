@@ -46,7 +46,7 @@ bool ToggablePercentagesList::init(CCSize size, std::vector<float> startposes) {
 	startposEditScroll->ignoreAnchorPointForPosition(false);
     startposEditScroll->setZOrder(scrollBG->getZOrder() + 1);
   
-    for (int i = 0; i < startposes.size() / 2 + 1; i++) {
+    for (int i = 0; i < (startposes.size() + 2 - 1) / 2; i++) {
         auto row = CCMenu::create();
         row->setContentSize({startposEditScroll->getContentWidth(), 24.0f});
         row->setLayout(RowLayout::create()
