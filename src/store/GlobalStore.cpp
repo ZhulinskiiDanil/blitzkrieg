@@ -119,7 +119,7 @@ void GlobalStore::resetRun()
 
 int GlobalStore::checkRun(std::string profileId, float timePlayed)
 {
-  const float eps = 0.001f;
+  const float eps = 0.01f;
   const float runDiff = std::abs(runEnd - runStart);
   auto currentProfile = getProfileById(profileId);
 

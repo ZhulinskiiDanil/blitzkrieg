@@ -1,15 +1,16 @@
 #include "ToggablePercentagesList.hpp"
 
-ToggablePercentagesList* ToggablePercentagesList::create(CCSize size, std::vector<float> startposes) {
-    auto *ret = new ToggablePercentagesList();
-    if (ret && ret->init(size, startposes))
-    {
-        ret->autorelease();
-        return ret;
-    }
+ToggablePercentagesList *ToggablePercentagesList::create(CCSize size, std::vector<float> startposes)
+{
+	auto *ret = new ToggablePercentagesList();
+	if (ret && ret->init(size, startposes))
+	{
+		ret->autorelease();
+		return ret;
+	}
 
-    CC_SAFE_DELETE(ret);
-    return nullptr;
+	CC_SAFE_DELETE(ret);
+	return nullptr;
 }
 
 bool ToggablePercentagesList::init(CCSize size, std::vector<float> startposes) {
@@ -18,124 +19,159 @@ bool ToggablePercentagesList::init(CCSize size, std::vector<float> startposes) {
     this->setAnchorPoint({0.5f, 1.0f});
     this->ignoreAnchorPointForPosition(false);
 
-    auto scrollBorder = ListBorders::create();
-    scrollBorder->setSpriteFrames("list-top.png"_spr, "list-side.png"_spr, 2.f);
-    scrollBorder->updateLayout();
-    scrollBorder->setContentSize(size);
-    scrollBorder->setAnchorPoint({0.5f, 0.5f});
-    scrollBorder->setPosition(size / 2.0f);
-    this->addChild(scrollBorder);
+	m_startposes = startposes;
+	m_enabledStartposes = startposes;
 
-    for (auto child : CCArrayExt<CCNodeRGBA *>(scrollBorder->getChildren())) {
-        child->setColor(ccc3(15, 15, 15));
-    }
+	// ! --- Sroll Border --- !
+	auto scrollBorder = ListBorders::create();
+	scrollBorder->setSpriteFrames("list-top.png"_spr, "list-side.png"_spr, 2.f);
+	scrollBorder->updateLayout();
+	scrollBorder->setContentSize(size);
+	scrollBorder->setAnchorPoint({0.5f, 0.5f});
+	scrollBorder->setPosition(size / 2.0f);
+	this->addChild(scrollBorder);
 
-    auto scrollBG = CCScale9Sprite::create("square02b_001.png");
-	scrollBG->setColor({ 0, 0, 0 });
-    scrollBG->setOpacity(96);
+	for (auto child : CCArrayExt<CCNodeRGBA *>(scrollBorder->getChildren()))
+	{
+		child->setColor(ccc3(15, 15, 15));
+	}
+
+	// ! --- Sroll Background --- !
+	auto scrollBG = CCScale9Sprite::create("square02b_001.png");
+	scrollBG->setColor({0, 0, 0});
+	scrollBG->setOpacity(96);
 	scrollBG->setContentSize(scrollBorder->getContentSize() + ccp(0, 5));
 	scrollBG->setAnchorPoint({0.5f, 0.5f});
     scrollBG->setPosition(scrollBorder->getPosition());
-	// scrollBG->setPosition({scrollBorder->getPositionX(), scrollBorder->getPositionY() - scrollBorder->getContentHeight() / 2.0f});
 	scrollBG->ignoreAnchorPointForPosition(false);
-    scrollBorder->setZOrder(scrollBG->getZOrder() + 1);
-    this->addChild(scrollBG);
+	scrollBorder->setZOrder(scrollBG->getZOrder() + 1);
+	this->addChild(scrollBG);
 
-    auto startposEditScroll = ScrollLayer::create(scrollBorder->getContentSize() - ccp(10, 10));
-    startposEditScroll->m_contentLayer->setLayout(ScrollLayer::createDefaultListLayout());
-	startposEditScroll->setAnchorPoint({0.5f, 0.5f});
-	startposEditScroll->setPosition(scrollBorder->getPosition());
-	// startposEditScroll->setPosition({scrollBorder->getPositionX(), scrollBorder->getPositionY() - scrollBorder->getContentHeight() / 2.0f});
-	startposEditScroll->ignoreAnchorPointForPosition(false);
-    startposEditScroll->setZOrder(scrollBG->getZOrder() + 1);
-  
-    for (int i = 0; i < (startposes.size() + 2 - 1) / 2; i++) {
-        auto row = CCMenu::create();
-        row->setContentSize({startposEditScroll->getContentWidth(), 24.0f});
-        row->setLayout(RowLayout::create()
-        ->setAxisAlignment(AxisAlignment::Between)
-        ->setGap(2.5f));
-        
-        for (int j = i * 2; j < std::min(static_cast<int>(startposes.size()), 2 * (i + 1)); j++) {
-        auto cell = CCMenu::create();
-        cell->setContentSize({startposEditScroll->getContentWidth() / 2.0f, 24.0f});
-        if (static_cast<int>(startposes.size()) < 2 * (i + 1)) cell->setContentSize({startposEditScroll->getContentWidth(), 24.0f});
+	// ! --- Sroll Layer --- !
+	m_scroll = ScrollLayer::create(scrollBorder->getContentSize() - ccp(10, 10));
+	m_scroll->m_contentLayer->setLayout(ScrollLayer::createDefaultListLayout());
+	m_scroll->setAnchorPoint({0.5f, 0.5f});
+	m_scroll->setPosition(scrollBorder->getPosition());
+	m_scroll->ignoreAnchorPointForPosition(false);
+	m_scroll->setZOrder(scrollBG->getZOrder() + 1);
+	m_scroll->m_peekLimitTop = 24.0f;
+	m_scroll->m_peekLimitBottom = 24.0f;
+	this->addChild(m_scroll);
 
-        auto EnabledCellBG = CCScale9Sprite::create("range-completed-bg.png"_spr);
-        EnabledCellBG->setPosition(cell->getContentSize() / 2.0f);
-        EnabledCellBG->setContentSize(cell->getContentSize() - ccp(1, 1));
-        EnabledCellBG->setID("enabled-cell-bg");
-        cell->addChild(EnabledCellBG);
+	reload();
 
-        auto DisabledCellBG = CCScale9Sprite::create("range-disabled-bg.png"_spr);
-        DisabledCellBG->setPosition(cell->getContentSize() / 2.0f);
-        DisabledCellBG->setContentSize(cell->getContentSize() - ccp(1, 1));
-        DisabledCellBG->setVisible(false);
-        DisabledCellBG->setID("disabled-cell-bg");
-        cell->addChild(DisabledCellBG);
+	return true;
+}
 
-        auto checkbox = CCMenuItemToggler::createWithStandardSprites(
-            this, menu_selector(ToggablePercentagesList::onToggleStartpos), 1.0f);
-        checkbox->setScale(0.4f);
-        checkbox->setPosition({checkbox->getContentWidth() * checkbox->getScale() / 2.0f + 6.0f, cell->getContentHeight() / 2.0f});
-        checkbox->toggle(true);
-        checkbox->setTag(j);
-        checkbox->setUserObject(cell);
-        cell->addChild(checkbox);
+void ToggablePercentagesList::reload()
+{
+	m_scroll->m_contentLayer->removeAllChildrenWithCleanup(true);
 
-        auto percentLabel = Label::create(fmt::format("{:.2f}%", startposes[j]).c_str(), "gjFont17.fnt");
-        percentLabel->setVariant(Label::Variant::Green);
-        percentLabel->setPosition({checkbox->getPositionX() + checkbox->getContentWidth() * checkbox->getScale() / 2.0f + 4.0f, cell->getContentHeight() / 2.0f});
-        percentLabel->setAnchorPoint({0.0f, 0.5f});
-        percentLabel->setScale(0.3f);
-        percentLabel->setID("percent-label");
-        cell->addChild(percentLabel);
+	for (int i = 0; i < (m_startposes.size() + 2 - 1) / 2; i++)
+	{
+		auto row = CCMenu::create();
+		row->setContentSize({m_scroll->getContentWidth(), 24.0f});
+		row->setLayout(RowLayout::create()
+											 ->setAxisAlignment(AxisAlignment::Between)
+											 ->setGap(2.5f));
 
-        auto runFromLabel = Label::create(
-            j == startposes.size()-1 ? fmt::format("<small>{:.2f}% - 100.00%</small>", startposes[j]).c_str() : 
-            fmt::format("<small>{:.2f}% - {:.2f}%</small>", startposes[j], startposes[j+1]).c_str(), "gjFont17.fnt");
-        runFromLabel->setScale(0.25f);
-        runFromLabel->setAnchorPoint({1.0f, 0.0f});
-        runFromLabel->setPosition({cell->getContentWidth() - 6.0f, 4.0f});
-        cell->addChild(runFromLabel);
+		for (int j = i * 2; j < std::min(static_cast<int>(m_startposes.size()), 2 * (i + 1)); j++)
+		{
+			auto cell = CCMenu::create();
+			cell->setContentSize({m_scroll->getContentWidth() / 2.0f, 24.0f});
+			if (static_cast<int>(m_startposes.size()) < 2 * (i + 1))
+				cell->setContentSize({m_scroll->getContentWidth(), 24.0f});
 
-        auto runToLabel = Label::create(j == 0 ? fmt::format("<small>0.00% - {:.2f}%</small>", startposes[0]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", startposes[j-1], startposes[j]).c_str(), "gjFont17.fnt");
-        runToLabel->setScale(0.25f);
-        runToLabel->setAnchorPoint({1.0f, 1.0f});
-        runToLabel->setPosition({cell->getContentWidth() - 6.0f, cell->getContentHeight() - 4.0f});
-        cell->addChild(runToLabel);
+			auto EnabledCellBG = CCScale9Sprite::create("range-completed-bg.png"_spr);
+			EnabledCellBG->setPosition(cell->getContentSize() / 2.0f);
+			EnabledCellBG->setContentSize(cell->getContentSize() - ccp(1, 1));
+			EnabledCellBG->setID("enabled-cell-bg");
+			cell->addChild(EnabledCellBG);
 
-        row->addChild(cell);
-        row->updateLayout();
-        }
+			auto DisabledCellBG = CCScale9Sprite::create("range-disabled-bg.png"_spr);
+			DisabledCellBG->setPosition(cell->getContentSize() / 2.0f);
+			DisabledCellBG->setContentSize(cell->getContentSize() - ccp(1, 1));
+			DisabledCellBG->setVisible(false);
+			DisabledCellBG->setID("disabled-cell-bg");
+			cell->addChild(DisabledCellBG);
 
-        startposEditScroll->m_contentLayer->addChild(row);
-    }
-    startposEditScroll->m_contentLayer->updateLayout();
-    startposEditScroll->moveToTop();
-    startposEditScroll->m_peekLimitTop = 24.0f;
-    startposEditScroll->m_peekLimitBottom = 24.0f;
-    this->addChild(startposEditScroll);
+			auto checkbox = CCMenuItemToggler::createWithStandardSprites(
+					this, menu_selector(ToggablePercentagesList::onToggleStartpos), 1.0f);
+			checkbox->setScale(0.4f);
+			checkbox->setPosition({checkbox->getContentWidth() * checkbox->getScale() / 2.0f + 6.0f, cell->getContentHeight() / 2.0f});
+			checkbox->toggle(true);
+			checkbox->setTag(j);
+			checkbox->setUserObject(cell);
+			cell->addChild(checkbox);
 
-    return true;
+			auto percentLabel = Label::create(fmt::format("{:.2f}%", m_startposes[j]).c_str(), "gjFont17.fnt");
+			percentLabel->setVariant(Label::Variant::Green);
+			percentLabel->setPosition({checkbox->getPositionX() + checkbox->getContentWidth() * checkbox->getScale() / 2.0f + 4.0f, cell->getContentHeight() / 2.0f});
+			percentLabel->setAnchorPoint({0.0f, 0.5f});
+			percentLabel->setScale(0.3f);
+			percentLabel->setID("percent-label");
+			cell->addChild(percentLabel);
+
+			auto runFromLabel = Label::create(
+					j == m_startposes.size() - 1 ? fmt::format("<small>{:.2f}% - 100.00%</small>", m_startposes[j]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", m_startposes[j], m_startposes[j + 1]).c_str(), "gjFont17.fnt");
+			runFromLabel->setScale(0.25f);
+			runFromLabel->setAnchorPoint({1.0f, 0.0f});
+			runFromLabel->setPosition({cell->getContentWidth() - 6.0f, 4.0f});
+			cell->addChild(runFromLabel);
+
+			auto runToLabel = Label::create(j == 0 ? fmt::format("<small>0.00% - {:.2f}%</small>", m_startposes[0]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", m_startposes[j - 1], m_startposes[j]).c_str(), "gjFont17.fnt");
+			runToLabel->setScale(0.25f);
+			runToLabel->setAnchorPoint({1.0f, 1.0f});
+			runToLabel->setPosition({cell->getContentWidth() - 6.0f, cell->getContentHeight() - 4.0f});
+			cell->addChild(runToLabel);
+
+			row->addChild(cell);
+			row->updateLayout();
+		}
+
+		m_scroll->m_contentLayer->addChild(row);
+	}
+
+	m_scroll->m_contentLayer->updateLayout();
+	m_scroll->moveToTop();
+}
+
+void ToggablePercentagesList::setStartposes(std::vector<float> startposes)
+{
+	m_startposes = startposes;
+	m_enabledStartposes = startposes;
+	reload();
+}
+
+std::vector<float> ToggablePercentagesList::getEnabledStartposes()
+{
+	return m_enabledStartposes;
 }
 
 void ToggablePercentagesList::onToggleStartpos(CCObject *sender)
 {
-    auto checkbox = static_cast<CCMenuItemToggler*>(sender);
-    auto cell = static_cast<CCMenu*>(checkbox->getUserObject());
-    auto percentLabel = static_cast<Label*>(cell->getChildByID("percent-label"));
-    auto EnabledCellBG = cell->getChildByID("enabled-cell-bg");
-    auto DisabledCellBG = cell->getChildByID("disabled-cell-bg");
+	auto checkbox = static_cast<CCMenuItemToggler *>(sender);
+	auto cell = static_cast<CCMenu *>(checkbox->getUserObject());
+	auto percentLabel = static_cast<Label *>(cell->getChildByID("percent-label"));
+	auto EnabledCellBG = cell->getChildByID("enabled-cell-bg");
+	auto DisabledCellBG = cell->getChildByID("disabled-cell-bg");
 
-    if (!checkbox->isToggled()) {
-        EnabledCellBG->setVisible(true);
-        DisabledCellBG->setVisible(false);
-        percentLabel->setVariant(Label::Variant::Green);
-    }
-    else {
-        EnabledCellBG->setVisible(false);
-        DisabledCellBG->setVisible(true);
-        percentLabel->setVariant(Label::Variant::Red);
-    }
+	if (!checkbox->isToggled())
+	{
+		EnabledCellBG->setVisible(true);
+		DisabledCellBG->setVisible(false);
+		percentLabel->setVariant(Label::Variant::Green);
+
+		m_enabledStartposes.push_back(m_startposes[checkbox->getTag()]);
+		std::sort(m_enabledStartposes.begin(), m_enabledStartposes.end());
+	}
+	else
+	{
+		EnabledCellBG->setVisible(false);
+		DisabledCellBG->setVisible(true);
+		percentLabel->setVariant(Label::Variant::Red);
+
+		m_enabledStartposes.erase(std::remove(m_enabledStartposes.begin(), m_enabledStartposes.end(), m_startposes[checkbox->getTag()]), m_enabledStartposes.end());
+		std::sort(m_enabledStartposes.begin(), m_enabledStartposes.end());
+	}
 }

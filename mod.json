@@ -1,5 +1,5 @@
 {
-    "geode": "5.3.0",
+    "geode": "5.0.1",
     "gd": {
         "win": "2.2081",
         "android": "2.2081",
@@ -11,7 +11,12 @@
     "version": "v1.6.5",
     "developer": "Zhulis",
     "description": "Blitzkrieg progression",
-    "tags": ["gameplay", "interface", "enhancement", "offline"],
+    "tags": [
+        "gameplay",
+        "interface",
+        "enhancement",
+        "offline"
+    ],
     "dependencies": {
         "cvolton.level-id-api": "v2.0.0",
         "geode.node-ids": ">=v1.23.0"
@@ -21,10 +26,17 @@
         "community": "https://discord.gg/duuG4RqJKh"
     },
     "resources": {
-        "sprites": ["resources/sprites/*.png", "resources/sprites/range/*.png"],
+        "sprites": [
+            "resources/sprites/*.png",
+            "resources/sprites/range/*.png"
+        ],
         "spritesheets": {
-            "Borders": ["resources/sprites/borders/*.png"],
-            "Buttons": ["resources/sprites/buttons/*.png"]
+            "Borders": [
+                "resources/sprites/borders/*.png"
+            ],
+            "Buttons": [
+                "resources/sprites/buttons/*.png"
+            ]
         },
         "files": [
             "resources/audio/progress_complete.mp3",
@@ -74,7 +86,10 @@
                 "dialog": "open",
                 "filters": [
                     {
-                        "files": ["*.mp3", "*.ogg"],
+                        "files": [
+                            "*.mp3",
+                            "*.ogg"
+                        ],
                         "description": "Sound Files"
                     }
                 ]
@@ -95,7 +110,10 @@
                 "dialog": "open",
                 "filters": [
                     {
-                        "files": ["*.mp3", "*.ogg"],
+                        "files": [
+                            "*.mp3",
+                            "*.ogg"
+                        ],
                         "description": "Sound Files"
                     }
                 ]
