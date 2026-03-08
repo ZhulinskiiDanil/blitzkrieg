@@ -1,3 +1,25 @@
+# 2.0.0-beta.1
+- Ability to create profiles with specific percentages
+- Ability to edit profiles with specific percentages
+- Warning when creating a profile with fewer than 6 start positions
+- Blitzkrieg button at the end of a level
+- Added error popups for profile import errors
+- Additional utilities, including `getMetaInfoFromStages`
+
+- Updated the mod logo
+- Updated Geode to version 5.0.3
+- Renamed "Profiles List" tab to "Profiles"
+- Renamed "Current Stage" tab to "Stage Browser"
+- Updated unchecked stage handling in `StagesList` to prevent incorrect stage displaying
+
+- Refactored utils and removed `getProfileStats`
+
+- Fixed stage displaying issues
+- Fixed a bug where the next stage would not unlock even when all progresses were completed
+- Fixed crashes when switching between the Profiles tab and the Stage Browser
+- Fixed a bug where custom SFX sounds were cut off due to their length
+- Various crashes
+
 # 1.6.5
 - Added node-ids dependency
 - Autofill profile name with level name

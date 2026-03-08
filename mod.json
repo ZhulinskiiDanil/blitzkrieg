@@ -8,10 +8,15 @@
   },
   "id": "zhulis.blitzkrieg",
   "name": "Blitzkrieg",
-  "version": "v1.6.5",
+  "version": "v2.0.0-beta.1",
   "developer": "Zhulis",
   "description": "Blitzkrieg progression",
-  "tags": ["gameplay", "interface", "enhancement", "offline"],
+  "tags": [
+    "gameplay",
+    "interface",
+    "enhancement",
+    "offline"
+  ],
   "dependencies": {
     "cvolton.level-id-api": "v2.0.0",
     "geode.node-ids": ">=v1.23.0"
@@ -27,8 +32,12 @@
       "resources/sprites/range/*.png"
     ],
     "spritesheets": {
-      "Borders": ["resources/sprites/borders/*.png"],
-      "Buttons": ["resources/sprites/buttons/*.png"]
+      "Borders": [
+        "resources/sprites/borders/*.png"
+      ],
+      "Buttons": [
+        "resources/sprites/buttons/*.png"
+      ]
     },
     "files": [
       "resources/audio/progress_complete.mp3",
@@ -78,7 +87,10 @@
         "dialog": "open",
         "filters": [
           {
-            "files": ["*.mp3", "*.ogg"],
+            "files": [
+              "*.mp3",
+              "*.ogg"
+            ],
             "description": "Sound Files"
           }
         ]
@@ -99,7 +111,10 @@
         "dialog": "open",
         "filters": [
           {
-            "files": ["*.mp3", "*.ogg"],
+            "files": [
+              "*.mp3",
+              "*.ogg"
+            ],
             "description": "Sound Files"
           }
         ]
