@@ -27,6 +27,7 @@
     },
     "resources": {
         "sprites": [
+            "resources/logo-circle.png",
             "resources/sprites/*.png",
             "resources/sprites/range/*.png"
         ],
