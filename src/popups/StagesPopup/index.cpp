@@ -48,11 +48,6 @@ void StagesPopup::drawContent()
     const auto btnId = activeButton->getID();
 
     // ! Clear old content
-    if (m_profilesListNode)
-      m_profilesListNode->removeFromParentAndCleanup(true);
-
-    if (m_currentStageNode)
-      m_currentStageNode->removeFromParentAndCleanup(true);
 
     for (auto *container : contentContainers)
       if (container)
@@ -128,12 +123,6 @@ void StagesPopup::drawCurrentStage()
 
 void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Padding padding)
 {
-  if (m_totalStatLabel)
-  {
-    m_totalStatLabel->removeFromParentAndCleanup(true);
-    m_totalStatLabel = nullptr;
-  }
-
   std::string title = fmt::format(
       "Stage: {}/{}",
       currentStage ? geode::utils::numToString(currentStage->stage) : "?",
