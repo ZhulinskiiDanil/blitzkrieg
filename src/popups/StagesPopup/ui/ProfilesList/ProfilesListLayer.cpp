@@ -220,6 +220,12 @@ void ProfilesListLayer::onImport(CCObject *obj)
         auto res = matjson::parseAs<std::vector<Profile>>(jsonContent);
         if (res.isErr()) {
             geode::log::error("JSON parse error: {}", res.unwrapErr());
+
+            FLAlertLayer::create(
+              "Import Error",
+              fmt::format("Failed to import profiles: {}", res.unwrapErr()),
+              "OK")->show();
+
             return;
         }
 
@@ -227,11 +233,23 @@ void ProfilesListLayer::onImport(CCObject *obj)
 
         if (profiles.empty() || !res.isOk()) {
             geode::log::error("Parsed JSON is empty or not a valid profiles array");
+
+            FLAlertLayer::create(
+              "Import Error",
+              "Parsed JSON is empty or not a valid profiles array",
+              "OK")->show();
+
             return;
         }
 
         if (!res.isOk()) {
             geode::log::error("JSON Parse error at import: {}", res.unwrapErr());
+
+            FLAlertLayer::create(
+              "Import Error",
+              fmt::format("Failed to import profiles: {}", res.unwrapErr()),
+              "OK")->show();
+
             return;
         }
 

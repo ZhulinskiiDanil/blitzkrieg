@@ -240,7 +240,7 @@ void BlitzkriegProfile::onDeleteProfile(CCObject *obj)
 {
   geode::createQuickPopup(
       "Delete Profile",
-      fmt::format("Are you sure you want to delete profile \"{}\"?", m_profile.profileName), // message text
+      fmt::format("Are you sure you want to delete profile \"{}\"?", m_profile.profileName),
       "Cancel",
       "Delete",
       [this](auto, bool confirmed)
