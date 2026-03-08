@@ -11,6 +11,7 @@
 #include "../../../../utils/generateProfile.hpp"
 #include "../../../../utils/selectJsonFile.hpp"
 #include "../../../../utils/generateBackupFilename.hpp"
+#include "../../../../utils/findStartposesFromCurrentLevel.hpp"
 
 using namespace geode::prelude;
 

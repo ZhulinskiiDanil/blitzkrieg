@@ -274,7 +274,7 @@ Profile GlobalStore::getProfileByLevel(GJGameLevel *level)
 
 Profile GlobalStore::getProfileByLevel(std::string const &levelId)
 {
-  for (auto &profile : m_profiles)
+  for (const auto profile : m_profiles)
   {
     std::string key = levelId + "-" + profile.id;
     auto savedStr = Mod::get()->getSavedValue<std::string>(key);

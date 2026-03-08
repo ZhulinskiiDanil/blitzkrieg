@@ -27,11 +27,11 @@ bool CreateProfilePopup::init(GJGameLevel *level)
 
   findStartPoses();
 
-  auto hasStartPoses = m_2_1_percentages.size() > 0;
+  bool hasStartPoses = m_2_1_percentages.size() > 0;
 
-  m_buttonMenu = CCMenu::create();
-  m_buttonMenu->setAnchorPoint({.0f, 0.f});
-  m_buttonMenu->setPosition({10.f, 10.f});
+  m_bottomButtonMenu = CCMenu::create();
+  m_bottomButtonMenu->setAnchorPoint({.0f, 0.f});
+  m_bottomButtonMenu->setPosition({10.f, 10.f});
 
   // ! --- Cancel Button --- !
   m_button2 = ButtonSprite::create("Cancel", 0, 0, "goldFont.fnt", "GJ_button_01.png", 0.0f, .8f);
@@ -42,11 +42,11 @@ bool CreateProfilePopup::init(GJGameLevel *level)
       this,
       menu_selector(CreateProfilePopup::onBtn2));
 
-  m_buttonMenu->addChild(btnCancel);
+  m_bottomButtonMenu->addChild(btnCancel);
   btnCancel->ignoreAnchorPointForPosition(true);
 
   // ! --- Button Menu --- !
-  m_buttonMenu->setLayout(
+  m_bottomButtonMenu->setLayout(
       RowLayout::create()
           ->setGap(5.f)
           ->setAutoScale(false)
@@ -79,7 +79,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
       this,
       menu_selector(CreateProfilePopup::onCreateProfile));
 
-  m_buttonMenu->addChild(btnCreateProfile);
+  m_bottomButtonMenu->addChild(btnCreateProfile);
   btnCreateProfile->ignoreAnchorPointForPosition(true);
 
   // ! --- Input --- !
@@ -91,10 +91,10 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   m_input->setMaxCharCount(32);
 
   // ! --- Lists Container --- !
-  const auto lists = CCLayer::create();
-  lists->setAnchorPoint({.5f, 1.f});
-  lists->setPosition(m_size.width / 2, m_input->getPositionY() - m_input->getContentHeight() - 8.f);
-  lists->setLayout(
+  m_lists = CCLayer::create();
+  m_lists->setAnchorPoint({.5f, 1.f});
+  m_lists->setPosition(m_size.width / 2, m_input->getPositionY() - m_input->getContentHeight() - 8.f);
+  m_lists->setLayout(
       ColumnLayout::create()
           ->setGap(4.f)
           ->setAutoScale(false)
@@ -201,7 +201,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
     listCell->addChild(rightList);
     listCell->addChild(borders);
 
-    lists->addChild(listCell);
+    m_lists->addChild(listCell);
     leftList->updateLayout();
     rightList->updateLayout();
     leftList->ignoreAnchorPointForPosition(true);
@@ -213,16 +213,16 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   }
 
   m_mainLayer->addChild(m_input);
-  m_mainLayer->addChild(lists);
-  lists->updateLayout();
-  m_mainLayer->addChild(m_buttonMenu);
-  m_buttonMenu->updateLayout();
+  m_mainLayer->addChild(m_lists);
+  m_lists->updateLayout();
+  m_mainLayer->addChild(m_bottomButtonMenu);
+  m_bottomButtonMenu->updateLayout();
 
-  auto checkboxesMenu = CCMenu::create();
-  checkboxesMenu->setContentSize({m_mainLayer->getContentWidth() - 28.0f, 32.0f});
-  checkboxesMenu->setAnchorPoint({0.0f, 0.0f});
-  checkboxesMenu->setPosition({12.0f, m_button1->getPositionY() + m_button1->getContentHeight() / 2.0f + 13.0f});
-  checkboxesMenu->setLayout(RowLayout::create()
+  m_checkboxesMenu = CCMenu::create();
+  m_checkboxesMenu->setContentSize({m_mainLayer->getContentWidth() - 28.0f, 32.0f});
+  m_checkboxesMenu->setAnchorPoint({0.0f, 0.0f});
+  m_checkboxesMenu->setPosition({12.0f, m_button1->getPositionY() + m_button1->getContentHeight() / 2.0f + 13.0f});
+  m_checkboxesMenu->setLayout(RowLayout::create()
                                 ->setAxisReverse(true)
                                 ->setGap(5.0f)
                                 ->setAutoScale(false));
@@ -237,7 +237,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
 
   auto percentagesCheckboxMenu = CCMenu::createWithItem(m_percentagesCheckbox);
   percentagesCheckboxMenu->setAnchorPoint({.0f, .5f});
-  percentagesCheckboxMenu->setContentSize({checkboxesMenu->getContentWidth() / 3.0f - (10.0f / 3.0f), checkboxesMenu->getContentHeight()});
+  percentagesCheckboxMenu->setContentSize({m_checkboxesMenu->getContentWidth() / 3.0f - (10.0f / 3.0f), m_checkboxesMenu->getContentHeight()});
   percentagesCheckboxMenu->ignoreAnchorPointForPosition(false);
   percentagesCheckboxMenu->setLayout(RowLayout::create()
                                          ->setGap(2.0f)
@@ -249,7 +249,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   percentagesCheckboxLabel->setAnchorPoint({0, .5f});
 
   percentagesCheckboxMenu->addChild(percentagesCheckboxLabel);
-  checkboxesMenu->addChild(percentagesCheckboxMenu);
+  m_checkboxesMenu->addChild(percentagesCheckboxMenu);
   percentagesCheckboxMenu->updateLayout();
 
   // ! --- Use Checkbox --- !
@@ -262,7 +262,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
 
   auto useCheckboxMenu = CCMenu::createWithItem(m_useCheckbox);
   useCheckboxMenu->setAnchorPoint({.0f, .5f});
-  useCheckboxMenu->setContentSize({checkboxesMenu->getContentWidth() / 3.0f - (10.0f / 3.0f), checkboxesMenu->getContentHeight()});
+  useCheckboxMenu->setContentSize({m_checkboxesMenu->getContentWidth() / 3.0f - (10.0f / 3.0f), m_checkboxesMenu->getContentHeight()});
   useCheckboxMenu->ignoreAnchorPointForPosition(false);
   useCheckboxMenu->setLayout(RowLayout::create()
                                  ->setGap(2.0f)
@@ -274,7 +274,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   useCheckboxLabel->setAnchorPoint({0, .5f});
 
   useCheckboxMenu->addChild(useCheckboxLabel);
-  checkboxesMenu->addChild(useCheckboxMenu);
+  m_checkboxesMenu->addChild(useCheckboxMenu);
   useCheckboxMenu->updateLayout();
 
   // ! --- Pin Checkbox --- !
@@ -287,7 +287,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
 
   auto pinCheckboxMenu = CCMenu::createWithItem(m_pinCheckbox);
   pinCheckboxMenu->setAnchorPoint({.0f, .5f});
-  pinCheckboxMenu->setContentSize({checkboxesMenu->getContentWidth() / 3.0f - (10.0f / 3.0f), checkboxesMenu->getContentHeight()});
+  pinCheckboxMenu->setContentSize({m_checkboxesMenu->getContentWidth() / 3.0f - (10.0f / 3.0f), m_checkboxesMenu->getContentHeight()});
   pinCheckboxMenu->ignoreAnchorPointForPosition(false);
   pinCheckboxMenu->setLayout(RowLayout::create()
                                  ->setGap(2.0f)
@@ -299,17 +299,17 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   pinCheckboxLabel->setAnchorPoint({0, .5f});
 
   pinCheckboxMenu->addChild(pinCheckboxLabel);
-  checkboxesMenu->addChild(pinCheckboxMenu);
+  m_checkboxesMenu->addChild(pinCheckboxMenu);
   pinCheckboxMenu->updateLayout();
 
-  checkboxesMenu->updateLayout();
-  m_mainLayer->addChild(checkboxesMenu);
+  m_checkboxesMenu->updateLayout();
+  m_mainLayer->addChild(m_checkboxesMenu);
 
   auto percentages = m_percentagesChecked ? m_2_1_percentages : m_2_2_percentages;
   m_percentagesList = ToggablePercentagesList::create(
       {m_mainLayer->getContentWidth() - 24.0f, 80.0f},
       percentages);
-  m_percentagesList->setPosition({m_mainLayer->getContentWidth() / 2.0f, lists->getPositionY() - lists->getContentHeight() - 10.0f});
+  m_percentagesList->setPosition({m_mainLayer->getContentWidth() / 2.0f, m_lists->getPositionY() - m_lists->getContentHeight() - 10.0f});
   m_mainLayer->addChild(m_percentagesList);
 
   // ! --- Other --- !
