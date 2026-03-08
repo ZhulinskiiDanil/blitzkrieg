@@ -13,7 +13,8 @@
 #include <Geode/cocos/cocoa/CCGeometry.h>
 #include <Geode/cocos/extensions/GUI/CCControlExtension/CCScale9Sprite.h>
 
-#include "./StageChangedEvent.hpp"
+#include "./StageSwitchedEvent.hpp"
+#include "./StageRangesChangedEvent.hpp"
 
 #include "./ui/StageList/StageListLayer.hpp"
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
@@ -49,6 +50,7 @@ private:
   Label *m_totalStatLabel = nullptr;
 
   geode::comm::ListenerHandle m_stageChangedListener;
+  geode::comm::ListenerHandle m_stageRangesChangedListener;
 
   void drawTabs();
   void drawContent();
@@ -63,7 +65,8 @@ private:
   void onProfilesListToggle(CCObject *);
   void activateTab(TabButton *btnToActivate);
 
-  ~StagesPopup() {
+  ~StagesPopup()
+  {
     m_stageChangedListener.destroy();
   }
 

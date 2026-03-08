@@ -29,6 +29,15 @@ bool StageListLayer::init(
   m_profile = GlobalStore::get()->getProfileByLevel(m_level);
   m_stage = stage;
 
+  m_listenerStageRangesChanged = StageRangesChangedEvent().listen(
+      [this]()
+      {
+        m_profile = GlobalStore::get()->getProfileByLevel(m_level);
+        m_uncheckedStage = getFirstUncheckedStage(m_profile);
+
+        return ListenerResult::Propagate;
+      });
+
   if (m_stage && !m_profile.id.empty())
   {
     m_stages = &m_profile.data.stages;
@@ -246,7 +255,7 @@ void StageListLayer::onPrevStage(CCObject *sender)
     --m_currentIndex;
 
   m_stage = &m_stages->at(m_currentIndex);
-  StageChangedEvent().send(m_stages->size(), m_stage);
+  StageSwitchedEvent().send(m_stages->size(), m_stage);
   reload();
 }
 
@@ -259,6 +268,6 @@ void StageListLayer::onNextStage(CCObject *sender)
     ++m_currentIndex;
 
   m_stage = &m_stages->at(m_currentIndex);
-  StageChangedEvent().send(m_stages->size(), m_stage);
+  StageSwitchedEvent().send(m_stages->size(), m_stage);
   reload();
 }

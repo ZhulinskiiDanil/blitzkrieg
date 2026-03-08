@@ -6,7 +6,7 @@
 
 using namespace geode::prelude;
 
-class StageChangedEvent : public Event<StageChangedEvent, bool(int totalStages, Stage*)>
+class StageSwitchedEvent : public Event<StageSwitchedEvent, bool(int totalStages, Stage *)>
 {
 protected:
   Stage *m_currentStage;
@@ -14,7 +14,7 @@ protected:
 
 public:
   using Event::Event;
-  // StageChangedEvent(Stage *currentStage, int totalStages)
+  // StageSwitchedEvent(Stage *currentStage, int totalStages)
   // {
   //   m_currentStage = currentStage;
   //   m_totalStages = totalStages;

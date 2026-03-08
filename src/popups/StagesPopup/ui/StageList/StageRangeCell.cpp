@@ -283,6 +283,7 @@ void StageRangeCell::onToggle(CCObject *sender)
   }
 
   GlobalStore::get()->updateProfile(profile);
+  StageRangesChangedEvent().send();
 }
 
 void StageRangeCell::onExpand(CCObject *sender)

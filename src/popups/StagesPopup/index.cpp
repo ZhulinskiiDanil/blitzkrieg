@@ -1,5 +1,5 @@
 #include "index.hpp"
-#include "StageChangedEvent.hpp"
+#include "StageSwitchedEvent.hpp"
 
 StagesPopup *StagesPopup::create(GJGameLevel *level)
 {
@@ -157,7 +157,7 @@ void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Pa
   m_totalStatLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 - 15});
   m_currentStageNode->addChild(m_totalStatLabel);
 
-  m_stageChangedListener = StageChangedEvent().listen(
+  m_stageChangedListener = StageSwitchedEvent().listen(
       [this](int totalStages, Stage *currentStage)
       {
         if (!m_currentStageTitleLabel || !m_totalStatLabel)

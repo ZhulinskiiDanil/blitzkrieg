@@ -4,6 +4,7 @@
 #include "../../../../ui/Include.hpp"
 
 #include "../../StagesChangedEvent.hpp"
+#include "../../StageRangesChangedEvent.hpp"
 #include "../../UpdateScrollLayoutEvent.hpp"
 #include "../../../../store/GlobalStore.hpp"
 #include "../../../../serialization/profile/index.hpp"

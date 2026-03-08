@@ -1,14 +1,12 @@
 #include "./getFirstUncheckedStage.hpp"
+#include "./isStageDeepChecked.hpp"
 
 Stage *getFirstUncheckedStage(Profile &profile)
 {
   for (auto &stage : profile.data.stages)
-  {
-    if (!stage.checked)
-    {
+    if (!isStageDeepChecked(stage))
       return &stage;
-    }
-  }
+
   return nullptr;
 }
 
