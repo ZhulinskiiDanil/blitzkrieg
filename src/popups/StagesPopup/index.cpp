@@ -259,8 +259,11 @@ void StagesPopup::drawTabs()
   CCNode *m = m_closeBtn->getParent();
   CCSprite *settingsSpr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
   settingsSpr->setScale(0.8);
-  CCMenuItemSpriteExtra *settingsBtn = CCMenuItemSpriteExtra::create(settingsBtn, this, menu_selector(StagesPopup::onSettingsButton));
-  settingsBtn->setPositionX(this->m_bgSprite->getContentWidth());
+  CCMenuItemSpriteExtra *settingsBtn = CCMenuItemSpriteExtra::create(settingsSpr, this, menu_selector(StagesPopup::onSettingsButton));
+  CCSize settingsSz = settingsBtn->getContentSize();
+  settingsSz *= 0.25;
+  settingsBtn->setPositionX(this->m_bgSprite->getContentWidth() - settingsSz.width);
+  settingsBtn->setPositionY(settingsSz.height);
   m->addChild(settingsBtn);
 }
 
