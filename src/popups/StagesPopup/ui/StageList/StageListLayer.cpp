@@ -188,7 +188,9 @@ void StageListLayer::reload()
 
 void StageListLayer::drawArrows()
 {
-  if (!m_stages || m_stages->empty() || m_stages->size() < 2)
+  const auto stagesMetaInfo = getMetaInfoFromStages(*m_stages);
+
+  if (!m_stages || stagesMetaInfo.consideredStages->empty() || stagesMetaInfo.consideredStages->size() < 2 || !stagesMetaInfo.currentStage)
     return;
 
   if (m_buttonMenuLeft)
@@ -236,7 +238,7 @@ void StageListLayer::drawArrows()
   m_buttonMenuRight->addChild(m_buttonRight);
   m_buttonMenuRight->updateLayout();
 
-  m_buttonMenuRight->setVisible(m_stage->stage < m_stages->size());
+  m_buttonMenuRight->setVisible(m_stage->stage < stagesMetaInfo.total - 1);
   this->addChild(m_buttonMenuRight);
 }
 
@@ -248,26 +250,30 @@ void StageListLayer::scrollToTop()
 
 void StageListLayer::onPrevStage(CCObject *sender)
 {
-  if (!m_stages || m_stages->empty() || m_stages->size() < 2)
+  const auto stagesMetaInfo = getMetaInfoFromStages(*m_stages);
+
+  if (!m_stages || stagesMetaInfo.consideredStages->empty() || stagesMetaInfo.consideredStages->size() < 2)
     return;
 
   if (m_currentIndex > 0)
     --m_currentIndex;
 
-  m_stage = &m_stages->at(m_currentIndex);
-  StageSwitchedEvent().send(m_stages->size(), m_stage);
+  m_stage = &stagesMetaInfo.consideredStages->at(m_currentIndex);
+  StageSwitchedEvent().send(stagesMetaInfo.consideredStages->size(), m_stage);
   reload();
 }
 
 void StageListLayer::onNextStage(CCObject *sender)
 {
-  if (!m_stages || m_stages->empty() || m_stages->size() < 2)
+  const auto stagesMetaInfo = getMetaInfoFromStages(*m_stages);
+
+  if (!m_stages || stagesMetaInfo.consideredStages->empty() || stagesMetaInfo.consideredStages->size() < 2)
     return;
 
-  if (m_currentIndex + 1 < static_cast<int>(m_stages->size()))
+  if (m_currentIndex + 1 < static_cast<int>(stagesMetaInfo.total))
     ++m_currentIndex;
 
-  m_stage = &m_stages->at(m_currentIndex);
-  StageSwitchedEvent().send(m_stages->size(), m_stage);
+  m_stage = &stagesMetaInfo.consideredStages->at(m_currentIndex);
+  StageSwitchedEvent().send(stagesMetaInfo.consideredStages->size(), m_stage);
   reload();
 }

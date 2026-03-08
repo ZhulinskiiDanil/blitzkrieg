@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <cmath>
 #include <Geode/Geode.hpp>
 #include <Geode/loader/Event.hpp>
 
@@ -8,9 +9,9 @@
 
 #include "../../../../serialization/profile/index.hpp"
 #include "../../../../store/GlobalStore.hpp"
-#include "../../../../utils/getProfileStats.hpp"
 #include "../../../../utils/linkProfileWithLevel.hpp"
 #include "../../../../utils/unlinkProfileFromLevel.hpp"
+#include "../../../../utils/getMetaInfoFromStages.hpp"
 #include "../../../EditProfilePopup/index.hpp"
 
 using namespace geode::prelude;
@@ -19,7 +20,7 @@ class BlitzkriegProfile : public CCLayer
 {
 protected:
   Profile m_profile;
-  ProfileStats m_stats;
+  StageMetaInfo *m_stageMetaInfo;
   bool m_isCurrent = false;
   bool m_isPinned = false;
   bool m_profileToggleDisabled = false;

@@ -1,13 +1,14 @@
 #include "./getMetaInfoFromStages.hpp"
 #include "./getFirstUncheckedStage.hpp"
 
-MetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
+StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
 {
   int total = 0;
   int completed = 0;
-  auto currentStage = getFirstUncheckedStage(stages);
   int currStagePlaytime = 0;
   int currStageAttempts = 0;
+  auto currentStage = getFirstUncheckedStage(stages);
+  std::vector<Stage> *consideredStages = new std::vector<Stage>();
 
   if (currentStage)
   {
@@ -30,6 +31,9 @@ MetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
       if (range.consider)
         stageConsidered = true;
 
+    if (stageConsidered)
+      consideredStages->push_back(stage);
+
     // A stage is completed if it is considered and has all ranges deep checked
     if (stageConsidered)
     {
@@ -40,5 +44,5 @@ MetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
     }
   }
 
-  return {total, completed, currentStage, currStagePlaytime, currStageAttempts};
+  return {total, completed, currStagePlaytime, currStageAttempts, currentStage, consideredStages};
 }

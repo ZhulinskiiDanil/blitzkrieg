@@ -10,6 +10,7 @@
 #include "../../UpdateScrollLayoutEvent.hpp"
 
 #include "../../../../utils/getFirstUncheckedStage.hpp"
+#include "../../../../utils/getMetaInfoFromStages.hpp"
 #include "../../../../serialization/profile/index.hpp"
 #include "../../../../store/GlobalStore.hpp"
 

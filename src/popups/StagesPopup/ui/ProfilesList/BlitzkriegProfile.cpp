@@ -25,7 +25,7 @@ bool BlitzkriegProfile::init(Profile const &profile,
   const auto linkedProfile = GlobalStore::get()->getProfileByLevel(level);
 
   m_profile = profile;
-  m_stats = getProfileStats(profile);
+  m_stageMetaInfo = new StageMetaInfo(getMetaInfoFromStages(m_profile.data.stages));
   m_isCurrent = !linkedProfile.id.empty() && linkedProfile.id == profile.id;
   m_level = level;
   m_size = size;
@@ -108,7 +108,7 @@ void BlitzkriegProfile::updateButtons()
   auto unpinnedSpr = CCSprite::createWithSpriteFrameName("pin.png"_spr);
   unpinnedSpr->setOpacity(128);
   auto pinBtn = CCMenuItemToggler::create(unpinnedSpr, pinnedSpr, this,
-    menu_selector(BlitzkriegProfile::onTogglePinProfile));
+                                          menu_selector(BlitzkriegProfile::onTogglePinProfile));
   pinBtn->toggle(m_isPinned);
   pinBtn->ignoreAnchorPointForPosition(true);
   pinBtn->setScale(.5f);
@@ -171,24 +171,22 @@ void BlitzkriegProfile::createLabels()
   nameLabel->setAnchorPoint({0, 0.5f});
   nameLabel->setPosition({10.f, 25.f});
 
-  if (m_stats.currentStage > m_stats.totalStages / 2)
-    nameLabel->setColor({253, 165, 106});
-  if (!m_stats.currentStage.has_value() || m_stats.currentStage >= m_stats.totalStages)
+  int currentStageNumber = std::max(m_stageMetaInfo->completed, 1);
+
+  if (currentStageNumber > m_stageMetaInfo->total / 2)
+    nameLabel->setColor({255, 210, 180});
+  if (currentStageNumber >= m_stageMetaInfo->total)
     nameLabel->setColor({99, 224, 110});
 
   this->addChild(nameLabel);
 
   std::string stagesText;
-  if (!m_stats.currentStage.has_value() || m_stats.currentStage >= m_stats.totalStages)
-  {
-    stagesText = "Stages: " + geode::utils::numToString(m_stats.totalStages) + "/" +
-                 geode::utils::numToString(m_stats.totalStages);
-  }
+  if (currentStageNumber >= m_stageMetaInfo->total)
+    stagesText = "Stages: " + geode::utils::numToString(m_stageMetaInfo->total) + "/" +
+                 geode::utils::numToString(m_stageMetaInfo->total);
   else
-  {
-    stagesText = "Stages: " + geode::utils::numToString(m_stats.currentStage.value()) + "/" +
-                 geode::utils::numToString(m_stats.totalStages);
-  }
+    stagesText = "Stages: " + geode::utils::numToString(currentStageNumber) + "/" +
+                 geode::utils::numToString(m_stageMetaInfo->total);
 
   auto stagesLabel = CCLabelBMFont::create(stagesText.c_str(), "bigFont.fnt");
   stagesLabel->setScale(0.25f);
@@ -223,7 +221,7 @@ void BlitzkriegProfile::onTogglePinProfile(CCObject *obj)
   m_isPinned = !m_isPinned;
   GlobalStore::get()->pinProfileById(m_profile.id, m_isPinned);
   ProfilesChangedEvent().send();
-  
+
   updateButtons();
 }
 

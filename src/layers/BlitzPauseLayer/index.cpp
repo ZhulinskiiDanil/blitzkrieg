@@ -1,6 +1,7 @@
 #include "./index.hpp"
 
-void BlitzPauseLayer::customSetup() {
+void BlitzPauseLayer::customSetup()
+{
     PauseLayer::customSetup();
     auto level = PlayLayer::get()->m_level;
     m_fields->currentProfile = GlobalStore::get()->getProfileByLevel(level);
@@ -11,7 +12,8 @@ void BlitzPauseLayer::customSetup() {
     auto modBtnSpr = CircleButtonSprite::create(modIcon);
     modBtnSpr->setScale(0.75f);
 
-    auto modBtn = CCMenuItemExt::createSpriteExtra(modBtnSpr, [this](auto) { onPopup(); });
+    auto modBtn = CCMenuItemExt::createSpriteExtra(modBtnSpr, [this](auto)
+                                                   { onPopup(); });
     modBtn->setID("blitzkrieg-button");
     leftMenu->addChild(modBtn);
     leftMenu->updateLayout();
@@ -19,31 +21,35 @@ void BlitzPauseLayer::customSetup() {
     if (!m_fields->currentProfile.id.empty())
         updateCurrentProfileLabel(m_fields->currentProfile);
 
-    m_fields->m_listener = ProfilesChangedEvent().listen([this]() {
+    m_fields->m_listener = ProfilesChangedEvent().listen([this]()
+                                                         {
             auto level = PlayLayer::get()->m_level;
             m_fields->currentProfile = GlobalStore::get()->getProfileByLevel(level);
             updateCurrentProfileLabel(m_fields->currentProfile);
 
-            return ListenerResult::Propagate;
-    });
+            return ListenerResult::Propagate; });
 }
 
-void BlitzPauseLayer::onQuit(CCObject *sender) {
+void BlitzPauseLayer::onQuit(CCObject *sender)
+{
     m_fields->m_listener.destroy();
     PauseLayer::onQuit(sender);
 }
 
-void BlitzPauseLayer::updateCurrentProfileLabel(Profile currentProfile) {
+void BlitzPauseLayer::updateCurrentProfileLabel(Profile currentProfile)
+{
     auto bg = this->getChildByID("background");
 
     if (auto old = this->getChildByID("bk-profileLabel"_spr))
         old->removeFromParentAndCleanup(true);
-    if (m_fields->currentProfile.id.empty()) return;
+    if (m_fields->currentProfile.id.empty())
+        return;
 
-    const auto stats = getProfileStats(m_fields->currentProfile);
-    std::string profileString = m_fields->currentProfile.profileName + " " +
-        (stats.currentStage ? geode::utils::numToString(*stats.currentStage) : "0") + "/" +
-        geode::utils::numToString(stats.totalStages);
+    const auto stagesMetaInfo = getMetaInfoFromStages(m_fields->currentProfile.data.stages);
+    std::string profileString = fmt::format(
+        "Stage: {}/{}",
+        geode::utils::numToString(std::max(stagesMetaInfo.completed, 1)),
+        geode::utils::numToString(stagesMetaInfo.total));
 
     auto profileLabel = CCLabelBMFont::create(profileString.c_str(), "goldFont.fnt");
     profileLabel->setScale(0.4f);
@@ -55,7 +61,8 @@ void BlitzPauseLayer::updateCurrentProfileLabel(Profile currentProfile) {
     this->addChild(profileLabel);
 }
 
-void BlitzPauseLayer::onPopup() {
+void BlitzPauseLayer::onPopup()
+{
     const auto level = PlayLayer::get()->m_level;
     std::string levelId = geode::utils::numToString(EditorIDs::getID(level));
 
