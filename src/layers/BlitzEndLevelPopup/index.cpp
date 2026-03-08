@@ -16,11 +16,6 @@ void BlitzEndLevelLayer::customSetup() {
     hideLayerMenu->updateLayout();
 }
 
-void BlitzEndLevelLayer::onExit() {
-    m_fields->m_listener.destroy();
-    EndLevelLayer::onExit();
-}
-
 void BlitzEndLevelLayer::onPopup() {
     const auto level = PlayLayer::get()->m_level;
     std::string levelId = geode::utils::numToString(EditorIDs::getID(level));
