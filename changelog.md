@@ -1,10 +1,12 @@
 # 2.0.0-beta.1
+- Ability to change profile name
 - Ability to create profiles with specific percentages
 - Ability to edit profiles with specific percentages
 - Warning when creating a profile with fewer than 6 start positions
 - Blitzkrieg button at the end of a level
 - Added error popups for profile import errors
 - Additional utilities, including `getMetaInfoFromStages`
+- Added a Settings button to the Create Profile popup
 
 - Updated the mod logo
 - Updated Geode to version 5.0.3
