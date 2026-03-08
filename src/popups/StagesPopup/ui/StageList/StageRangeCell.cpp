@@ -254,14 +254,14 @@ void StageRangeCell::onToggle(CCObject *sender)
 
     for (auto &range : stage.ranges)
     {
-      if (!range.checked)
+      if (!range.checked && range.consider)
         isEveryProgressChecked = false;
 
       if (range.id == m_id)
       {
         range.checked = !range.checked;
 
-        if (!range.checked)
+        if (!range.checked && range.consider)
         {
           range.attempts = range.attempts - 1 >= 0 ? range.attempts - 1 : 0;
           range.completionCounter--;

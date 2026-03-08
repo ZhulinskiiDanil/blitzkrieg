@@ -35,7 +35,7 @@ struct Padding
   float right;
 };
 
-class StagesPopup : public geode::Popup//<GJGameLevel *>
+class StagesPopup : public geode::Popup
 {
 private:
   std::vector<TabButton *> tabButtons;
@@ -47,7 +47,7 @@ private:
   CCNode *m_profilesListNode = nullptr;
   CCLabelBMFont *m_currentStageTitleLabel = nullptr;
   Label *m_totalStatLabel = nullptr;
-  // EventListener<EventFilter<StageChangedEvent>> m_stageChangedListener;
+
   geode::comm::ListenerHandle m_stageChangedListener;
 
   void drawTabs();

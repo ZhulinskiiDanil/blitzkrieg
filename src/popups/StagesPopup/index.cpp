@@ -49,13 +49,10 @@ void StagesPopup::drawContent()
 
     // Clear old content
     for (auto *container : contentContainers)
-    {
       if (container)
-      {
         container->removeFromParentAndCleanup(true);
-      }
-    }
 
+    m_stageChangedListener.destroy();
     contentContainers.clear();
 
     if (btnId == "tabBtnProfilesList"_spr)
@@ -69,18 +66,16 @@ void StagesPopup::drawContent()
 
 void StagesPopup::drawProfilesList()
 {
-  if (auto oldList = m_mainLayer->getChildByID("stages-popup-profiles-list"_spr))
-  {
-    oldList->removeFromParentAndCleanup(true);
-  }
+  if (m_profilesListNode)
+    m_profilesListNode->removeFromParentAndCleanup(true);
 
   Padding padding{12.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
 
   const auto profiles = GlobalStore::get()->getProfiles();
 
-  const auto profileListContainer = CCNode::create();
-  profileListContainer->setID("stages-popup-profiles-list"_spr);
-  profileListContainer->setTag(1);
+  m_profilesListNode = CCNode::create();
+  m_profilesListNode->setID("stages-popup-profiles-list"_spr);
+  m_profilesListNode->setTag(1);
 
   const auto contentSize = CCSize(
       m_size.width - padding.left - padding.right,
@@ -89,18 +84,16 @@ void StagesPopup::drawProfilesList()
   // ! --- ProfilesListLayer --- !
   auto listLayer = ProfilesListLayer::create(m_level, profiles, contentSize);
   listLayer->setPosition({padding.left, padding.bottom});
-  profileListContainer->addChild(listLayer);
+  m_profilesListNode->addChild(listLayer);
 
-  m_mainLayer->addChild(profileListContainer);
-  contentContainers.push_back(profileListContainer);
+  m_mainLayer->addChild(m_profilesListNode);
+  contentContainers.push_back(m_profilesListNode);
 }
 
 void StagesPopup::drawCurrentStage()
 {
-  if (auto oldList = m_mainLayer->getChildByID("stages-popup-current-stage"_spr))
-  {
-    oldList->removeFromParentAndCleanup(true);
-  }
+  if (m_currentStageNode)
+    m_currentStageNode->removeFromParentAndCleanup(true);
 
   Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
@@ -135,77 +128,85 @@ void StagesPopup::drawCurrentStage()
 
 void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Padding padding)
 {
-  if (m_currentStageNode)
+  if (!m_currentStageNode)
+    return;
+
+  if (m_totalStatLabel)
   {
-    std::string title = fmt::format(
-        "Stage: {}/{}",
-        currentStage ? geode::utils::numToString(currentStage->stage) : "?",
-        totalStages > 0
-            ? geode::utils::numToString(totalStages)
-            : "?");
-
-    m_currentStageTitleLabel = CCLabelBMFont::create(
-        title.c_str(),
-        "goldFont.fnt");
-    m_currentStageTitleLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 + 5}); // n - 2.5f
-    m_currentStageNode->addChild(m_currentStageTitleLabel);
-
-    std::string stat = "";
-
-    float totalAttempts = 0;
-    float totalTimePlayed = 0;
-
-    if (currentStage)
-    {
-      for (const auto &range : currentStage->ranges)
-      {
-        totalAttempts += range.attempts;
-        totalTimePlayed += range.timePlayed;
-      }
-    }
-
-    stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
-    stat += formatTimePlayed(totalTimePlayed);
-
-    m_totalStatLabel = Label::create(stat, "bigFont.fnt", .4f);
-    m_totalStatLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 - 15});
-    m_currentStageNode->addChild(m_totalStatLabel);
-
-    m_stageChangedListener = StageChangedEvent().listen(
-        [this](int totalStages, Stage *currentStage)
-        {
-          std::string newTitle = fmt::format(
-              "Stage: {}/{}",
-              currentStage ? geode::utils::numToString(currentStage->stage) : "?",
-              totalStages > 0
-                  ? geode::utils::numToString(totalStages)
-                  : "?");
-
-          m_currentStageTitleLabel->setString(newTitle.c_str());
-
-          std::string stat = "";
-
-          float totalAttempts = 0;
-          float totalTimePlayed = 0;
-
-          if (currentStage)
-          {
-            for (const auto &range : currentStage->ranges)
-            {
-              totalAttempts += range.attempts;
-              totalTimePlayed += range.timePlayed;
-            }
-          }
-
-          stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
-          stat += formatTimePlayed(totalTimePlayed);
-
-          m_totalStatLabel->setText(stat);
-
-          return ListenerResult::Propagate;
-        });
-    // m_stageChangedListener.leak();
+    m_totalStatLabel->removeFromParentAndCleanup(true);
+    m_totalStatLabel = nullptr;
   }
+
+  std::string title = fmt::format(
+      "Stage: {}/{}",
+      currentStage ? geode::utils::numToString(currentStage->stage) : "?",
+      totalStages > 0
+          ? geode::utils::numToString(totalStages)
+          : "?");
+
+  m_currentStageTitleLabel = CCLabelBMFont::create(
+      title.c_str(),
+      "goldFont.fnt");
+  m_currentStageTitleLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 + 5}); // n - 2.5f
+  m_currentStageNode->addChild(m_currentStageTitleLabel);
+
+  std::string stat = "";
+
+  float totalAttempts = 0;
+  float totalTimePlayed = 0;
+
+  if (currentStage)
+  {
+    for (const auto &range : currentStage->ranges)
+    {
+      totalAttempts += range.attempts;
+      totalTimePlayed += range.timePlayed;
+    }
+  }
+
+  stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
+  stat += formatTimePlayed(totalTimePlayed);
+
+  m_totalStatLabel = Label::create(stat, "bigFont.fnt", .4f);
+  m_totalStatLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 - 15});
+  m_currentStageNode->addChild(m_totalStatLabel);
+
+  m_stageChangedListener = StageChangedEvent().listen(
+      [this](int totalStages, Stage *currentStage)
+      {
+        if (!m_currentStageTitleLabel || !m_totalStatLabel)
+          return ListenerResult::Stop;
+
+        std::string newTitle = fmt::format(
+            "Stage: {}/{}",
+            currentStage ? geode::utils::numToString(currentStage->stage) : "?",
+            totalStages > 0
+                ? geode::utils::numToString(totalStages)
+                : "?");
+
+        m_currentStageTitleLabel->setString(newTitle.c_str());
+
+        std::string stat = "";
+
+        float totalAttempts = 0;
+        float totalTimePlayed = 0;
+
+        if (currentStage)
+        {
+          for (const auto &range : currentStage->ranges)
+          {
+            totalAttempts += range.attempts;
+            totalTimePlayed += range.timePlayed;
+          }
+        }
+
+        stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
+        stat += formatTimePlayed(totalTimePlayed);
+
+        m_totalStatLabel->setText(stat);
+
+        return ListenerResult::Propagate;
+      });
 }
 
 void StagesPopup::drawLastRuns()
@@ -217,6 +218,7 @@ void StagesPopup::drawTabs()
 {
   // ! --- CLEANUP OLD CONTAINER --- !
   auto oldTabsNode = m_mainLayer->getChildByID("stages-popup-tabs-node"_spr);
+
   if (oldTabsNode)
     oldTabsNode->removeFromParentAndCleanup(true);
 

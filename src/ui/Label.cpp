@@ -25,6 +25,16 @@ bool Label::init(const std::string &text,
   m_font = font;
   m_text = text;
 
+  this->setLayout(
+      RowLayout::create()
+          ->setGap(0.f)
+          ->setAxisAlignment(AxisAlignment::Start)
+          ->setCrossAxisAlignment(AxisAlignment::Center)
+          ->setCrossAxisLineAlignment(AxisAlignment::Start)
+          ->setAutoScale(false)
+          ->setAutoGrowAxis(true)
+          ->setGrowCrossAxis(false));
+
   parseAndBuild();
   updateColor();
 
@@ -33,12 +43,7 @@ bool Label::init(const std::string &text,
 
 void Label::setText(const std::string &text)
 {
-  for (auto lbl : m_parts)
-    lbl->removeFromParentAndCleanup(true);
-  m_parts.clear();
-
   m_text = text;
-
   parseAndBuild();
   updateColor();
 }
@@ -78,20 +83,9 @@ void Label::updateColor()
 
 void Label::parseAndBuild()
 {
-  for (auto lbl : m_parts)
-    lbl->removeFromParent();
+  for (auto textPart : m_parts)
+    textPart->removeFromParentAndCleanup(true);
   m_parts.clear();
-
-  this->setLayout(
-      RowLayout::create()
-          ->setGap(0.f)
-          ->setAxisAlignment(AxisAlignment::Start)
-          ->setCrossAxisAlignment(AxisAlignment::Center)
-          ->setCrossAxisLineAlignment(AxisAlignment::Start)
-          ->setAutoScale(false)
-          ->setAutoGrowAxis(true)
-          ->setGrowCrossAxis(false));
-  // this->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
 
   size_t pos = 0;
   bool inSmall = false;
@@ -111,7 +105,6 @@ void Label::parseAndBuild()
       label->setAnchorPoint({0, 0.5f});
 
       this->addChild(label);
-      this->updateLayout();
       m_parts.push_back(label);
 
       pos = tagClose + 8; // skip </small>
