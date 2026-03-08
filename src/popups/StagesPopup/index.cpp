@@ -47,7 +47,13 @@ void StagesPopup::drawContent()
   {
     const auto btnId = activeButton->getID();
 
-    // Clear old content
+    // ! Clear old content
+    if (m_profilesListNode)
+      m_profilesListNode->removeFromParentAndCleanup(true);
+
+    if (m_currentStageNode)
+      m_currentStageNode->removeFromParentAndCleanup(true);
+
     for (auto *container : contentContainers)
       if (container)
         container->removeFromParentAndCleanup(true);
@@ -66,9 +72,6 @@ void StagesPopup::drawContent()
 
 void StagesPopup::drawProfilesList()
 {
-  if (m_profilesListNode)
-    m_profilesListNode->removeFromParentAndCleanup(true);
-
   Padding padding{12.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
 
   const auto profiles = GlobalStore::get()->getProfiles();
@@ -92,9 +95,6 @@ void StagesPopup::drawProfilesList()
 
 void StagesPopup::drawCurrentStage()
 {
-  if (m_currentStageNode)
-    m_currentStageNode->removeFromParentAndCleanup(true);
-
   Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
   Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
@@ -128,9 +128,6 @@ void StagesPopup::drawCurrentStage()
 
 void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Padding padding)
 {
-  if (!m_currentStageNode)
-    return;
-
   if (m_totalStatLabel)
   {
     m_totalStatLabel->removeFromParentAndCleanup(true);
