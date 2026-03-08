@@ -289,4 +289,8 @@ void ProfilesListLayer::onCreate(CCObject *sender)
         }
       });
   }
+  else {
+    const auto createProfilePopup = CreateProfilePopup::create(m_level);
+    createProfilePopup->show();
+  }
 }
