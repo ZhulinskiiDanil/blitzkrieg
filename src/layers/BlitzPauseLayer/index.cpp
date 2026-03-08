@@ -48,7 +48,7 @@ void BlitzPauseLayer::updateCurrentProfileLabel(Profile currentProfile)
     const auto stagesMetaInfo = getMetaInfoFromStages(m_fields->currentProfile.data.stages);
     std::string profileString = fmt::format(
         "Stage: {}/{}",
-        geode::utils::numToString(std::max(stagesMetaInfo.completed, 1)),
+        geode::utils::numToString(stagesMetaInfo.completed + 1),
         geode::utils::numToString(stagesMetaInfo.total));
 
     auto profileLabel = CCLabelBMFont::create(profileString.c_str(), "goldFont.fnt");
