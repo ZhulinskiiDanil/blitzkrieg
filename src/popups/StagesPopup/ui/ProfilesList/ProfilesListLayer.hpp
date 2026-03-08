@@ -2,7 +2,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/loader/Event.hpp>
 
-#include "BlitzkriegProfile.hpp"
+#include "./BlitzkriegProfile.hpp"
 #include "../../ProfilesChangedEvent.hpp"
 #include "../../../CreateProfilePopup/index.hpp"
 

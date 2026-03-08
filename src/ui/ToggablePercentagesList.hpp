@@ -1,7 +1,7 @@
 #pragma once
 #include <Geode/Geode.hpp>
 #include <Geode/loader/Event.hpp>
-#include "..\ui\Label.hpp"
+#include "./Label.hpp"
 
 using namespace geode::prelude;
 
