@@ -271,9 +271,22 @@ void ProfilesListLayer::onExport(CCObject *obj)
 
 void ProfilesListLayer::onCreate(CCObject *sender)
 {
-  if (!m_level)
-    return;
+  if (!m_level) return;
 
-  const auto createProfilePopup = CreateProfilePopup::create(m_level);
-  createProfilePopup->show();
+  std::vector<float> percentages = findStartposesFromCurrentLevel().percentages_2_1;
+  bool isSPCountValid = percentages.size() <= 5;
+
+  if (isSPCountValid)
+  {
+    createQuickPopup(
+      "Too few startposes",
+      "It is <cg>recommended</c> to use more than <cc>5 startposes</c>. If you still want to <cg>create a profile</c>, click <cy>Continue</c>.",
+      "Back", "Continue",
+      [this](auto, bool onContinueBtn) {
+        if (onContinueBtn) {
+          const auto createProfilePopup = CreateProfilePopup::create(m_level);
+          createProfilePopup->show();
+        }
+      });
+  }
 }

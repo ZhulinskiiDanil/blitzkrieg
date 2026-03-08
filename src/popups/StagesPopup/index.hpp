@@ -63,6 +63,10 @@ private:
   void onProfilesListToggle(CCObject *);
   void activateTab(TabButton *btnToActivate);
 
+  ~StagesPopup() {
+    m_stageChangedListener.destroy();
+  }
+
 public:
   // static StagesPopup* create(StagesPopupDelegate*);
   static StagesPopup *create(GJGameLevel *);
