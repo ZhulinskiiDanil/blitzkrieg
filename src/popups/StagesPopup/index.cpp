@@ -1,5 +1,8 @@
 #include "index.hpp"
+#include "Geode/cocos/cocoa/CCObject.h"
+#include "Geode/ui/GeodeUI.hpp"
 #include "StageSwitchedEvent.hpp"
+#include <Geode/binding/CCMenuItemSpriteExtra.hpp>
 
 StagesPopup *StagesPopup::create(GJGameLevel *level)
 {
@@ -251,6 +254,19 @@ void StagesPopup::drawTabs()
 
   tabsNode->addChild(tabMenu);
   m_mainLayer->addChild(tabsNode);
+
+  // options button
+  CCNode *m = m_closeBtn->getParent();
+  CCSprite *settingsSpr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+  settingsSpr->setScale(0.8);
+  CCMenuItemSpriteExtra *settingsBtn = CCMenuItemSpriteExtra::create(settingsBtn, this, menu_selector(StagesPopup::onSettingsButton));
+  settingsBtn->setPositionX(this->m_bgSprite->getContentWidth());
+  m->addChild(settingsBtn);
+}
+
+void StagesPopup::onSettingsButton(CCObject *)
+{
+    geode::openSettingsPopup(Mod::get(), false);
 }
 
 void StagesPopup::activateTab(TabButton *sender)

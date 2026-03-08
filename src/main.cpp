@@ -8,6 +8,10 @@
 
 using namespace geode::prelude;
 
+namespace BKGlobal {
+    FMOD::ChannelGroup *sfxGroup = nullptr;
+}
+
 class $modify(BlitzPlayLayer, PlayLayer) {
     struct Fields {
         CCObject *disabledCheat = nullptr;
@@ -28,6 +32,13 @@ class $modify(BlitzPlayLayer, PlayLayer) {
 public:
     bool init(GJGameLevel *level, bool p1, bool p2) {
         if (!PlayLayer::init(level, p1, p2)) return false;
+
+        auto engine = FMODAudioEngine::get();
+        auto system = engine->m_system;
+        if (BKGlobal::sfxGroup == nullptr) {
+            system->createChannelGroup("blitzkrieg", &BKGlobal::sfxGroup);
+        }
+        BKGlobal::sfxGroup->setVolume(GameManager::get()->m_sfxVolume);
 
         m_fields->profiles = GlobalStore::get()->getProfiles();
         return true;
@@ -87,7 +98,32 @@ public:
         checkRun();
     }
 
+    static FMOD_RESULT fmodNonBlockCallback(FMOD_SOUND *a, FMOD_RESULT b) {
+        log::info("nonBlockCallback called");
+
+        // auto engine = FMODAudioEngine::get();
+        // auto system = engine->m_system;
+        // FMOD::Channel *playingChannel;
+
+        return FMOD_OK;
+    }
+
+
     void playSound(bool isStage) {
+        FMOD_RESULT result;
+        FMOD::Sound *sound;
+        FMOD_CREATESOUNDEXINFO exinfo;
+        FMOD::Channel *playingChannel;
+
+        memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
+        exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
+        exinfo.nonblockcallback = BlitzPlayLayer::fmodNonBlockCallback;
+
+        BKGlobal::sfxGroup->setVolume(GameManager::get()->m_sfxVolume);
+
+        auto engine = FMODAudioEngine::get();
+        auto system = engine->m_system;
+
         auto sfxStagePath = Mod::get()->getSettingValue<std::filesystem::path>("sfx-stage-path");
         auto sfxProgressPath = Mod::get()->getSettingValue<std::filesystem::path>("sfx-progress-path");
         auto sfxUseCustomSounds = Mod::get()->getSettingValue<bool>("sfx-use-custom-sounds");
@@ -97,8 +133,18 @@ public:
         auto progressSound = !sfxProgressPath.empty() &&
             sfxUseCustomSounds ? geode::utils::string::pathToString(sfxProgressPath) : "progress_complete.mp3"_spr;
 
-        if (isStage) FMODAudioEngine::sharedEngine()->playEffect(stageSound);
-        else FMODAudioEngine::sharedEngine()->playEffect(progressSound);
+        std::string actualSound = (isStage) ? stageSound : progressSound;
+
+        result = system->createStream(actualSound.c_str(), FMOD_DEFAULT | FMOD_LOOP_OFF | FMOD_2D | FMOD_LOWMEM, &exinfo, &sound);
+        if (result != FMOD_OK) {
+            log::info("FMOD ERROR {}", (int)result);
+        } else {
+            log::info("fmod: sound created successfully");
+            auto res = system->playSound(sound, BKGlobal::sfxGroup, false, &playingChannel);
+            if (res != FMOD_OK) {
+                log::info("FMOD ERROR STARTING AUDIO: {}", (int)res);
+            }
+        }
     }
 
     void resetState() {

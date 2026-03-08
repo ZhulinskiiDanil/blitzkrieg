@@ -64,6 +64,7 @@ private:
 
   void onCurrentStageToggle(CCObject *);
   void onProfilesListToggle(CCObject *);
+  void onSettingsButton(CCObject *);
   void activateTab(TabButton *btnToActivate);
 
   ~StagesPopup()
