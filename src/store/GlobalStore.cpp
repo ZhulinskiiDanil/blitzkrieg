@@ -119,7 +119,7 @@ void GlobalStore::resetRun()
 
 int GlobalStore::checkRun(std::string profileId, float timePlayed)
 {
-  const float eps = 0.001f;
+  const float eps = 0.01f;
   const float runDiff = std::abs(runEnd - runStart);
   auto currentProfile = getProfileById(profileId);
 
@@ -139,7 +139,7 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
     std::vector<Range *> candidates;
 
     for (auto &range : stage.ranges)
-      if (runStart <= range.from)
+      if (runStart <= range.from && range.consider)
         candidates.push_back(&range);
 
     if (!candidates.empty())
@@ -156,7 +156,7 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
       Range *toCheckActual = nullptr;
       for (auto *r : candidates)
       {
-        if (!r->checked && runEnd >= r->to)
+        if (r->consider && !r->checked && runEnd >= r->to)
         {
           toCheckActual = r;
           break;
@@ -229,7 +229,7 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
   if (targetStage)
   {
     bool allChecked = std::all_of(targetStage->ranges.begin(), targetStage->ranges.end(), [](const Range &r)
-                                  { return r.checked; });
+                                  { return r.checked || !r.consider; });
 
     if (allChecked)
     {
@@ -266,16 +266,15 @@ Profile GlobalStore::getProfileById(std::string &profileId)
 Profile GlobalStore::getProfileByLevel(GJGameLevel *level)
 {
   if (!level)
-    return Profile{};
+    return {};
 
   std::string levelId = geode::utils::numToString(EditorIDs::getID(level));
-
   return getProfileByLevel(levelId);
 }
 
 Profile GlobalStore::getProfileByLevel(std::string const &levelId)
 {
-  for (const auto &profile : m_profiles)
+  for (const auto profile : m_profiles)
   {
     std::string key = levelId + "-" + profile.id;
     auto savedStr = Mod::get()->getSavedValue<std::string>(key);
@@ -284,7 +283,7 @@ Profile GlobalStore::getProfileByLevel(std::string const &levelId)
       return profile;
   }
 
-  return Profile{};
+  return {};
 }
 
 Range GlobalStore::getCurrentRange(std::string &profileId)

@@ -1,5 +1,5 @@
 #include "index.hpp"
-#include "StageChangedEvent.hpp"
+#include "StageSwitchedEvent.hpp"
 
 StagesPopup *StagesPopup::create(GJGameLevel *level)
 {
@@ -47,15 +47,13 @@ void StagesPopup::drawContent()
   {
     const auto btnId = activeButton->getID();
 
-    // Clear old content
-    for (auto *container : contentContainers)
-    {
-      if (container)
-      {
-        container->removeFromParentAndCleanup(true);
-      }
-    }
+    // ! Clear old content
 
+    for (auto *container : contentContainers)
+      if (container)
+        container->removeFromParentAndCleanup(true);
+
+    m_stageChangedListener.destroy();
     contentContainers.clear();
 
     if (btnId == "tabBtnProfilesList"_spr)
@@ -69,18 +67,13 @@ void StagesPopup::drawContent()
 
 void StagesPopup::drawProfilesList()
 {
-  if (auto oldList = m_mainLayer->getChildByID("stages-popup-profiles-list"_spr))
-  {
-    oldList->removeFromParentAndCleanup(true);
-  }
-
   Padding padding{12.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
 
   const auto profiles = GlobalStore::get()->getProfiles();
 
-  const auto profileListContainer = CCNode::create();
-  profileListContainer->setID("stages-popup-profiles-list"_spr);
-  profileListContainer->setTag(1);
+  m_profilesListNode = CCNode::create();
+  m_profilesListNode->setID("stages-popup-profiles-list"_spr);
+  m_profilesListNode->setTag(1);
 
   const auto contentSize = CCSize(
       m_size.width - padding.left - padding.right,
@@ -89,19 +82,14 @@ void StagesPopup::drawProfilesList()
   // ! --- ProfilesListLayer --- !
   auto listLayer = ProfilesListLayer::create(m_level, profiles, contentSize);
   listLayer->setPosition({padding.left, padding.bottom});
-  profileListContainer->addChild(listLayer);
+  m_profilesListNode->addChild(listLayer);
 
-  m_mainLayer->addChild(profileListContainer);
-  contentContainers.push_back(profileListContainer);
+  m_mainLayer->addChild(m_profilesListNode);
+  contentContainers.push_back(m_profilesListNode);
 }
 
 void StagesPopup::drawCurrentStage()
 {
-  if (auto oldList = m_mainLayer->getChildByID("stages-popup-current-stage"_spr))
-  {
-    oldList->removeFromParentAndCleanup(true);
-  }
-
   Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
   Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
@@ -120,8 +108,7 @@ void StagesPopup::drawCurrentStage()
 
   // ! --- Title --- !
   drawCurrentStageTitle(
-      currentStage,
-      profile.data.stages.size(), padding);
+      profile.data.stages, padding);
 
   // ! --- StageListLayer --- !
   auto stageListContentSize = CCSize(contentSize.width, contentSize.height);
@@ -133,79 +120,70 @@ void StagesPopup::drawCurrentStage()
   contentContainers.push_back(m_currentStageNode);
 }
 
-void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Padding padding)
+void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padding)
 {
-  if (m_currentStageNode)
-  {
-    std::string title = fmt::format(
-        "Stage: {}/{}",
-        currentStage ? geode::utils::numToString(currentStage->stage) : "?",
-        totalStages > 0
-            ? geode::utils::numToString(totalStages)
-            : "?");
+  auto metaInfo = getMetaInfoFromStages(stages);
 
-    m_currentStageTitleLabel = CCLabelBMFont::create(
-        title.c_str(),
-        "goldFont.fnt");
-    m_currentStageTitleLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 + 5}); // n - 2.5f
-    m_currentStageNode->addChild(m_currentStageTitleLabel);
+  std::string title = fmt::format(
+      "Stage: {}/{}",
+      geode::utils::numToString(std::max(metaInfo.completed, 1)),
+      geode::utils::numToString(metaInfo.total));
 
-    std::string stat = "";
+  m_currentStageTitleLabel = CCLabelBMFont::create(
+      title.c_str(),
+      "goldFont.fnt");
+  m_currentStageTitleLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 + 5}); // n - 2.5f
+  m_currentStageNode->addChild(m_currentStageTitleLabel);
 
-    float totalAttempts = 0;
-    float totalTimePlayed = 0;
+  std::string stat = "";
 
-    if (currentStage)
-    {
-      for (const auto &range : currentStage->ranges)
+  float totalAttempts = metaInfo.currStageAttempts;
+  float totalTimePlayed = metaInfo.currStagePlaytime;
+
+  stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
+  stat += formatTimePlayed(totalTimePlayed);
+
+  m_totalStatLabel = Label::create(stat, "bigFont.fnt", .4f);
+  m_totalStatLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 - 15});
+  m_currentStageNode->addChild(m_totalStatLabel);
+
+  m_stageChangedListener = StageSwitchedEvent().listen(
+      [this](int totalStages, Stage *currentStage)
       {
-        totalAttempts += range.attempts;
-        totalTimePlayed += range.timePlayed;
-      }
-    }
+        if (!m_currentStageTitleLabel || !m_totalStatLabel)
+          return ListenerResult::Stop;
 
-    stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
-    stat += formatTimePlayed(totalTimePlayed);
+        std::string newTitle = fmt::format(
+            "Stage: {}/{}",
+            geode::utils::numToString(currentStage->stage),
+            geode::utils::numToString(totalStages));
 
-    m_totalStatLabel = Label::create(stat, "bigFont.fnt", .4f);
-    m_totalStatLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 - 15});
-    m_currentStageNode->addChild(m_totalStatLabel);
+        m_currentStageTitleLabel->setString(newTitle.c_str());
 
-    m_stageChangedListener = StageChangedEvent().listen(
-        [this](int totalStages, Stage *currentStage)
+        std::string stat = "";
+
+        float totalAttempts = 0;
+        float totalTimePlayed = 0;
+
+        if (currentStage)
         {
-          std::string newTitle = fmt::format(
-              "Stage: {}/{}",
-              currentStage ? geode::utils::numToString(currentStage->stage) : "?",
-              totalStages > 0
-                  ? geode::utils::numToString(totalStages)
-                  : "?");
-
-          m_currentStageTitleLabel->setString(newTitle.c_str());
-
-          std::string stat = "";
-
-          float totalAttempts = 0;
-          float totalTimePlayed = 0;
-
-          if (currentStage)
+          for (const auto &range : currentStage->ranges)
           {
-            for (const auto &range : currentStage->ranges)
+            if (range.consider)
             {
               totalAttempts += range.attempts;
               totalTimePlayed += range.timePlayed;
             }
           }
+        }
 
-          stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
-          stat += formatTimePlayed(totalTimePlayed);
+        stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
+        stat += formatTimePlayed(totalTimePlayed);
 
-          m_totalStatLabel->setText(stat);
+        m_totalStatLabel->setText(stat);
 
-          return ListenerResult::Propagate;
-        });
-    // m_stageChangedListener.leak();
-  }
+        return ListenerResult::Propagate;
+      });
 }
 
 void StagesPopup::drawLastRuns()
@@ -217,6 +195,7 @@ void StagesPopup::drawTabs()
 {
   // ! --- CLEANUP OLD CONTAINER --- !
   auto oldTabsNode = m_mainLayer->getChildByID("stages-popup-tabs-node"_spr);
+
   if (oldTabsNode)
     oldTabsNode->removeFromParentAndCleanup(true);
 
@@ -244,14 +223,6 @@ void StagesPopup::drawTabs()
   tabBtnCurrentStage->setTag(2);
   tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
 
-  // auto tabBtnLastRuns = TabButton::create(
-  //     "Last runs",
-  //     this,
-  //     menu_selector(StagesPopup::onCurrentStageToggle));
-  // tabBtnLastRuns->setAnchorPoint({0.5f, 0.f});
-  // tabBtnLastRuns->setTag(3);
-  // tabBtnLastRuns->setID("tabBtnLastRuns"_spr);
-
   // ! --- MENU --- !
   auto tabMenu = CCMenu::create();
   tabMenu->addChild(tabBtnProfilesList);
@@ -265,7 +236,6 @@ void StagesPopup::drawTabs()
   tabButtons.clear();
   tabButtons.push_back(tabBtnProfilesList);
   tabButtons.push_back(tabBtnCurrentStage);
-  // tabButtons.push_back(tabBtnLastRuns);
 
   // ! --- TAB BUTTONS BACKGROUNDS --- !
   for (auto *btn : tabButtons)

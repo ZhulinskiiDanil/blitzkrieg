@@ -16,7 +16,7 @@ EditProfilePopup *EditProfilePopup::create(Profile *profile, GJGameLevel *level)
 
 bool EditProfilePopup::init(Profile *profile, GJGameLevel *level)
 {
-  if (!Popup::init(320, 114, "GJ_square01_custom.png"_spr))
+  if (!Popup::init(320, 204, "GJ_square01_custom.png"_spr))
     return false;
 
   findStartPoses();
@@ -34,6 +34,15 @@ bool EditProfilePopup::init(Profile *profile, GJGameLevel *level)
   m_input->setString(profile->profileName, false);
 
   m_mainLayer->addChild(m_input);
+
+  // ! --- Percentages List --- !
+  m_percentagesList = ToggablePercentagesList::create(
+      {m_mainLayer->getContentWidth() - 24.0f, 80.0f},
+      getAllStartposesFromProfile(*profile),
+      getDisabledStartposesFromStage(profile->data.stages[0]));
+  m_percentagesList->setAnchorPoint({.5f, 1.f});
+  m_percentagesList->setPosition(m_mainLayer->getContentWidth() / 2.f, m_input->getPositionY() - 40.f);
+  m_mainLayer->addChild(m_percentagesList);
 
   // ! --- Buttons Menu --- !
   m_buttonMenu = CCMenu::create();
@@ -89,37 +98,12 @@ void EditProfilePopup::onSave(CCObject *)
   if (!m_profile || !m_level)
     return;
 
-  auto profileWithNewName = *m_profile;
-  profileWithNewName.profileName = m_input->getString();
+  auto regeneratedProfile = generateProfile("_mergeProfile", m_percentagesList->getEnabledStartposes());
+  auto mergedProfile = mergeProfiles(*m_profile, regeneratedProfile.as<Profile>().unwrap(), true);
 
-  auto regeneratedProfile = generateProfile("_mergeProfile", m_2_1_percentages);
-  auto mergedProfile = mergeProfiles(profileWithNewName, regeneratedProfile.as<Profile>().unwrap(), true);
-
-  // Save to test
-  auto resourcesDir = geode::Mod::get()->getSaveDir();
-
-  // Create Backup folder
-  auto backupDir = resourcesDir / "backups";
-  auto backupFile = backupDir / backup::generateBackupFilename();
-
-  const auto res = geode::utils::file::createDirectory(backupDir);
-
-  if (!res)
-  {
-    geode::log::error("Unable to create backup directory: {}", res.unwrapErr());
-    return;
-  }
+  mergedProfile.profileName = m_input->getString();
 
   GlobalStore::get()->updateProfile(mergedProfile);
-
-  matjson::Value jProfiles = mergedProfile;
-  auto jsonString = jProfiles.dump(matjson::NO_INDENTATION);
-  auto result = geode::utils::file::writeString(backupFile, jsonString);
-
-  // if (result)
-  //   geode::utils::file::openFolder(backupFile);
-  // else
-  //   geode::log::error("Unable to save JSON: {}", result.unwrapErr());
 
   ProfilesChangedEvent().send();
   this->onClose(nullptr);
@@ -127,24 +111,7 @@ void EditProfilePopup::onSave(CCObject *)
 
 void EditProfilePopup::findStartPoses()
 {
-  for (auto child : CCArrayExt<StartPosObject *>(PlayLayer::get()->m_objects))
-  {
-    if (auto startPos = typeinfo_cast<StartPosObject *>(child))
-    {
-      const float levelLength = PlayLayer::get()->m_levelLength;
-      const float levelTime = PlayLayer::get()->timeForPos({levelLength, 0.f}, 0.f, 0.f, true, 0.f);
-
-      const float startPosX = startPos->getPositionX();
-      const float startPosPercentByPosX = (startPosX / levelLength) * 100.f;
-
-      const float startPosTime = PlayLayer::get()->timeForPos({startPosX, 0.f}, 0.f, 0.f, true, 0.f);
-      const float startPosPercentByTime = (startPosTime / levelTime) * 100.f;
-
-      m_2_1_percentages.push_back(startPosPercentByPosX);
-      m_2_2_percentages.push_back(startPosPercentByTime);
-    }
-  }
-
-  std::sort(m_2_1_percentages.begin(), m_2_1_percentages.end());
-  std::sort(m_2_2_percentages.begin(), m_2_2_percentages.end());
+  auto startposes = findStartposesFromCurrentLevel();
+  m_2_1_percentages = startposes.percentages_2_1;
+  m_2_2_percentages = startposes.percentages_2_2;
 }

@@ -220,6 +220,12 @@ void ProfilesListLayer::onImport(CCObject *obj)
         auto res = matjson::parseAs<std::vector<Profile>>(jsonContent);
         if (res.isErr()) {
             geode::log::error("JSON parse error: {}", res.unwrapErr());
+
+            FLAlertLayer::create(
+              "Import Error",
+              fmt::format("Failed to import profiles: {}", res.unwrapErr()),
+              "OK")->show();
+
             return;
         }
 
@@ -227,11 +233,23 @@ void ProfilesListLayer::onImport(CCObject *obj)
 
         if (profiles.empty() || !res.isOk()) {
             geode::log::error("Parsed JSON is empty or not a valid profiles array");
+
+            FLAlertLayer::create(
+              "Import Error",
+              "Parsed JSON is empty or not a valid profiles array",
+              "OK")->show();
+
             return;
         }
 
         if (!res.isOk()) {
             geode::log::error("JSON Parse error at import: {}", res.unwrapErr());
+
+            FLAlertLayer::create(
+              "Import Error",
+              fmt::format("Failed to import profiles: {}", res.unwrapErr()),
+              "OK")->show();
+
             return;
         }
 
@@ -274,6 +292,27 @@ void ProfilesListLayer::onCreate(CCObject *sender)
   if (!m_level)
     return;
 
-  const auto createProfilePopup = CreateProfilePopup::create(m_level);
-  createProfilePopup->show();
+  std::vector<float> percentages = findStartposesFromCurrentLevel().percentages_2_1;
+  bool isSPCountValid = percentages.size() <= 5;
+
+  if (isSPCountValid)
+  {
+    createQuickPopup(
+        "Too few startposes",
+        "It is <cg>recommended</c> to use more than <cc>5 startposes</c>. If you still want to <cg>create a profile</c>, click <cy>Continue</c>.",
+        "Back", "Continue",
+        [this](auto, bool onContinueBtn)
+        {
+          if (onContinueBtn)
+          {
+            const auto createProfilePopup = CreateProfilePopup::create(m_level);
+            createProfilePopup->show();
+          }
+        });
+  }
+  else
+  {
+    const auto createProfilePopup = CreateProfilePopup::create(m_level);
+    createProfilePopup->show();
+  }
 }

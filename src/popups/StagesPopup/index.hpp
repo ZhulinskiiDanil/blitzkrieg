@@ -13,7 +13,8 @@
 #include <Geode/cocos/cocoa/CCGeometry.h>
 #include <Geode/cocos/extensions/GUI/CCControlExtension/CCScale9Sprite.h>
 
-#include "./StageChangedEvent.hpp"
+#include "./StageSwitchedEvent.hpp"
+#include "./StageRangesChangedEvent.hpp"
 
 #include "./ui/StageList/StageListLayer.hpp"
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
@@ -24,6 +25,7 @@
 #include "../../utils/getFirstUncheckedStage.hpp"
 #include "../../utils/generateProfile.hpp"
 #include "../../utils/formatTimePlayed.hpp"
+#include "../../utils/getMetaInfoFromStages.hpp"
 
 using namespace geode::prelude;
 
@@ -35,7 +37,7 @@ struct Padding
   float right;
 };
 
-class StagesPopup : public geode::Popup//<GJGameLevel *>
+class StagesPopup : public geode::Popup
 {
 private:
   std::vector<TabButton *> tabButtons;
@@ -47,14 +49,15 @@ private:
   CCNode *m_profilesListNode = nullptr;
   CCLabelBMFont *m_currentStageTitleLabel = nullptr;
   Label *m_totalStatLabel = nullptr;
-  // EventListener<EventFilter<StageChangedEvent>> m_stageChangedListener;
+
   geode::comm::ListenerHandle m_stageChangedListener;
+  geode::comm::ListenerHandle m_stageRangesChangedListener;
 
   void drawTabs();
   void drawContent();
   void drawProfilesList();
   void drawCurrentStage();
-  void drawCurrentStageTitle(Stage *currentStage, int totalStages, Padding padding);
+  void drawCurrentStageTitle(std::vector<Stage> &stages, Padding padding);
   void drawLastRuns();
 
   bool init(GJGameLevel *);
@@ -62,6 +65,11 @@ private:
   void onCurrentStageToggle(CCObject *);
   void onProfilesListToggle(CCObject *);
   void activateTab(TabButton *btnToActivate);
+
+  ~StagesPopup()
+  {
+    m_stageChangedListener.destroy();
+  }
 
 public:
   // static StagesPopup* create(StagesPopupDelegate*);

@@ -4,10 +4,13 @@
 #include <vector>
 
 #include "StageRangeCell.hpp"
-#include "../../StageChangedEvent.hpp"
+#include "../../StageSwitchedEvent.hpp"
 #include "../../StagesChangedEvent.hpp"
+#include "../../StageRangesChangedEvent.hpp"
 #include "../../UpdateScrollLayoutEvent.hpp"
 
+#include "../../../../utils/getFirstUncheckedStage.hpp"
+#include "../../../../utils/getMetaInfoFromStages.hpp"
 #include "../../../../serialization/profile/index.hpp"
 #include "../../../../store/GlobalStore.hpp"
 
@@ -29,12 +32,13 @@ private:
   ListenerHandle m_listener;
   // EventListener<EventFilter<UpdateScrollLayoutEvent>>
   ListenerHandle m_listenerUpdateScrollLayout;
+  ListenerHandle m_listenerStageRangesChanged;
 
   Profile m_profile;
   GJGameLevel *m_level = nullptr;
+  Stage *m_stage = nullptr;
   std::vector<Stage> *m_stages = nullptr;
   Stage *m_uncheckedStage = nullptr;
-  Stage *m_stage = nullptr;
   int m_currentIndex;
 
 public:

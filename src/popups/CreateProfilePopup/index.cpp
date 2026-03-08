@@ -17,7 +17,7 @@ CreateProfilePopup *CreateProfilePopup::create(GJGameLevel *level)
 
 bool CreateProfilePopup::init(GJGameLevel *level)
 {
-  if (!Popup::init(320, 248, "GJ_square01_custom.png"_spr))
+  if (!Popup::init(320, 280, "GJ_square01_custom.png"_spr))
   {
     return false;
   }
@@ -27,11 +27,11 @@ bool CreateProfilePopup::init(GJGameLevel *level)
 
   findStartPoses();
 
-  auto hasStartPoses = m_2_1_percentages.size() > 0;
+  bool hasStartPoses = m_2_1_percentages.size() > 0;
 
-  m_buttonMenu = CCMenu::create();
-  m_buttonMenu->setAnchorPoint({.0f, 0.f});
-  m_buttonMenu->setPosition({10.f, 10.f});
+  m_bottomButtonMenu = CCMenu::create();
+  m_bottomButtonMenu->setAnchorPoint({.0f, 0.f});
+  m_bottomButtonMenu->setPosition({10.f, 10.f});
 
   // ! --- Cancel Button --- !
   m_button2 = ButtonSprite::create("Cancel", 0, 0, "goldFont.fnt", "GJ_button_01.png", 0.0f, .8f);
@@ -42,11 +42,11 @@ bool CreateProfilePopup::init(GJGameLevel *level)
       this,
       menu_selector(CreateProfilePopup::onBtn2));
 
-  m_buttonMenu->addChild(btnCancel);
+  m_bottomButtonMenu->addChild(btnCancel);
   btnCancel->ignoreAnchorPointForPosition(true);
 
   // ! --- Button Menu --- !
-  m_buttonMenu->setLayout(
+  m_bottomButtonMenu->setLayout(
       RowLayout::create()
           ->setGap(5.f)
           ->setAutoScale(false)
@@ -79,7 +79,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
       this,
       menu_selector(CreateProfilePopup::onCreateProfile));
 
-  m_buttonMenu->addChild(btnCreateProfile);
+  m_bottomButtonMenu->addChild(btnCreateProfile);
   btnCreateProfile->ignoreAnchorPointForPosition(true);
 
   // ! --- Input --- !
@@ -88,12 +88,13 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   m_input->setAnchorPoint({0.f, 1.f});
   m_input->setPosition(10.f, m_size.height - 40.f);
   m_input->setString(m_level->m_levelName, false);
+  m_input->setMaxCharCount(32);
 
   // ! --- Lists Container --- !
-  const auto lists = CCLayer::create();
-  lists->setAnchorPoint({.5f, 1.f});
-  lists->setPosition(m_size.width / 2, m_input->getPositionY() - m_input->getContentHeight() - 10.f);
-  lists->setLayout(
+  m_lists = CCLayer::create();
+  m_lists->setAnchorPoint({.5f, 1.f});
+  m_lists->setPosition(m_size.width / 2, m_input->getPositionY() - m_input->getContentHeight() - 8.f);
+  m_lists->setLayout(
       ColumnLayout::create()
           ->setGap(4.f)
           ->setAutoScale(false)
@@ -166,7 +167,8 @@ bool CreateProfilePopup::init(GJGameLevel *level)
       rangeLabel->setPosition({background->getContentWidth() / 2 + background->getPositionX(),
                                background->getContentHeight() / 2 + background->getPositionY()});
 
-      cell->addChild(background);
+      if (j != 4)
+        cell->addChild(background);
       cell->addChild(rangeLabel);
 
       if (!useCompactLayout || (useCompactLayout && j < 4))
@@ -199,7 +201,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
     listCell->addChild(rightList);
     listCell->addChild(borders);
 
-    lists->addChild(listCell);
+    m_lists->addChild(listCell);
     leftList->updateLayout();
     rightList->updateLayout();
     leftList->ignoreAnchorPointForPosition(true);
@@ -210,98 +212,105 @@ bool CreateProfilePopup::init(GJGameLevel *level)
     borders->setPosition({(m_size.width - 20.f) / 2 - 4.f, listCell->getContentHeight() / 2});
   }
 
-  auto toggleOn = CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png");
-  auto toggleOff = CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png");
-
   m_mainLayer->addChild(m_input);
-  m_mainLayer->addChild(lists);
-  lists->updateLayout();
-  m_mainLayer->addChild(m_buttonMenu);
-  m_buttonMenu->updateLayout();
+  m_mainLayer->addChild(m_lists);
+  m_lists->updateLayout();
+  m_mainLayer->addChild(m_bottomButtonMenu);
+  m_bottomButtonMenu->updateLayout();
+
+  m_checkboxesMenu = CCMenu::create();
+  m_checkboxesMenu->setContentSize({m_mainLayer->getContentWidth() - 28.0f, 32.0f});
+  m_checkboxesMenu->setAnchorPoint({0.0f, 0.0f});
+  m_checkboxesMenu->setPosition({12.0f, m_button1->getPositionY() + m_button1->getContentHeight() / 2.0f + 13.0f});
+  m_checkboxesMenu->setLayout(RowLayout::create()
+                                ->setAxisReverse(true)
+                                ->setGap(5.0f)
+                                ->setAutoScale(false));
 
   // ! --- Percentages Checkbox --- !
-  m_percentagesCheckbox = CCMenuItemToggler::create(
-      toggleOn, toggleOff, this, menu_selector(CreateProfilePopup::onTogglePercentages));
+  m_percentagesCheckbox = CCMenuItemToggler::createWithStandardSprites(
+      this, menu_selector(CreateProfilePopup::onTogglePercentages), 1.0f);
+  m_percentagesCheckbox->setScale(0.5f);
   m_percentagesCheckbox->ignoreAnchorPointForPosition(true);
   m_percentagesCheckbox->setContentSize({32.f, 32.f});
-  m_percentagesCheckbox->toggle(!m_percentagesChecked);
+  m_percentagesCheckbox->toggle(m_percentagesChecked);
 
   auto percentagesCheckboxMenu = CCMenu::createWithItem(m_percentagesCheckbox);
-  percentagesCheckboxMenu->setScale(.6f);
   percentagesCheckboxMenu->setAnchorPoint({.0f, .5f});
-  percentagesCheckboxMenu->setContentSize(m_percentagesCheckbox->getContentSize());
+  percentagesCheckboxMenu->setContentSize({m_checkboxesMenu->getContentWidth() / 3.0f - (10.0f / 3.0f), m_checkboxesMenu->getContentHeight()});
   percentagesCheckboxMenu->ignoreAnchorPointForPosition(false);
-  percentagesCheckboxMenu->setPosition({10.f + 2.f,
-                                        lists->getPositionY() - lists->getContentHeight() - 8.f - 12.f});
-  percentagesCheckboxMenu->setLayout(RowLayout::create());
-
-  m_mainLayer->addChild(percentagesCheckboxMenu);
-  percentagesCheckboxMenu->updateLayout();
+  percentagesCheckboxMenu->setLayout(RowLayout::create()
+                                         ->setGap(2.0f)
+                                         ->setAutoScale(false));
 
   // ! --- Checkbox Text --- !
-  auto percentagesCheckboxLabel = CCLabelBMFont::create("Old 2.1 percentages", "bigFont.fnt");
-  percentagesCheckboxLabel->setScale(0.4f);
+  auto percentagesCheckboxLabel = CCLabelBMFont::create("2.1 percentages", "bigFont.fnt");
+  percentagesCheckboxLabel->setScale((percentagesCheckboxMenu->getContentWidth() - m_percentagesCheckbox->getContentWidth() / 2.0f) / percentagesCheckboxLabel->getContentWidth() * 0.95f);
   percentagesCheckboxLabel->setAnchorPoint({0, .5f});
-  percentagesCheckboxLabel->setPosition({percentagesCheckboxMenu->getPositionX() + percentagesCheckboxMenu->getContentWidth() / 2 + 8.f,
-                                         percentagesCheckboxMenu->getPositionY()});
 
-  m_mainLayer->addChild(percentagesCheckboxLabel);
+  percentagesCheckboxMenu->addChild(percentagesCheckboxLabel);
+  m_checkboxesMenu->addChild(percentagesCheckboxMenu);
+  percentagesCheckboxMenu->updateLayout();
 
   // ! --- Use Checkbox --- !
-  m_useCheckbox = CCMenuItemToggler::create(
-      toggleOn, toggleOff, this, menu_selector(CreateProfilePopup::onToggleUse));
+  m_useCheckbox = CCMenuItemToggler::createWithStandardSprites(
+      this, menu_selector(CreateProfilePopup::onToggleUse), 1.0f);
+  m_useCheckbox->setScale(0.5f);
   m_useCheckbox->ignoreAnchorPointForPosition(true);
   m_useCheckbox->setContentSize({32.f, 32.f});
-  m_useCheckbox->toggle(!m_pinChecked);
+  m_useCheckbox->toggle(m_useChecked);
 
   auto useCheckboxMenu = CCMenu::createWithItem(m_useCheckbox);
-  useCheckboxMenu->setScale(.6f);
   useCheckboxMenu->setAnchorPoint({.0f, .5f});
-  useCheckboxMenu->setContentSize(m_useCheckbox->getContentSize());
+  useCheckboxMenu->setContentSize({m_checkboxesMenu->getContentWidth() / 3.0f - (10.0f / 3.0f), m_checkboxesMenu->getContentHeight()});
   useCheckboxMenu->ignoreAnchorPointForPosition(false);
-  useCheckboxMenu->setPosition({10.f + 2.f,
-                                percentagesCheckboxMenu->getPositionY() - percentagesCheckboxMenu->getContentHeight() / 2 - 8.f});
-  useCheckboxMenu->setLayout(RowLayout::create());
-
-  m_mainLayer->addChild(useCheckboxMenu);
-  useCheckboxMenu->updateLayout();
+  useCheckboxMenu->setLayout(RowLayout::create()
+                                 ->setGap(2.0f)
+                                 ->setAutoScale(false));
 
   // ! --- Checkbox Text --- !
   auto useCheckboxLabel = CCLabelBMFont::create("Bind profile", "bigFont.fnt");
-  useCheckboxLabel->setScale(0.4f);
+  useCheckboxLabel->setScale((useCheckboxMenu->getContentWidth() - m_useCheckbox->getContentWidth() / 2.0f) / useCheckboxLabel->getContentWidth() * 0.95f);
   useCheckboxLabel->setAnchorPoint({0, .5f});
-  useCheckboxLabel->setPosition({useCheckboxMenu->getPositionX() + useCheckboxMenu->getContentWidth() / 2 + 8.f,
-                                 useCheckboxMenu->getPositionY()});
 
-  m_mainLayer->addChild(useCheckboxLabel);
+  useCheckboxMenu->addChild(useCheckboxLabel);
+  m_checkboxesMenu->addChild(useCheckboxMenu);
+  useCheckboxMenu->updateLayout();
 
   // ! --- Pin Checkbox --- !
-  m_pinCheckbox = CCMenuItemToggler::create(
-      toggleOn, toggleOff, this, menu_selector(CreateProfilePopup::onTogglePin));
+  m_pinCheckbox = CCMenuItemToggler::createWithStandardSprites(
+      this, menu_selector(CreateProfilePopup::onTogglePin), 1.0f);
+  m_pinCheckbox->setScale(0.5f);
   m_pinCheckbox->ignoreAnchorPointForPosition(true);
   m_pinCheckbox->setContentSize({32.f, 32.f});
-  m_pinCheckbox->toggle(!m_pinChecked);
+  m_pinCheckbox->toggle(m_pinChecked);
 
   auto pinCheckboxMenu = CCMenu::createWithItem(m_pinCheckbox);
-  pinCheckboxMenu->setScale(.6f);
   pinCheckboxMenu->setAnchorPoint({.0f, .5f});
-  pinCheckboxMenu->setContentSize(m_pinCheckbox->getContentSize());
+  pinCheckboxMenu->setContentSize({m_checkboxesMenu->getContentWidth() / 3.0f - (10.0f / 3.0f), m_checkboxesMenu->getContentHeight()});
   pinCheckboxMenu->ignoreAnchorPointForPosition(false);
-  pinCheckboxMenu->setPosition({10.f + 2.f,
-                                useCheckboxMenu->getPositionY() - useCheckboxMenu->getContentHeight() / 2 - 8.f});
-  pinCheckboxMenu->setLayout(RowLayout::create());
-
-  m_mainLayer->addChild(pinCheckboxMenu);
-  pinCheckboxMenu->updateLayout();
+  pinCheckboxMenu->setLayout(RowLayout::create()
+                                 ->setGap(2.0f)
+                                 ->setAutoScale(false));
 
   // ! --- Checkbox Text --- !
   auto pinCheckboxLabel = CCLabelBMFont::create("Pin profile", "bigFont.fnt");
-  pinCheckboxLabel->setScale(0.4f);
+  pinCheckboxLabel->setScale((pinCheckboxMenu->getContentWidth() - m_pinCheckbox->getContentWidth() / 2.0f) / pinCheckboxLabel->getContentWidth() * 0.95f);
   pinCheckboxLabel->setAnchorPoint({0, .5f});
-  pinCheckboxLabel->setPosition({pinCheckboxMenu->getPositionX() + pinCheckboxMenu->getContentWidth() / 2 + 8.f,
-                                 pinCheckboxMenu->getPositionY()});
 
-  m_mainLayer->addChild(pinCheckboxLabel);
+  pinCheckboxMenu->addChild(pinCheckboxLabel);
+  m_checkboxesMenu->addChild(pinCheckboxMenu);
+  pinCheckboxMenu->updateLayout();
+
+  m_checkboxesMenu->updateLayout();
+  m_mainLayer->addChild(m_checkboxesMenu);
+
+  auto percentages = m_percentagesChecked ? m_2_1_percentages : m_2_2_percentages;
+  m_percentagesList = ToggablePercentagesList::create(
+      {m_mainLayer->getContentWidth() - 24.0f, 80.0f},
+      percentages);
+  m_percentagesList->setPosition({m_mainLayer->getContentWidth() / 2.0f, m_lists->getPositionY() - m_lists->getContentHeight() - 10.0f});
+  m_mainLayer->addChild(m_percentagesList);
 
   // ! --- Other --- !
   this->setKeypadEnabled(true);
@@ -312,33 +321,16 @@ bool CreateProfilePopup::init(GJGameLevel *level)
 
 void CreateProfilePopup::findStartPoses()
 {
-  for (auto child : CCArrayExt<StartPosObject *>(PlayLayer::get()->m_objects))
-  {
-    if (auto startPos = typeinfo_cast<StartPosObject *>(child))
-    {
-      const float levelLength = PlayLayer::get()->m_levelLength;
-      const float levelTime = PlayLayer::get()->timeForPos({levelLength, 0.f}, 0.f, 0.f, true, 0.f);
-
-      const float startPosX = startPos->getPositionX();
-      const float startPosPercentByPosX = (startPosX / levelLength) * 100.f;
-
-      const float startPosTime = PlayLayer::get()->timeForPos({startPosX, 0.f}, 0.f, 0.f, true, 0.f);
-      const float startPosPercentByTime = (startPosTime / levelTime) * 100.f;
-
-      m_2_1_percentages.push_back(startPosPercentByPosX);
-      m_2_2_percentages.push_back(startPosPercentByTime);
-    }
-  }
-
-  std::sort(m_2_1_percentages.begin(), m_2_1_percentages.end());
-  std::sort(m_2_2_percentages.begin(), m_2_2_percentages.end());
+  auto startposes = findStartposesFromCurrentLevel();
+  m_2_1_percentages = startposes.percentages_2_1;
+  m_2_2_percentages = startposes.percentages_2_2;
 }
 
 void CreateProfilePopup::onCreateProfile(CCObject *sender)
 {
   std::string levelName = m_input->getString();
 
-  if (levelName.length() <= 0)
+  if (levelName.length() == 0)
   {
     const auto alert = FLAlertLayer::create(
         "Profile Name Required",
@@ -349,27 +341,16 @@ void CreateProfilePopup::onCreateProfile(CCObject *sender)
     return;
   }
 
-  if (levelName.length() > 32)
-  {
-    const auto alert = FLAlertLayer::create(
-        "Invalid Profile Name",
-        "Your profile name must not exceed 32 characters.",
-        "OK");
-    alert->show();
+  auto profile1 = generateProfile(levelName, m_percentagesChecked ? m_2_1_percentages : m_2_2_percentages).as<Profile>().unwrap();
+  auto profile2 = generateProfile(levelName, m_percentagesList->getEnabledStartposes()).as<Profile>().unwrap();
 
-    return;
-  }
-
-  matjson::Value profile1 = generateProfile(levelName, m_2_1_percentages);
-  matjson::Value profile2 = generateProfile(levelName, m_2_2_percentages);
-
-  auto profile = m_percentagesChecked ? profile1 : profile2;
-  GlobalStore::get()->updateProfile(profile.as<Profile>().unwrap());
+  auto profile = mergeProfiles(profile1, profile2, false);
+  GlobalStore::get()->updateProfile(profile);
 
   if (m_useChecked)
-    linkProfileWithLevel(profile.as<Profile>().unwrap(), m_level);
+    linkProfileWithLevel(profile, m_level);
   if (m_pinChecked)
-    GlobalStore::get()->pinProfileById(profile.as<Profile>().unwrap().id, true);
+    GlobalStore::get()->pinProfileById(profile.id, true);
 
   this->onClose(sender);
   ProfilesChangedEvent().send();
@@ -380,27 +361,22 @@ void CreateProfilePopup::onTogglePercentages(CCObject *sender)
   if (m_percentagesCheckbox)
   {
     m_percentagesChecked = !m_percentagesChecked;
-    m_percentagesCheckbox->toggle(m_percentagesChecked);
 
     m_borders1->setVisible(m_percentagesChecked);
     m_borders2->setVisible(!m_percentagesChecked);
+
+    m_percentagesList->setStartposes(m_percentagesChecked ? m_2_1_percentages : m_2_2_percentages);
   }
 }
 
 void CreateProfilePopup::onToggleUse(CCObject *sender)
 {
   if (m_useCheckbox)
-  {
     m_useChecked = !m_useChecked;
-    m_useCheckbox->toggle(m_useChecked);
-  }
 }
 
 void CreateProfilePopup::onTogglePin(CCObject *sender)
 {
   if (m_pinCheckbox)
-  {
     m_pinChecked = !m_pinChecked;
-    m_pinCheckbox->toggle(m_pinChecked);
-  }
 }

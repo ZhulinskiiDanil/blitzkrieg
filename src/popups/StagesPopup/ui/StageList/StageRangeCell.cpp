@@ -129,8 +129,6 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   std::string timePlayed = formatTimePlayed(m_range->timePlayed);
 
   std::vector<MetaData> tableData = {
-      {"Consider:", m_range->consider == true ? "Yes" : "No"},
-      {"Automatically Closed:", m_range->automaticallyClosed == true ? "Yes" : "No"},
       {"Attempts:", attempts},
       {"Completed in:", attemptsToComplete},
       {"Completions:", completions},
@@ -254,14 +252,14 @@ void StageRangeCell::onToggle(CCObject *sender)
 
     for (auto &range : stage.ranges)
     {
-      if (!range.checked)
+      if (!range.checked && range.consider)
         isEveryProgressChecked = false;
 
       if (range.id == m_id)
       {
         range.checked = !range.checked;
 
-        if (!range.checked)
+        if (!range.checked && range.consider)
         {
           range.attempts = range.attempts - 1 >= 0 ? range.attempts - 1 : 0;
           range.completionCounter--;
@@ -283,6 +281,7 @@ void StageRangeCell::onToggle(CCObject *sender)
   }
 
   GlobalStore::get()->updateProfile(profile);
+  StageRangesChangedEvent().send();
 }
 
 void StageRangeCell::onExpand(CCObject *sender)
