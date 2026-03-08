@@ -238,7 +238,7 @@ void StageListLayer::drawArrows()
   m_buttonMenuRight->addChild(m_buttonRight);
   m_buttonMenuRight->updateLayout();
 
-  m_buttonMenuRight->setVisible(m_stage->stage < stagesMetaInfo.total - 1);
+  m_buttonMenuRight->setVisible(m_stage->stage < stagesMetaInfo.total);
   this->addChild(m_buttonMenuRight);
 }
 

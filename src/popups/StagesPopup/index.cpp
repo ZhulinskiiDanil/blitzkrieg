@@ -129,7 +129,7 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padd
 
   std::string title = fmt::format(
       "Stage: {}/{}",
-      geode::utils::numToString(std::max(metaInfo.completed, 1)),
+      geode::utils::numToString(metaInfo.completed + 1),
       geode::utils::numToString(metaInfo.total));
 
   m_currentStageTitleLabel = CCLabelBMFont::create(
