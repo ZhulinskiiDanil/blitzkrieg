@@ -25,6 +25,7 @@
 #include "../../utils/getFirstUncheckedStage.hpp"
 #include "../../utils/generateProfile.hpp"
 #include "../../utils/formatTimePlayed.hpp"
+#include "../../utils/getMetaInfoFromStages.hpp"
 
 using namespace geode::prelude;
 
@@ -56,7 +57,7 @@ private:
   void drawContent();
   void drawProfilesList();
   void drawCurrentStage();
-  void drawCurrentStageTitle(Stage *currentStage, int totalStages, Padding padding);
+  void drawCurrentStageTitle(std::vector<Stage> &stages, Padding padding);
   void drawLastRuns();
 
   bool init(GJGameLevel *);

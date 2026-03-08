@@ -129,8 +129,6 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   std::string timePlayed = formatTimePlayed(m_range->timePlayed);
 
   std::vector<MetaData> tableData = {
-      {"Consider:", m_range->consider == true ? "Yes" : "No"},
-      {"Automatically Closed:", m_range->automaticallyClosed == true ? "Yes" : "No"},
       {"Attempts:", attempts},
       {"Completed in:", attemptsToComplete},
       {"Completions:", completions},

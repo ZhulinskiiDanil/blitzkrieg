@@ -108,8 +108,7 @@ void StagesPopup::drawCurrentStage()
 
   // ! --- Title --- !
   drawCurrentStageTitle(
-      currentStage,
-      profile.data.stages.size(), padding);
+      profile.data.stages, padding);
 
   // ! --- StageListLayer --- !
   auto stageListContentSize = CCSize(contentSize.width, contentSize.height);
@@ -121,14 +120,14 @@ void StagesPopup::drawCurrentStage()
   contentContainers.push_back(m_currentStageNode);
 }
 
-void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Padding padding)
+void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padding)
 {
+  auto metaInfo = getMetaInfoFromStages(stages);
+
   std::string title = fmt::format(
       "Stage: {}/{}",
-      currentStage ? geode::utils::numToString(currentStage->stage) : "?",
-      totalStages > 0
-          ? geode::utils::numToString(totalStages)
-          : "?");
+      geode::utils::numToString(std::max(metaInfo.completed, 1)),
+      geode::utils::numToString(metaInfo.total));
 
   m_currentStageTitleLabel = CCLabelBMFont::create(
       title.c_str(),
@@ -138,17 +137,8 @@ void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Pa
 
   std::string stat = "";
 
-  float totalAttempts = 0;
-  float totalTimePlayed = 0;
-
-  if (currentStage)
-  {
-    for (const auto &range : currentStage->ranges)
-    {
-      totalAttempts += range.attempts;
-      totalTimePlayed += range.timePlayed;
-    }
-  }
+  float totalAttempts = metaInfo.currStageAttempts;
+  float totalTimePlayed = metaInfo.currStagePlaytime;
 
   stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
   stat += formatTimePlayed(totalTimePlayed);
@@ -165,10 +155,8 @@ void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Pa
 
         std::string newTitle = fmt::format(
             "Stage: {}/{}",
-            currentStage ? geode::utils::numToString(currentStage->stage) : "?",
-            totalStages > 0
-                ? geode::utils::numToString(totalStages)
-                : "?");
+            geode::utils::numToString(currentStage->stage),
+            geode::utils::numToString(totalStages));
 
         m_currentStageTitleLabel->setString(newTitle.c_str());
 
@@ -181,8 +169,11 @@ void StagesPopup::drawCurrentStageTitle(Stage *currentStage, int totalStages, Pa
         {
           for (const auto &range : currentStage->ranges)
           {
-            totalAttempts += range.attempts;
-            totalTimePlayed += range.timePlayed;
+            if (range.consider)
+            {
+              totalAttempts += range.attempts;
+              totalTimePlayed += range.timePlayed;
+            }
           }
         }
 

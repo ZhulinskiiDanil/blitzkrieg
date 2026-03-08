@@ -10,6 +10,15 @@ Stage *getFirstUncheckedStage(Profile &profile)
   return nullptr;
 }
 
+Stage *getFirstUncheckedStage(std::vector<Stage> &stages)
+{
+  for (auto &stage : stages)
+    if (!isStageDeepChecked(stage))
+      return &stage;
+
+  return nullptr;
+}
+
 // Range *getFirstUncheckedRange(ProfileData &data)
 // {
 //   for (auto &stage : data.stages)
