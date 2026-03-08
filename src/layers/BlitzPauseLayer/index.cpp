@@ -7,7 +7,7 @@ void BlitzPauseLayer::customSetup() {
 
     auto leftMenu = this->getChildByID("left-button-menu");
 
-    auto modIcon = CCSprite::create("logo.png"_spr);
+    auto modIcon = CCSprite::create("logo-circle.png"_spr);
     auto modBtnSpr = CircleButtonSprite::create(modIcon);
     modBtnSpr->setScale(0.75f);
 
