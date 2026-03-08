@@ -263,16 +263,16 @@ Profile GlobalStore::getProfileById(std::string &profileId)
   return {};
 }
 
-Profile *GlobalStore::getProfileByLevel(GJGameLevel *level)
+Profile GlobalStore::getProfileByLevel(GJGameLevel *level)
 {
   if (!level)
-    return nullptr;
+    return {};
 
   std::string levelId = geode::utils::numToString(EditorIDs::getID(level));
   return getProfileByLevel(levelId);
 }
 
-Profile *GlobalStore::getProfileByLevel(std::string const &levelId)
+Profile GlobalStore::getProfileByLevel(std::string const &levelId)
 {
   for (auto &profile : m_profiles)
   {
@@ -280,10 +280,10 @@ Profile *GlobalStore::getProfileByLevel(std::string const &levelId)
     auto savedStr = Mod::get()->getSavedValue<std::string>(key);
 
     if (!savedStr.empty())
-      return &profile;
+      return profile;
   }
 
-  return nullptr;
+  return {};
 }
 
 Range GlobalStore::getCurrentRange(std::string &profileId)
