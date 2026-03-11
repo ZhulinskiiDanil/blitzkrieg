@@ -16,32 +16,70 @@ EditProfilePopup *EditProfilePopup::create(Profile *profile, GJGameLevel *level)
 
 bool EditProfilePopup::init(Profile *profile, GJGameLevel *level)
 {
-  if (!Popup::init(320, 204, "GJ_square01_custom.png"_spr))
+  if (!Popup::init(320, 266, "GJ_square01_custom.png"_spr))
     return false;
 
   findStartPoses();
 
-  m_profile = profile;
   m_level = level;
+  m_profile = profile;
+  m_webhookEnabled = profile->discordWebhookForRunNotificationsEnabled;
 
   setTitle("Edit Profile");
 
-  // ! --- Input --- !
-  m_input = TextInput::create(m_size.width - 20.f, "Profile name", "bigFont.fnt");
-  m_input->getInputNode()->setMaxLabelLength(32);
-  m_input->setAnchorPoint({0.f, 1.f});
-  m_input->setPosition(10.f, m_size.height - 40.f);
-  m_input->setString(profile->profileName, false);
+  // ! --- Profile Name Input --- !
+  m_profileNameInput = TextInput::create(m_size.width - 20.f, "Profile name", "bigFont.fnt");
+  m_profileNameInput->getInputNode()->setMaxLabelLength(32);
+  m_profileNameInput->setAnchorPoint({0.f, 1.f});
+  m_profileNameInput->setPosition(10.f, m_size.height - 30.f - 10.f);
+  m_profileNameInput->setString(profile->profileName, false);
 
-  m_mainLayer->addChild(m_input);
+  m_mainLayer->addChild(m_profileNameInput);
+
+  // ! --- Discord Webhook Input --- !
+  m_discordWebhookInput = TextInput::create(m_size.width - 20.f, "Discord webhook URL", "bigFont.fnt");
+  m_discordWebhookInput->getInputNode()->setMaxLabelLength(128);
+  m_discordWebhookInput->setFilter("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_/:.");
+  m_discordWebhookInput->setAnchorPoint({0, 1});
+  m_discordWebhookInput->setPosition(10.f, m_profileNameInput->getPositionY() - 30.f - 10.f);
+  m_discordWebhookInput->setString(profile->discordWebhookForRunNotifications, false);
+
+  m_mainLayer->addChild(m_discordWebhookInput);
+
+  // ! --- Use Checkbox --- !
+  m_useWebhookCheckbox = CCMenuItemToggler::createWithStandardSprites(
+      this, menu_selector(EditProfilePopup::onToggleWebhookEnabled), 1.0f);
+  m_useWebhookCheckbox->setScale(0.5f);
+  m_useWebhookCheckbox->ignoreAnchorPointForPosition(true);
+  m_useWebhookCheckbox->setContentSize({32.f, 32.f});
+  m_useWebhookCheckbox->toggle(m_webhookEnabled);
+
+  // ! --- Checkbox Text --- !
+  auto useCheckboxLabel = CCLabelBMFont::create("Enable Discord Notifications", "bigFont.fnt");
+  useCheckboxLabel->setScale(0.4f);
+  useCheckboxLabel->setAnchorPoint({0, .5f});
+
+  // ! --- Checkbox Menu --- !
+  auto useCheckboxMenu = CCMenu::createWithItem(m_useWebhookCheckbox);
+  useCheckboxMenu->setAnchorPoint({0, 1});
+  useCheckboxMenu->ignoreAnchorPointForPosition(false);
+  useCheckboxMenu->setPosition(10.f, m_discordWebhookInput->getPositionY() - 30.f - 4.f);
+  useCheckboxMenu->setLayout(RowLayout::create()
+                                 ->setGap(2.0f)
+                                 ->setAutoGrowAxis(true)
+                                 ->setAutoScale(false));
+
+  useCheckboxMenu->addChild(useCheckboxLabel);
+  m_mainLayer->addChild(useCheckboxMenu);
+  useCheckboxMenu->updateLayout();
 
   // ! --- Percentages List --- !
   m_percentagesList = ToggablePercentagesList::create(
       {m_mainLayer->getContentWidth() - 24.0f, 80.0f},
       getAllStartposesFromProfile(*profile),
       getDisabledStartposesFromStage(profile->data.stages[0]));
-  m_percentagesList->setAnchorPoint({.5f, 1.f});
-  m_percentagesList->setPosition(m_mainLayer->getContentWidth() / 2.f, m_input->getPositionY() - 40.f);
+  m_percentagesList->setAnchorPoint({.5f, 1});
+  m_percentagesList->setPosition(m_mainLayer->getContentWidth() / 2, useCheckboxMenu->getPositionY() - 16.f - 10.f);
   m_mainLayer->addChild(m_percentagesList);
 
   // ! --- Buttons Menu --- !
@@ -57,6 +95,7 @@ bool EditProfilePopup::init(Profile *profile, GJGameLevel *level)
       m_button1,
       this,
       menu_selector(EditProfilePopup::onSave));
+  btnSave->m_baseScale = .8f;
 
   m_buttonMenu->addChild(btnSave);
   btnSave->ignoreAnchorPointForPosition(true);
@@ -69,6 +108,7 @@ bool EditProfilePopup::init(Profile *profile, GJGameLevel *level)
       m_button2,
       this,
       menu_selector(EditProfilePopup::onCancel));
+  btnCancel->m_baseScale = .8f;
 
   m_buttonMenu->addChild(btnCancel);
   btnCancel->ignoreAnchorPointForPosition(true);
@@ -88,6 +128,12 @@ bool EditProfilePopup::init(Profile *profile, GJGameLevel *level)
   return true;
 }
 
+void EditProfilePopup::onToggleWebhookEnabled(CCObject *)
+{
+  if (m_useWebhookCheckbox)
+    m_webhookEnabled = !m_webhookEnabled;
+}
+
 void EditProfilePopup::onCancel(CCObject *)
 {
   this->onClose(nullptr);
@@ -101,7 +147,9 @@ void EditProfilePopup::onSave(CCObject *)
   auto regeneratedProfile = generateProfile("_mergeProfile", m_percentagesList->getEnabledStartposes());
   auto mergedProfile = mergeProfiles(*m_profile, regeneratedProfile.as<Profile>().unwrap(), true);
 
-  mergedProfile.profileName = m_input->getString();
+  mergedProfile.profileName = m_profileNameInput->getString();
+  mergedProfile.discordWebhookForRunNotifications = m_discordWebhookInput->getString();
+  mergedProfile.discordWebhookForRunNotificationsEnabled = m_webhookEnabled;
 
   GlobalStore::get()->updateProfile(mergedProfile);
 

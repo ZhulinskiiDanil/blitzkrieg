@@ -60,7 +60,6 @@ matjson::Value generateStages(std::vector<float> sps)
             .from = from2,
             .to = to2,
             .checked = false,
-            .attempts = 0,
             .note = "",
             .completedAt = 0,
             .completionCounter = 0});
@@ -78,7 +77,6 @@ matjson::Value generateStages(std::vector<float> sps)
           .stage = static_cast<int>(i + 1),
           .checked = false,
           .note = "",
-          .attempts = 0,
           .completionCounter = 0,
           .ranges = stageRanges});
     }

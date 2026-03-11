@@ -1,6 +1,6 @@
 #include "index.hpp"
-#include "Geode/cocos/cocoa/CCObject.h"
 #include "Geode/ui/GeodeUI.hpp"
+#include "Geode/cocos/cocoa/CCObject.h"
 #include <Geode/binding/CCMenuItemSpriteExtra.hpp>
 
 #include "../../events/StageSwitchedEvent.hpp"

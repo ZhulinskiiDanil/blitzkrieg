@@ -11,7 +11,7 @@ GlobalStore *GlobalStore::get()
 GlobalStore::GlobalStore()
     : m_profiles(getSavedProfiles()) {}
 
-// ! --- Profiles API ---
+// ! --- Profiles API --- !
 std::vector<Profile> &GlobalStore::getProfiles()
 {
   return m_profiles;
@@ -127,6 +127,7 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
     return -1;
 
   Stage *targetStage = nullptr;
+  Range *targetRange = nullptr;
   bool progressHasChecked = false;
   bool isStageClosed = false;
 
@@ -153,17 +154,17 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
                                           }
                                           return a->from < b->from;
                                         });
-      Range *toCheckActual = nullptr;
+      Range *toCheckActualRange = nullptr;
       for (auto *r : candidates)
       {
         if (r->consider && !r->checked && runEnd >= r->to)
         {
-          toCheckActual = r;
+          toCheckActualRange = r;
           break;
         }
       }
 
-      if (!toCheckActual)
+      if (!toCheckActualRange)
       {
         toCheck->attempts++;
         toCheck->timePlayed += timePlayed;
@@ -187,38 +188,39 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
         break;
       }
 
-      if (toCheckActual)
+      if (toCheckActualRange)
       {
-        toCheckActual->timePlayed += timePlayed;
-        toCheckActual->attempts++;
+        toCheckActualRange->timePlayed += timePlayed;
+        toCheckActualRange->attempts++;
       }
 
-      if (!toCheckActual || toCheckActual->checked)
+      if (!toCheckActualRange || toCheckActualRange->checked)
         break;
 
-      auto bestRunDiff = std::abs(toCheckActual->bestRunFrom - toCheckActual->bestRunTo);
+      auto bestRunDiff = std::abs(toCheckActualRange->bestRunFrom - toCheckActualRange->bestRunTo);
 
       if (bestRunDiff < runDiff)
       {
-        toCheckActual->bestRunFrom = runStart;
-        toCheckActual->bestRunTo = runEnd;
+        toCheckActualRange->bestRunFrom = runStart;
+        toCheckActualRange->bestRunTo = runEnd;
       }
 
-      if (runEnd < toCheckActual->to)
+      if (runEnd < toCheckActualRange->to)
         break;
 
       geode::Notification::create(
-          fmt::format("Passed {:.2f}-{:.2f} run", toCheckActual->from, toCheckActual->to),
+          fmt::format("Passed {:.2f}-{:.2f} run", toCheckActualRange->from, toCheckActualRange->to),
           geode::NotificationIcon::Success,
           geode::NOTIFICATION_DEFAULT_TIME)
           ->show();
 
-      toCheckActual->checked = true;
-      toCheckActual->firstRunFrom = runStart;
-      toCheckActual->firstRunTo = runEnd;
-      toCheckActual->completedAt = std::time(nullptr);
-      toCheckActual->attemptsToComplete = toCheckActual->attempts;
-      toCheckActual->completionCounter++;
+      targetRange = toCheckActualRange;
+      toCheckActualRange->checked = true;
+      toCheckActualRange->firstRunFrom = runStart;
+      toCheckActualRange->firstRunTo = runEnd;
+      toCheckActualRange->completedAt = std::time(nullptr);
+      toCheckActualRange->attemptsToComplete = toCheckActualRange->attempts;
+      toCheckActualRange->completionCounter++;
       progressHasChecked = true;
       break;
     }
@@ -238,15 +240,19 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
     }
   }
 
+  // ! Notify about closed stage or range
+  if (targetRange)
+    RunClosedEvent().send(runStart, runEnd, &currentProfile, targetRange, isStageClosed ? targetStage : nullptr);
+
   updateProfile(currentProfile);
 
   if (progressHasChecked)
     return isStageClosed ? 1 : 0;
-
-  return -1;
+  else
+    return -1;
 }
 
-// ! --- Search API ---
+// ! --- Search API --- !
 Profile GlobalStore::getProfileById(std::string &profileId)
 {
   auto it = std::find_if(m_profiles.begin(), m_profiles.end(),
@@ -325,7 +331,7 @@ Range GlobalStore::getCurrentRange(std::string &profileId)
   return {};
 }
 
-// ! --- Persistence ---
+// ! --- Persistence --- !
 void GlobalStore::saveProfiles() const
 {
   matjson::Value j = m_profiles;

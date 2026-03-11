@@ -107,7 +107,6 @@ struct matjson::Serialize<Stage>
     s.stage = getOr<int>(value, "stage", 0);
     s.checked = getOr<bool>(value, "checked", false);
     s.note = getOr<std::string>(value, "note", "");
-    s.attempts = getOr<int>(value, "attempts", 0);
     s.completionCounter = getOr<int>(value, "completionCounter", 0);
 
     if (auto arr = value.get("ranges"))
@@ -123,7 +122,6 @@ struct matjson::Serialize<Stage>
     obj["stage"] = s.stage;
     obj["checked"] = s.checked;
     obj["note"] = s.note;
-    obj["attempts"] = s.attempts;
     obj["completionCounter"] = s.completionCounter;
     obj["ranges"] = s.ranges; // Serialize<std::vector<Range>>
     return obj;
@@ -218,6 +216,9 @@ struct matjson::Serialize<Profile>
     Profile p;
     p.id = getOr<std::string>(value, "id", "");
     p.profileName = getOr<std::string>(value, "profileName", "");
+    p.discordWebhookForRunNotifications = getOr<std::string>(value, "discordWebhookForRunNotifications", "");
+    p.discordWebhookForRunNotificationsEnabled = getOr<bool>(value, "discordWebhookForRunNotificationsEnabled", false);
+
     if (auto data = value.get("data"))
       p.data = data.unwrap().as<ProfileData>().unwrapOr(ProfileData{});
     return geode::Ok(p);
@@ -228,6 +229,8 @@ struct matjson::Serialize<Profile>
     auto obj = matjson::Value::object();
     obj["id"] = p.id;
     obj["profileName"] = p.profileName;
+    obj["discordWebhookForRunNotifications"] = p.discordWebhookForRunNotifications;
+    obj["discordWebhookForRunNotificationsEnabled"] = p.discordWebhookForRunNotificationsEnabled;
     obj["data"] = p.data;
     return obj;
   }

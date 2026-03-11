@@ -3,17 +3,25 @@
 #include <Geode/modify/MenuLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 
+#include "./utils/generateDSMessageByClosedRun.hpp"
+#include "./events/RunClosedEvent.hpp"
 #include "./serialization/profile/index.hpp"
 #include "./store/GlobalStore.hpp"
 
 using namespace geode::prelude;
 
-namespace BKGlobal {
+namespace BKGlobal
+{
     FMOD::ChannelGroup *sfxGroup = nullptr;
 }
 
-class $modify(BlitzPlayLayer, PlayLayer) {
-    struct Fields {
+class $modify(BlitzPlayLayer, PlayLayer)
+{
+    struct Fields
+    {
+        geode::comm::ListenerHandle runClosedListener;
+        async::TaskHolder<utils::web::WebResponse> m_task;
+
         CCObject *disabledCheat = nullptr;
 
         std::vector<Profile> profiles;
@@ -24,43 +32,81 @@ class $modify(BlitzPlayLayer, PlayLayer) {
         float attEndTime = 0.f;
     };
 
-    static void onModify(auto &self) {
+    static void onModify(auto &self)
+    {
         if (!self.setHookPriorityPre("PlayLayer::destroyPlayer", Priority::First))
             geode::log::warn("Failed to set hook priority.");
     }
 
 public:
-    bool init(GJGameLevel *level, bool p1, bool p2) {
-        if (!PlayLayer::init(level, p1, p2)) return false;
+    bool init(GJGameLevel *level, bool p1, bool p2)
+    {
+        if (!PlayLayer::init(level, p1, p2))
+            return false;
 
         auto engine = FMODAudioEngine::get();
         auto system = engine->m_system;
-        if (BKGlobal::sfxGroup == nullptr) {
+
+        if (BKGlobal::sfxGroup == nullptr)
             system->createChannelGroup("blitzkrieg", &BKGlobal::sfxGroup);
-        }
+
         BKGlobal::sfxGroup->setVolume(GameManager::get()->m_sfxVolume);
+
+        m_fields->runClosedListener = RunClosedEvent().listen(
+            [this](float from, float to, Profile *profile, Range *closedRange, Stage *closedStage)
+            {
+                if (!profile->discordWebhookForRunNotificationsEnabled)
+                    return ListenerResult::Propagate;
+
+                std::string msg = generateDSMessageByClosedRun(from, to, profile, closedRange, closedStage);
+
+                // "https://discord.com/api/webhooks/1481282532098965697/r19jznUeKnqSQwrJbLSecqUad36N4wp-UEME2R1lgQ9uSSAKUUECheGYNdJRC2VxqVkb";
+                std::string webhook = profile->discordWebhookForRunNotifications;
+
+                utils::web::MultipartForm form;
+                form.param("content", msg);
+
+                auto req = utils::web::WebRequest()
+                               .bodyMultipart(form)
+                               .timeout(std::chrono::seconds(15))
+                               .post(webhook);
+
+                m_fields->m_task.spawn(
+                    std::move(req),
+                    [](utils::web::WebResponse res)
+                    {
+                        if (!res.ok())
+                            geode::log::error("Failed to send webhook: {} (code {})", res.errorMessage(), res.code());
+                    });
+
+                return ListenerResult::Propagate;
+            });
 
         m_fields->profiles = GlobalStore::get()->getProfiles();
         return true;
     }
 
-    void resetLevel() {
+    void resetLevel()
+    {
         PlayLayer::resetLevel();
         resetState();
 
         m_fields->hasRespawned = true;
         m_fields->attStartTime = this->timeForPos(m_player1->getPosition(), 0, 0, true, 0);
 
-        GlobalStore::get() ->setRunStart(this->getCurrentPercent());
+        GlobalStore::get()->setRunStart(this->getCurrentPercent());
     }
 
-    void levelComplete() {
+    void levelComplete()
+    {
         PlayLayer::levelComplete();
 
-        if (!m_fields->hasRespawned) return;
+        if (!m_fields->hasRespawned)
+            return;
         m_fields->hasRespawned = false;
 
-        if (!m_level->isPlatformer()) {
+        if (!m_level->isPlatformer())
+        {
             m_fields->attEndTime = this->timeForPos({m_levelLength, 0}, 0, 0, true, 0);
             GlobalStore::get()->setRunEnd(100.f);
             checkRun();
@@ -69,27 +115,35 @@ public:
         resetState();
     }
 
-    void checkRun() {
+    void checkRun()
+    {
         auto currentProfile = GlobalStore::get()->getProfileByLevel(BlitzPlayLayer::get()->m_level);
         const bool ignorePractice = Mod::get()->getSettingValue<bool>("ignore-practice-mode");
 
-        if (ignorePractice && this->m_isPracticeMode) return;
+        if (ignorePractice && this->m_isPracticeMode)
+            return;
 
-        if (isLegal() && !currentProfile.id.empty()) {
+        if (isLegal() && !currentProfile.id.empty())
+        {
             const auto timePlayedForAttempt = m_fields->attEndTime - m_fields->attStartTime;
             int res = GlobalStore::get()->checkRun(currentProfile.id, timePlayedForAttempt);
 
-            if (res != -1) playSound(!!res);
+            if (res != -1)
+                playSound(!!res);
         }
     }
 
-    void destroyPlayer(PlayerObject *player, GameObject *obj) {
+    void destroyPlayer(PlayerObject *player, GameObject *obj)
+    {
         PlayLayer::destroyPlayer(player, obj);
 
         // First object is anticheat, store it
-        if (!m_fields->disabledCheat) m_fields->disabledCheat = obj;
-        if (!m_fields->isNoclip && m_fields->disabledCheat != obj && !player->m_isDead) m_fields->isNoclip = true;
-        if (!player->m_isDead || !m_fields->hasRespawned || m_level->isPlatformer()) return;
+        if (!m_fields->disabledCheat)
+            m_fields->disabledCheat = obj;
+        if (!m_fields->isNoclip && m_fields->disabledCheat != obj && !player->m_isDead)
+            m_fields->isNoclip = true;
+        if (!player->m_isDead || !m_fields->hasRespawned || m_level->isPlatformer())
+            return;
 
         m_fields->hasRespawned = false;
 
@@ -98,7 +152,8 @@ public:
         checkRun();
     }
 
-    static FMOD_RESULT fmodNonBlockCallback(FMOD_SOUND *a, FMOD_RESULT b) {
+    static FMOD_RESULT fmodNonBlockCallback(FMOD_SOUND *a, FMOD_RESULT b)
+    {
         log::info("nonBlockCallback called");
 
         // auto engine = FMODAudioEngine::get();
@@ -108,8 +163,8 @@ public:
         return FMOD_OK;
     }
 
-
-    void playSound(bool isStage) {
+    void playSound(bool isStage)
+    {
         FMOD_RESULT result;
         FMOD::Sound *sound;
         FMOD_CREATESOUNDEXINFO exinfo;
@@ -129,25 +184,32 @@ public:
         auto sfxUseCustomSounds = Mod::get()->getSettingValue<bool>("sfx-use-custom-sounds");
 
         auto stageSound = !sfxStagePath.empty() &&
-            sfxUseCustomSounds ? geode::utils::string::pathToString(sfxStagePath) : "stage_complete.mp3"_spr;
+                                  sfxUseCustomSounds
+                              ? geode::utils::string::pathToString(sfxStagePath)
+                              : "stage_complete.mp3"_spr;
         auto progressSound = !sfxProgressPath.empty() &&
-            sfxUseCustomSounds ? geode::utils::string::pathToString(sfxProgressPath) : "progress_complete.mp3"_spr;
+                                     sfxUseCustomSounds
+                                 ? geode::utils::string::pathToString(sfxProgressPath)
+                                 : "progress_complete.mp3"_spr;
 
         std::string actualSound = (isStage) ? stageSound : progressSound;
-
         result = system->createStream(actualSound.c_str(), FMOD_DEFAULT | FMOD_LOOP_OFF | FMOD_2D | FMOD_LOWMEM, &exinfo, &sound);
-        if (result != FMOD_OK) {
+
+        if (result != FMOD_OK)
+        {
             log::info("FMOD ERROR {}", (int)result);
-        } else {
-            log::info("fmod: sound created successfully");
+        }
+        else
+        {
             auto res = system->playSound(sound, BKGlobal::sfxGroup, false, &playingChannel);
-            if (res != FMOD_OK) {
+
+            if (res != FMOD_OK)
                 log::info("FMOD ERROR STARTING AUDIO: {}", (int)res);
-            }
         }
     }
 
-    void resetState() {
+    void resetState()
+    {
         m_fields->isNoclip = false;
         m_fields->disabledCheat = nullptr;
         m_fields->attStartTime = 0;
@@ -155,9 +217,11 @@ public:
         GlobalStore::get()->resetRun();
     }
 
-    Profile *getProfileByName(const std::string &name) {
+    Profile *getProfileByName(const std::string &name)
+    {
         for (auto &profile : m_fields->profiles)
-            if (profile.profileName == name) return &profile;
+            if (profile.profileName == name)
+                return &profile;
 
         return nullptr;
     }

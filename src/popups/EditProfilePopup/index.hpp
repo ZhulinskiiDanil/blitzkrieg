@@ -21,7 +21,10 @@ class EditProfilePopup : public geode::Popup
 {
 private:
   CCMenu *m_buttonMenu = nullptr;
-  TextInput *m_input = nullptr;
+  TextInput *m_profileNameInput = nullptr;
+  TextInput *m_discordWebhookInput = nullptr;
+  CCMenuItemToggler *m_useWebhookCheckbox = nullptr;
+  bool m_webhookEnabled;
   Profile *m_profile = nullptr;
   GJGameLevel *m_level = nullptr;
 
@@ -36,6 +39,7 @@ private:
 
   void onSave(CCObject *);
   void onCancel(CCObject *);
+  void onToggleWebhookEnabled(CCObject *);
 
 public:
   static EditProfilePopup *create(Profile *profile, GJGameLevel *level);
