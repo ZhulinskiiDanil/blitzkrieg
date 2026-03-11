@@ -1,3 +1,8 @@
+# 2.0.0-beta.2
+- Added Discord webhook notifications when closing runs in a profile
+- Ability to enable or disable Discord notifications
+- Ability to configure a Discord webhook per profile
+
 # 2.0.0-beta.1
 - Ability to change profile name
 - Ability to create profiles with specific percentages
