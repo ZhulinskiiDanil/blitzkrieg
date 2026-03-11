@@ -4,8 +4,8 @@
 #include <Geode/Geode.hpp>
 #include <Geode/loader/Event.hpp>
 
-#include "../../ProfileChangedEvent.hpp"
-#include "../../ProfilesChangedEvent.hpp"
+#include "../../../../events/ProfileChangedEvent.hpp"
+#include "../../../../events/ProfilesChangedEvent.hpp"
 
 #include "../../../../serialization/profile/index.hpp"
 #include "../../../../store/GlobalStore.hpp"

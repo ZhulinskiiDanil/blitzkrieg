@@ -4,7 +4,7 @@
 #include <Geode/Geode.hpp>
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 
-#include "../StagesPopup/ProfilesChangedEvent.hpp"
+#include "../../events/ProfilesChangedEvent.hpp"
 
 #include "../../store/GlobalStore.hpp"
 #include "../../utils/generateProfile.hpp"

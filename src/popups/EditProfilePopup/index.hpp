@@ -2,9 +2,9 @@
 
 #include <Geode/Geode.hpp>
 
-#include "../StagesPopup/ProfilesChangedEvent.hpp"
 #include "../../store/GlobalStore.hpp"
 
+#include "../../events/ProfilesChangedEvent.hpp"
 #include "../../serialization/profile/index.hpp"
 #include "../../utils/mergeProfiles.hpp"
 #include "../../utils/generateProfile.hpp"

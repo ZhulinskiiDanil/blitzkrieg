@@ -4,10 +4,10 @@
 #include <vector>
 
 #include "StageRangeCell.hpp"
-#include "../../StageSwitchedEvent.hpp"
-#include "../../StagesChangedEvent.hpp"
-#include "../../StageRangesChangedEvent.hpp"
-#include "../../UpdateScrollLayoutEvent.hpp"
+#include "../../../../events/StageSwitchedEvent.hpp"
+#include "../../../../events/StagesChangedEvent.hpp"
+#include "../../../../events/StageRangesChangedEvent.hpp"
+#include "../../../../events/UpdateScrollLayoutEvent.hpp"
 
 #include "../../../../utils/getFirstUncheckedStage.hpp"
 #include "../../../../utils/getMetaInfoFromStages.hpp"

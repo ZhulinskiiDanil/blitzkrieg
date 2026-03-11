@@ -13,15 +13,15 @@
 #include <Geode/cocos/cocoa/CCGeometry.h>
 #include <Geode/cocos/extensions/GUI/CCControlExtension/CCScale9Sprite.h>
 
-#include "./StageSwitchedEvent.hpp"
-#include "./StageRangesChangedEvent.hpp"
-
 #include "./ui/StageList/StageListLayer.hpp"
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
 
 #include "../../ui/Include.hpp"
-#include "../../serialization/profile/index.hpp"
 #include "../../store/GlobalStore.hpp"
+#include "../../events/StageSwitchedEvent.hpp"
+#include "../../events/StageRangesChangedEvent.hpp"
+#include "../../serialization/profile/index.hpp"
+
 #include "../../utils/getFirstUncheckedStage.hpp"
 #include "../../utils/generateProfile.hpp"
 #include "../../utils/formatTimePlayed.hpp"

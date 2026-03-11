@@ -3,9 +3,9 @@
 #include <Geode/loader/Event.hpp>
 #include "../../../../ui/Include.hpp"
 
-#include "../../StagesChangedEvent.hpp"
-#include "../../StageRangesChangedEvent.hpp"
-#include "../../UpdateScrollLayoutEvent.hpp"
+#include "../../../../events/StagesChangedEvent.hpp"
+#include "../../../../events/StageRangesChangedEvent.hpp"
+#include "../../../../events/UpdateScrollLayoutEvent.hpp"
 #include "../../../../store/GlobalStore.hpp"
 #include "../../../../serialization/profile/index.hpp"
 #include "../../../../utils/getFirstUncheckedStage.hpp"

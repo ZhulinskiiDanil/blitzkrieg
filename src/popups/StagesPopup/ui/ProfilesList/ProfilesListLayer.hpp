@@ -3,9 +3,9 @@
 #include <Geode/loader/Event.hpp>
 
 #include "./BlitzkriegProfile.hpp"
-#include "../../ProfilesChangedEvent.hpp"
 #include "../../../CreateProfilePopup/index.hpp"
 
+#include "../../../../events/ProfilesChangedEvent.hpp"
 #include "../../../../serialization/profile/index.hpp"
 #include "../../../../store/GlobalStore.hpp"
 #include "../../../../utils/generateProfile.hpp"

@@ -1,8 +1,9 @@
 #include "index.hpp"
 #include "Geode/cocos/cocoa/CCObject.h"
 #include "Geode/ui/GeodeUI.hpp"
-#include "StageSwitchedEvent.hpp"
 #include <Geode/binding/CCMenuItemSpriteExtra.hpp>
+
+#include "../../events/StageSwitchedEvent.hpp"
 
 StagesPopup *StagesPopup::create(GJGameLevel *level)
 {
