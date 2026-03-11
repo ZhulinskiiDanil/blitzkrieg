@@ -1,7 +1,6 @@
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/loader/Event.hpp>
 
-#include "../../popups/StagesPopup/ProfilesChangedEvent.hpp"
 #include "../../popups/StagesPopup/index.hpp"
 
 #include "../../utils/selectJsonFile.hpp"
@@ -15,12 +14,10 @@ class $modify(BlitzPauseLayer, PauseLayer)
 {
     struct Fields
     {
-        Profile currentProfile;
         ListenerHandle m_listener;
     };
 
 private:
-    void updateCurrentProfileLabel(Profile currentProfile);
     void onPopup();
 
 public:

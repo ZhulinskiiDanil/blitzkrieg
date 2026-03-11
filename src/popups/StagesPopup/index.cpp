@@ -50,7 +50,7 @@ void StagesPopup::drawContent()
   {
     const auto btnId = activeButton->getID();
 
-    // ! Clear old content
+    // ! --- Clear Old Content --- !
 
     for (auto *container : contentContainers)
       if (container)
@@ -196,7 +196,6 @@ void StagesPopup::drawLastRuns()
 
 void StagesPopup::drawTabs()
 {
-  // ! --- CLEANUP OLD CONTAINER --- !
   auto oldTabsNode = m_mainLayer->getChildByID("stages-popup-tabs-node"_spr);
 
   if (oldTabsNode)
@@ -204,11 +203,11 @@ void StagesPopup::drawTabs()
 
   const float btnsGap = 2.f;
 
-  // ! --- MAIN CONTAINER --- !
+  // ! --- Main Container --- !
   auto tabsNode = CCNode::create();
   tabsNode->setID("stages-popup-tabs-node"_spr);
 
-  // ! --- BUTTONS --- !
+  // ! --- Buttons --- !
   auto tabBtnProfilesList = TabButton::create(
       "Profiles",
       this,
@@ -226,7 +225,7 @@ void StagesPopup::drawTabs()
   tabBtnCurrentStage->setTag(2);
   tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
 
-  // ! --- MENU --- !
+  // ! --- Menu --- !
   auto tabMenu = CCMenu::create();
   tabMenu->addChild(tabBtnProfilesList);
   tabMenu->addChild(tabBtnCurrentStage);
@@ -240,7 +239,7 @@ void StagesPopup::drawTabs()
   tabButtons.push_back(tabBtnProfilesList);
   tabButtons.push_back(tabBtnCurrentStage);
 
-  // ! --- TAB BUTTONS BACKGROUNDS --- !
+  // ! --- Tab Buttons Backgrounds --- !
   for (auto *btn : tabButtons)
   {
     auto gradient = CCSprite::create("tab-gradient-mask.png"_spr);
@@ -255,21 +254,22 @@ void StagesPopup::drawTabs()
   tabsNode->addChild(tabMenu);
   m_mainLayer->addChild(tabsNode);
 
-  // options button
+  // ! --- Options Button --- !
   CCNode *m = m_closeBtn->getParent();
   CCSprite *settingsSpr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
-  settingsSpr->setScale(0.8);
+  settingsSpr->setScale(0.8f);
+
   CCMenuItemSpriteExtra *settingsBtn = CCMenuItemSpriteExtra::create(settingsSpr, this, menu_selector(StagesPopup::onSettingsButton));
-  CCSize settingsSz = settingsBtn->getContentSize();
-  settingsSz *= 0.25;
-  settingsBtn->setPositionX(this->m_bgSprite->getContentWidth() - settingsSz.width);
-  settingsBtn->setPositionY(settingsSz.height);
+  CCSize settingsSize = settingsBtn->getContentSize();
+
+  settingsBtn->setPositionX(this->m_bgSprite->getContentWidth() - 3);
+  settingsBtn->setPositionY(3);
   m->addChild(settingsBtn);
 }
 
 void StagesPopup::onSettingsButton(CCObject *)
 {
-    geode::openSettingsPopup(Mod::get(), false);
+  geode::openSettingsPopup(Mod::get(), false);
 }
 
 void StagesPopup::activateTab(TabButton *sender)

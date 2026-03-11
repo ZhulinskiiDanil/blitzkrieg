@@ -7,14 +7,16 @@
 
 using namespace geode::prelude;
 
-class $modify(BlitzEndLevelLayer, EndLevelLayer) {
-    struct Fields {
+class $modify(BlitzEndLevelLayer, EndLevelLayer)
+{
+    struct Fields
+    {
         Profile currentProfile;
     };
 
 private:
-     void onPopup();
+    void onPopup();
 
 public:
-     void customSetup();
+    void customSetup();
 };

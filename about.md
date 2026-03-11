@@ -67,3 +67,5 @@ Stage statistics also include **<cg>total attempts and total playtime</c>**.
 If the Russian tutorial ever gets removed by the author, the previous tutorial is still available as a fallback:
 
 [Watch the legacy tutorial](https://www.youtube.com/watch?v=f02eTJmPgBI)
+
+To report bugs or get help with using my mods, press the Discord button in the lower left corner

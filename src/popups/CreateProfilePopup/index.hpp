@@ -25,7 +25,7 @@ private:
   CCMenu *m_bottomButtonMenu = nullptr;
   CCMenu *m_checkboxesMenu = nullptr;
   TextInput *m_input = nullptr;
-  CCLayer* m_lists;
+  CCLayer *m_lists;
   ToggablePercentagesList *m_percentagesList = nullptr;
 
   std::vector<float> m_2_1_percentages = {};
@@ -47,7 +47,7 @@ private:
   void onToggleUse(CCObject *);
   void onTogglePin(CCObject *);
   void onToggleStartpos(CCObject *);
-  void onContinue(CCLabelBMFont* label, CCMenuItemSpriteExtra* btn);
+  void onContinue(CCLabelBMFont *label, CCMenuItemSpriteExtra *btn);
 
   void findStartPoses();
 
