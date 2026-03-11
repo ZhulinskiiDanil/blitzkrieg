@@ -20,8 +20,7 @@ class CreateProfilePopup : public geode::Popup
 private:
   GJGameLevel *m_level = nullptr;
 
-  ListBorders *m_borders1 = nullptr;
-  ListBorders *m_borders2 = nullptr;
+  ListBorders *m_border = nullptr;
   CCMenu *m_bottomButtonMenu = nullptr;
   CCMenu *m_checkboxesMenu = nullptr;
   TextInput *m_input = nullptr;
@@ -32,7 +31,7 @@ private:
   std::vector<float> m_2_2_percentages = {};
 
   CCMenuItemToggler *m_percentagesCheckbox = nullptr;
-  bool m_percentagesChecked = false;
+  bool m_2_1_percentagesChecked = true;
 
   CCMenuItemToggler *m_useCheckbox = nullptr;
   bool m_useChecked = false;

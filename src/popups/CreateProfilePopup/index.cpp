@@ -179,43 +179,42 @@ bool CreateProfilePopup::init(GJGameLevel *level)
         listCell->addChild(cell);
     }
 
-    // ! --- Borders --- !
-    auto borders = ListBorders::create();
-    borders->setSpriteFrames("list-top.png"_spr, "list-side.png"_spr, 2.f);
-
-    if (i == 0)
-    {
-      m_borders1 = borders;
-      borders->setVisible(m_percentagesChecked);
-    }
-    else
-    {
-      m_borders2 = borders;
-      borders->setVisible(!m_percentagesChecked);
-    }
-
-    for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
-      child->setColor(ccc3(75, 210, 75));
-
     listCell->addChild(leftList);
     listCell->addChild(rightList);
-    listCell->addChild(borders);
 
     m_lists->addChild(listCell);
     leftList->updateLayout();
     rightList->updateLayout();
     leftList->ignoreAnchorPointForPosition(true);
     rightList->ignoreAnchorPointForPosition(true);
-
-    borders->setContentSize({listCell->getContentWidth() + 2.f,
-                             listCell->getContentHeight()});
-    borders->setPosition({(m_size.width - 20.f) / 2 - 4.f, listCell->getContentHeight() / 2});
   }
 
+  // ! --- Border --- !
+  int currCellIndex = m_2_1_percentagesChecked ? 1 : 0;
+  auto *percentagesCell = CCArrayExt<CCLayer *>(m_lists->getChildren())[currCellIndex];
+
+  m_border = ListBorders::create();
+  m_border->setSpriteFrames("list-top.png"_spr, "list-side.png"_spr, 2.f);
+
+  if (percentagesCell)
+  {
+    m_border->setContentSize({percentagesCell->getContentWidth() + 2.f,
+                              percentagesCell->getContentHeight()});
+    m_border->setPosition({m_size.width / 2,
+                           m_lists->getPositionY() - percentagesCell->getContentHeight() / 2 - (percentagesCell->getContentHeight() + 4) * currCellIndex});
+  }
+
+  for (auto child : CCArrayExt<CCNodeRGBA *>(m_border->getChildren()))
+  {
+    child->setColor(ccc3(75, 210, 75));
+    child->setOpacity(m_border->isVisible() ? 255 : 0);
+  }
+
+  m_mainLayer->addChild(m_border);
   m_mainLayer->addChild(m_input);
   m_mainLayer->addChild(m_lists);
-  m_lists->updateLayout();
   m_mainLayer->addChild(m_bottomButtonMenu);
+  m_lists->updateLayout();
   m_bottomButtonMenu->updateLayout();
 
   m_checkboxesMenu = CCMenu::create();
@@ -233,7 +232,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   m_percentagesCheckbox->setScale(0.5f);
   m_percentagesCheckbox->ignoreAnchorPointForPosition(true);
   m_percentagesCheckbox->setContentSize({32.f, 32.f});
-  m_percentagesCheckbox->toggle(m_percentagesChecked);
+  m_percentagesCheckbox->toggle(m_2_1_percentagesChecked);
 
   auto percentagesCheckboxMenu = CCMenu::createWithItem(m_percentagesCheckbox);
   percentagesCheckboxMenu->setAnchorPoint({.0f, .5f});
@@ -305,7 +304,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   m_checkboxesMenu->updateLayout();
   m_mainLayer->addChild(m_checkboxesMenu);
 
-  auto percentages = m_percentagesChecked ? m_2_1_percentages : m_2_2_percentages;
+  auto percentages = m_2_1_percentagesChecked ? m_2_1_percentages : m_2_2_percentages;
   m_percentagesList = ToggablePercentagesList::create(
       {m_mainLayer->getContentWidth() - 24.0f, 80.0f},
       percentages);
@@ -341,7 +340,7 @@ void CreateProfilePopup::onCreateProfile(CCObject *sender)
     return;
   }
 
-  auto profile1 = generateProfile(levelName, m_percentagesChecked ? m_2_1_percentages : m_2_2_percentages).as<Profile>().unwrap();
+  auto profile1 = generateProfile(levelName, m_2_1_percentagesChecked ? m_2_1_percentages : m_2_2_percentages).as<Profile>().unwrap();
   auto profile2 = generateProfile(levelName, m_percentagesList->getEnabledStartposes()).as<Profile>().unwrap();
 
   auto profile = mergeProfiles(profile1, profile2, false);
@@ -358,14 +357,20 @@ void CreateProfilePopup::onCreateProfile(CCObject *sender)
 
 void CreateProfilePopup::onTogglePercentages(CCObject *sender)
 {
-  if (m_percentagesCheckbox)
+  if (m_percentagesCheckbox && m_border && m_lists)
   {
-    m_percentagesChecked = !m_percentagesChecked;
+    m_border->stopAllActions();
+    m_2_1_percentagesChecked = !m_2_1_percentagesChecked;
 
-    m_borders1->setVisible(m_percentagesChecked);
-    m_borders2->setVisible(!m_percentagesChecked);
+    int currCellIndex = m_2_1_percentagesChecked ? 1 : 0;
+    auto *percentagesCell = CCArrayExt<CCLayer *>(m_lists->getChildren())[currCellIndex];
 
-    m_percentagesList->setStartposes(m_percentagesChecked ? m_2_1_percentages : m_2_2_percentages);
+    if (percentagesCell)
+      m_border->runAction(CCMoveTo::create(0.2f, CCPoint(m_size.width / 2,
+                                                         m_lists->getPositionY() - percentagesCell->getContentHeight() / 2 - (percentagesCell->getContentHeight() + 4) * currCellIndex)));
+
+    m_percentagesList->setStartposes(
+        m_2_1_percentagesChecked ? m_2_1_percentages : m_2_2_percentages);
   }
 }
 
