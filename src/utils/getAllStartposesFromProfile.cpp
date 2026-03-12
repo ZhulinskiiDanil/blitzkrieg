@@ -9,7 +9,8 @@ std::vector<float> getAllStartposesFromProfile(const Profile &profile)
     return startposes;
 
   for (const auto &range : firstStage.ranges)
-    startposes.push_back(range.from);
+    if (range.from > 0 && range.from < 100)
+      startposes.push_back(range.from);
 
   std::sort(startposes.begin(), startposes.end());
   startposes.erase(std::unique(startposes.begin(), startposes.end()), startposes.end());

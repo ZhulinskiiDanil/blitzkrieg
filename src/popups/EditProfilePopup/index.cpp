@@ -89,7 +89,7 @@ bool EditProfilePopup::init(Profile *profile, GJGameLevel *level)
   m_buttonMenu->setPosition({10.f, 10.f});
 
   // ! --- Save Button --- !
-  m_button1 = ButtonSprite::create("Save", 0, 0, "goldFont.fnt", "GJ_button_01.png", 0.0f, .8f);
+  auto m_button1 = ButtonSprite::create("Save", 0, 0, "goldFont.fnt", "GJ_button_01.png", 0.0f, .8f);
   m_button1->setScale(.8f);
 
   auto btnSave = CCMenuItemSpriteExtra::create(
@@ -102,7 +102,7 @@ bool EditProfilePopup::init(Profile *profile, GJGameLevel *level)
   btnSave->ignoreAnchorPointForPosition(true);
 
   // ! --- Cancel Button --- !
-  m_button2 = ButtonSprite::create("Cancel", 0, 0, "goldFont.fnt", "GJ_button_01.png", 0.0f, .8f);
+  auto m_button2 = ButtonSprite::create("Cancel", 0, 0, "goldFont.fnt", "GJ_button_01.png", 0.0f, .8f);
   m_button2->setScale(.8f);
 
   auto btnCancel = CCMenuItemSpriteExtra::create(
@@ -146,7 +146,7 @@ void EditProfilePopup::onSave(CCObject *)
     return;
 
   auto regeneratedProfile = generateProfile("_mergeProfile", m_percentagesList->getEnabledStartposes());
-  auto mergedProfile = mergeProfiles(*m_profile, regeneratedProfile.as<Profile>().unwrap(), true);
+  auto mergedProfile = mergeProfiles(*m_profile, regeneratedProfile.as<Profile>().unwrap(), false);
 
   mergedProfile.profileName = m_profileNameInput->getString();
   mergedProfile.discordWebhookForRunNotifications = m_discordWebhookInput->getString();

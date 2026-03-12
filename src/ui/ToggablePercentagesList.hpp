@@ -2,6 +2,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/loader/Event.hpp>
 #include "./Label.hpp"
+#include "../popups/EditStartPosPopup/index.hpp"
 
 using namespace geode::prelude;
 
@@ -17,9 +18,12 @@ public:
 
   void reload();
   void setStartposes(std::vector<float> startposes);
+  std::vector<float> getStartposes();
   std::vector<float> getEnabledStartposes();
 
 protected:
   bool init(CCSize size, std::vector<float> startposes, std::vector<float> disabledStartposes);
   void onToggleStartpos(CCObject *);
+  void onEditStartpos(CCObject *);
+  void onDeleteStartpos(CCObject *);
 };

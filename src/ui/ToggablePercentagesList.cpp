@@ -75,7 +75,7 @@ void ToggablePercentagesList::reload()
 
 	for (int i = 0; i < (m_startposes.size() + 2 - 1) / 2; i++)
 	{
-		auto row = CCMenu::create();
+		auto row = CCLayer::create();
 		row->setContentSize({m_scroll->getContentWidth(), 24.0f});
 		row->setLayout(RowLayout::create()
 											 ->setAxisAlignment(AxisAlignment::Between)
@@ -84,12 +84,12 @@ void ToggablePercentagesList::reload()
 		for (int j = i * 2; j < std::min(static_cast<int>(m_startposes.size()), 2 * (i + 1)); j++)
 		{
 			auto isStartposEnabled = std::find(m_enabledStartposes.begin(), m_enabledStartposes.end(), m_startposes[j]) != m_enabledStartposes.end();
-			auto cell = CCMenu::create();
+			auto cell = CCLayer::create();
 			cell->setContentSize({m_scroll->getContentWidth() / 2.0f, 24.0f});
 			if (static_cast<int>(m_startposes.size()) < 2 * (i + 1))
 				cell->setContentSize({m_scroll->getContentWidth(), 24.0f});
 
-			// ! --- Cell Content --- !
+			// ! --- Cell Background --- !
 			auto EnabledCellBG = CCScale9Sprite::create("range-completed-bg.png"_spr);
 			EnabledCellBG->setPosition(cell->getContentSize() / 2.0f);
 			EnabledCellBG->setContentSize(cell->getContentSize() - ccp(1, 1));
@@ -97,7 +97,7 @@ void ToggablePercentagesList::reload()
 			EnabledCellBG->setID("enabled-cell-bg");
 			cell->addChild(EnabledCellBG);
 
-			// ! --- Disabled Cell Background --- !
+			// ! --- Cell Background (Disabled) --- !
 			auto DisabledCellBG = CCScale9Sprite::create("range-disabled-bg.png"_spr);
 			DisabledCellBG->setPosition(cell->getContentSize() / 2.0f);
 			DisabledCellBG->setContentSize(cell->getContentSize() - ccp(1, 1));
@@ -105,41 +105,71 @@ void ToggablePercentagesList::reload()
 			DisabledCellBG->setID("disabled-cell-bg");
 			cell->addChild(DisabledCellBG);
 
+			// ! --- Checkbox Menu --- !
+			auto checkboxMenu = CCMenu::create();
+			checkboxMenu->setContentSize({12, 12});
+			checkboxMenu->setAnchorPoint({0, 0.5f});
+			checkboxMenu->ignoreAnchorPointForPosition(false);
+			checkboxMenu->setPosition({6, cell->getContentHeight() / 2.0f});
+
 			// ! --- Checkbox --- !
 			auto checkbox = CCMenuItemToggler::createWithStandardSprites(
 					this, menu_selector(ToggablePercentagesList::onToggleStartpos), 1.0f);
 			checkbox->setScale(0.4f);
-			checkbox->setPosition({checkbox->getContentWidth() * checkbox->getScale() / 2.0f + 6.0f, cell->getContentHeight() / 2.0f});
+			checkbox->setPosition(checkboxMenu->getContentSize() / 2);
+			checkbox->setTag(j);
 
 			if (isStartposEnabled)
 				checkbox->toggle(true);
 
-			checkbox->setTag(j);
-			checkbox->setUserObject(cell);
-			cell->addChild(checkbox);
+			checkboxMenu->addChild(checkbox);
+			cell->addChild(checkboxMenu);
 
 			// ! --- Percentage Label --- !
 			auto percentLabel = Label::create(fmt::format("{:.2f}%", m_startposes[j]).c_str(), "gjFont17.fnt");
 			percentLabel->setVariant(isStartposEnabled ? Label::Variant::Green : Label::Variant::Red);
-			percentLabel->setPosition({checkbox->getPositionX() + checkbox->getContentWidth() * checkbox->getScale() / 2.0f + 4.0f, cell->getContentHeight() / 2.0f});
+			percentLabel->setPosition({checkboxMenu->getPositionX() + checkboxMenu->getContentWidth() + 4.0f, cell->getContentHeight() / 2.0f});
 			percentLabel->setAnchorPoint({0.0f, 0.5f});
 			percentLabel->setScale(0.3f);
 			percentLabel->setID("percent-label");
 			cell->addChild(percentLabel);
+
+			// ! --- Checkbox Menu --- !
+			auto buttonMenu = CCMenu::create();
+			buttonMenu->setAnchorPoint({1, 0.5f});
+			buttonMenu->ignoreAnchorPointForPosition(false);
+			buttonMenu->setPosition({cell->getContentWidth() - 6, cell->getContentHeight() / 2.0f});
+			buttonMenu->setLayout(
+					RowLayout::create()
+							->setGap(2.f)
+							->setAutoScale(false)
+							->setAutoGrowAxis(true)
+							->setAxisAlignment(AxisAlignment::Center));
+
+			// ! --- Edit button --- !
+			auto spr = CCSprite::createWithSpriteFrameName("edit-profile-btn.png"_spr);
+			const auto editBtn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(ToggablePercentagesList::onEditStartpos));
+			editBtn->setTag(j);
+			editBtn->setScale(0.4f);
+			editBtn->m_baseScale = 0.4f;
+
+			buttonMenu->addChild(editBtn);
+			cell->addChild(buttonMenu);
+			buttonMenu->updateLayout();
 
 			// ! --- Range Labels --- !
 			auto runFromLabel = Label::create(
 					j == m_startposes.size() - 1 ? fmt::format("<small>{:.2f}% - 100.00%</small>", m_startposes[j]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", m_startposes[j], m_startposes[j + 1]).c_str(), "gjFont17.fnt");
 			runFromLabel->setScale(0.25f);
 			runFromLabel->setAnchorPoint({1.0f, 0.0f});
-			runFromLabel->setPosition({cell->getContentWidth() - 6.0f, 4.0f});
+			runFromLabel->setPosition({cell->getContentWidth() - buttonMenu->getContentWidth() - 6 - 2, 4.0f});
 			cell->addChild(runFromLabel);
 
 			// ! --- Run To Label --- !
 			auto runToLabel = Label::create(j == 0 ? fmt::format("<small>0.00% - {:.2f}%</small>", m_startposes[0]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", m_startposes[j - 1], m_startposes[j]).c_str(), "gjFont17.fnt");
 			runToLabel->setScale(0.25f);
 			runToLabel->setAnchorPoint({1.0f, 1.0f});
-			runToLabel->setPosition({cell->getContentWidth() - 6.0f, cell->getContentHeight() - 4.0f});
+			runToLabel->setPosition({cell->getContentWidth() - buttonMenu->getContentWidth() - 6 - 2, cell->getContentHeight() - 4.0f});
 			cell->addChild(runToLabel);
 
 			row->addChild(cell);
@@ -160,6 +190,11 @@ void ToggablePercentagesList::setStartposes(std::vector<float> startposes)
 	reload();
 }
 
+std::vector<float> ToggablePercentagesList::getStartposes()
+{
+	return m_startposes;
+}
+
 std::vector<float> ToggablePercentagesList::getEnabledStartposes()
 {
 	return m_enabledStartposes;
@@ -168,7 +203,7 @@ std::vector<float> ToggablePercentagesList::getEnabledStartposes()
 void ToggablePercentagesList::onToggleStartpos(CCObject *sender)
 {
 	auto checkbox = static_cast<CCMenuItemToggler *>(sender);
-	auto cell = static_cast<CCMenu *>(checkbox->getUserObject());
+	auto cell = static_cast<CCLayer *>(static_cast<CCMenu *>(checkbox->getParent())->getParent());
 	auto percentLabel = static_cast<Label *>(cell->getChildByID("percent-label"));
 	auto EnabledCellBG = cell->getChildByID("enabled-cell-bg");
 	auto DisabledCellBG = cell->getChildByID("disabled-cell-bg");
@@ -191,4 +226,32 @@ void ToggablePercentagesList::onToggleStartpos(CCObject *sender)
 		m_enabledStartposes.erase(std::remove(m_enabledStartposes.begin(), m_enabledStartposes.end(), m_startposes[checkbox->getTag()]), m_enabledStartposes.end());
 		std::sort(m_enabledStartposes.begin(), m_enabledStartposes.end());
 	}
+}
+
+void ToggablePercentagesList::onEditStartpos(CCObject *sender)
+{
+	auto checkbox = static_cast<CCMenuItemToggler *>(sender);
+	float percentage = m_startposes[checkbox->getTag()];
+
+	EditStartPosPopup::create(
+			percentage,
+			[this](float oldPercent, float newPercent)
+			{
+				m_enabledStartposes.erase(std::remove(m_enabledStartposes.begin(), m_enabledStartposes.end(), oldPercent), m_enabledStartposes.end());
+
+				for (auto &p : m_startposes)
+				{
+					if (p == oldPercent)
+					{
+						p = newPercent;
+						m_enabledStartposes.push_back(newPercent);
+						std::sort(m_enabledStartposes.begin(), m_enabledStartposes.end());
+						break;
+					}
+				}
+
+				m_startposes.erase(std::remove(m_startposes.begin(), m_startposes.end(), oldPercent), m_startposes.end());
+				this->reload();
+			})
+			->show();
 }

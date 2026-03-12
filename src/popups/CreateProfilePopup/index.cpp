@@ -341,7 +341,7 @@ void CreateProfilePopup::onCreateProfile(CCObject *sender)
     return;
   }
 
-  auto profile1 = generateProfile(levelName, m_2_1_percentagesChecked ? m_2_1_percentages : m_2_2_percentages).as<Profile>().unwrap();
+  auto profile1 = generateProfile(levelName, m_percentagesList->getStartposes()).as<Profile>().unwrap();
   auto profile2 = generateProfile(levelName, m_percentagesList->getEnabledStartposes()).as<Profile>().unwrap();
 
   auto profile = mergeProfiles(profile1, profile2, false);
