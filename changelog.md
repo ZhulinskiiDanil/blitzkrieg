@@ -1,3 +1,10 @@
+# 2.0.0
+- Ability to change every percentage in the Create/Edit Profile popups
+- Fixed a bug with 0 as the start position
+- Small UI improvements for `CreateProfilePopup`
+- Added border animation when switching between percentages
+- 2.1 percentages are now selected by default in `CreateProfilePopup`
+
 # 2.0.0-beta.2
 - Added Discord webhook notifications when closing runs in a profile
 - Ability to enable or disable Discord notifications
