@@ -140,7 +140,7 @@ public:
         // First object is anticheat, store it
         if (!m_fields->disabledCheat)
             m_fields->disabledCheat = obj;
-        if (!m_fields->isNoclip && m_fields->disabledCheat != obj && !player->m_isDead)
+        if (!m_fields->isNoclip && m_fields->disabledCheat != obj && !player->m_isDead && !m_levelEndAnimationStarted)
             m_fields->isNoclip = true;
         if (!player->m_isDead || !m_fields->hasRespawned || m_level->isPlatformer())
             return;

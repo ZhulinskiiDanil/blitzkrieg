@@ -1,3 +1,6 @@
+# 2.0.1
+- Fixed a bug where the player had already completed a level, but on the way to the portal there was a hitbox that he was clinging to, and safe mode identified this as a no-clip and did not count runs to 100%. Example levels: "Poocubed, Cat Planet"
+
 # 2.0.0
 - Ability to change every percentage in the Create/Edit Profile popups
 - Fixed a bug with 0 as the start position
