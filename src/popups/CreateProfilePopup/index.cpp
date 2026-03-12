@@ -304,6 +304,7 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   m_checkboxesMenu->updateLayout();
   m_mainLayer->addChild(m_checkboxesMenu);
 
+  // ! --- ToggablePercentagesList --- !
   auto percentages = m_2_1_percentagesChecked ? m_2_1_percentages : m_2_2_percentages;
   m_percentagesList = ToggablePercentagesList::create(
       {m_mainLayer->getContentWidth() - 24.0f, 80.0f},
@@ -366,11 +367,30 @@ void CreateProfilePopup::onTogglePercentages(CCObject *sender)
     auto *percentagesCell = CCArrayExt<CCLayer *>(m_lists->getChildren())[currCellIndex];
 
     if (percentagesCell)
-      m_border->runAction(CCMoveTo::create(0.2f, CCPoint(m_size.width / 2,
-                                                         m_lists->getPositionY() - percentagesCell->getContentHeight() / 2 - (percentagesCell->getContentHeight() + 4) * currCellIndex)));
+    {
+      auto moveTo = CCMoveTo::create(
+          0.15f,
+          CCPoint(
+              m_size.width / 2,
+              m_lists->getPositionY() - percentagesCell->getContentHeight() / 2 -
+                  (percentagesCell->getContentHeight() + 4) * currCellIndex));
 
-    m_percentagesList->setStartposes(
-        m_2_1_percentagesChecked ? m_2_1_percentages : m_2_2_percentages);
+      auto easeMove = CCEaseInOut::create(moveTo, 2.0f);
+      m_border->runAction(easeMove);
+
+      for (auto child : CCArrayExt<CCNodeRGBA *>(m_border->getChildren()))
+      {
+        auto tintTo = m_2_1_percentagesChecked
+                          ? CCTintTo::create(0.15f, 75, 210, 75)
+                          : CCTintTo::create(0.15f, 255, 170, 0);
+
+        auto easeTint = CCEaseInOut::create(tintTo, 2.0f);
+        child->runAction(easeTint);
+      }
+
+      m_percentagesList->setStartposes(
+          m_2_1_percentagesChecked ? m_2_1_percentages : m_2_2_percentages);
+    }
   }
 }
 
