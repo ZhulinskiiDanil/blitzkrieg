@@ -208,11 +208,14 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
       if (runEnd < toCheckActualRange->to)
         break;
 
-      geode::Notification::create(
-          fmt::format("Passed {:.2f}-{:.2f} run", toCheckActualRange->from, toCheckActualRange->to),
-          geode::NotificationIcon::Success,
-          geode::NOTIFICATION_DEFAULT_TIME)
-          ->show();
+      if (!Mod::get()->getSettingValue<bool>("disable-run-notifications"))
+      {
+        geode::Notification::create(
+            fmt::format("Passed {:.2f}-{:.2f} run", toCheckActualRange->from, toCheckActualRange->to),
+            geode::NotificationIcon::Success,
+            geode::NOTIFICATION_DEFAULT_TIME)
+            ->show();
+      }
 
       targetRange = toCheckActualRange;
       toCheckActualRange->checked = true;

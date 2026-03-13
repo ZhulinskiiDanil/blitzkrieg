@@ -52,19 +52,41 @@
     }
   },
   "settings": {
+    "gameplay-settings": {
+      "type": "title",
+      "name": "Gameplay"
+    },
     "ignore-practice-mode": {
       "type": "bool",
       "name": "Ignore Practice Mode",
       "default": false
+    },
+    "ui-settings": {
+      "type": "title",
+      "name": "Interface"
     },
     "expand-progress-by-default": {
       "type": "bool",
       "name": "Expand progress details by default",
       "default": true
     },
+    "notifications-settings": {
+      "type": "title",
+      "name": "Notifications"
+    },
+    "disable-run-notifications": {
+      "type": "bool",
+      "name": "Disable run notifications",
+      "default": false
+    },
+    "disable-run-notification-sound": {
+      "type": "bool",
+      "name": "Disable run notification sound",
+      "default": false
+    },
     "sfx-settings": {
       "type": "title",
-      "name": "SFX Settings"
+      "name": "SFX"
     },
     "sfx-use-custom-sounds": {
       "name": "Use Custom SFX's",

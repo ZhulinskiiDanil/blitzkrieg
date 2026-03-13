@@ -10,7 +10,7 @@ else()
 endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-project(dgkr-blitzkrieg-tracker VERSION 1.0.0)
+project(blitzkrieg VERSION 2.0.1)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 add_library(${PROJECT_NAME} SHARED ${SOURCES})

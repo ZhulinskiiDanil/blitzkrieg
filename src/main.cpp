@@ -165,6 +165,9 @@ public:
 
     void playSound(bool isStage)
     {
+        if (Mod::get()->getSettingValue<bool>("disable-run-notification-sound"))
+            return;
+
         FMOD_RESULT result;
         FMOD::Sound *sound;
         FMOD_CREATESOUNDEXINFO exinfo;
