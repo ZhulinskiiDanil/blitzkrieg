@@ -1,10 +1,5 @@
 #include "StageRangeCell.hpp"
 
-#include <fmt/core.h>
-#include <string>
-
-#include "../../../../utils/formatTimePlayed.hpp"
-
 StageRangeCell *StageRangeCell::create(Range *range, GJGameLevel *level, const CCSize &cellSize)
 {
   StageRangeCell *ret = new StageRangeCell();
@@ -50,6 +45,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   m_content->setLayout(
       ColumnLayout::create()
           ->setGap(0)
+          ->setAxisAlignment(AxisAlignment::End)
           ->setAxisReverse(true)
           ->setAutoScale(false)
           ->setAutoGrowAxis(true));
@@ -142,32 +138,82 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
 
   updateMetaContent();
   updateExpandButton();
-  updateLayoutWrapper();
+  updateLayoutWrapper(true);
 
   return true;
 }
 
-void StageRangeCell::updateLayoutWrapper()
+void StageRangeCell::updateLayoutWrapper(bool isInitialRender)
 {
-  m_content->updateLayout();
-  m_content->setPositionY(m_content->getContentHeight());
-  this->setContentSize(m_content->getContentSize());
+  this->stopAllActions();
 
-  UpdateScrollLayoutEvent().send();
-  updateBackgroundTexture();
+  // Layout calculations
+  auto oldContentSize = m_content->getContentSize();
+  m_content->updateLayout();
+  auto newContentSize = m_content->getContentSize();
+  m_content->setContentSize(oldContentSize);
+
+  // No more need for calculations, temporary hide table to finish animations
+  if (m_table)
+    m_table->setVisible(isInitialRender ? m_isExpanded : !m_isExpanded);
+
+  auto resizeTo = CCEaseInOut::create(CCResizeTo::create(0.26f, newContentSize.width, newContentSize.height), 2);
+  auto actionFloat = CCActionFloat::create(0.26f, 0, 1, [this, newContentSize](float t)
+                                           {
+                                            m_head->setPosition(this->getContentWidth() / 2, this->getContentHeight() - m_head->getContentHeight() / 2);
+                                            m_content->setPosition({0, this->getContentHeight()});
+                                            m_content->setContentSize(this->getContentSize());
+                                            updateBackgroundTexture();
+                                            UpdateScrollLayoutEvent().send(); });
+  auto delay = CCDelayTime::create(!m_isExpanded ? 0.26f : 0);
+  auto spawnResize = CCSpawn::createWithTwoActions(resizeTo, actionFloat);
+  auto spawnDelay = CCSpawn::create(delay, !m_isExpanded ? actionFloat : nullptr, nullptr);
+  auto animateTable = CCCallFunc::create(this, callfunc_selector(StageRangeCell::onFinishExpandAnimation));
+
+  this->runAction(CCSequence::create(animateTable, spawnDelay, spawnResize, nullptr));
+}
+
+void StageRangeCell::onFinishExpandAnimation()
+{
+  if (m_table)
+  {
+    m_table->stopAllActions();
+
+    auto scaleTo = CCSequence::createWithTwoActions(CCDelayTime::create(m_isExpanded ? .26f : 0), CCScaleTo::create(0.15f, m_isExpanded ? 1 : 0));
+    auto endFunc = CCCallFunc::create(this, callfunc_selector(StageRangeCell::onFinishTableAnimation));
+
+    m_table->setScale(!m_isExpanded ? 1 : 0);
+
+    if (m_isExpanded)
+      m_table->setVisible(true);
+
+    m_table->runAction(CCSequence::createWithTwoActions(CCEaseInOut::create(scaleTo, 2), endFunc));
+  }
+}
+
+void StageRangeCell::onFinishTableAnimation()
+{
+  if (m_table)
+    m_table->setVisible(m_isExpanded);
 }
 
 void StageRangeCell::updateBackgroundTexture()
 {
-  if (m_background)
-    m_background->removeFromParentAndCleanup(true);
 
-  const auto contentSize = m_content->getContentSize();
-  const auto bg_spr = m_disabled
-                          ? "range-disabled-bg.png"_spr
-                      : m_checked   ? "range-completed-bg.png"_spr
-                      : m_isCurrent ? "range-current-bg.png"_spr
-                                    : "range-default-bg.png"_spr;
+  auto contentSize = m_content->getContentSize();
+  auto bg_spr = m_disabled
+                    ? "range-disabled-bg.png"_spr
+                : m_checked   ? "range-completed-bg.png"_spr
+                : m_isCurrent ? "range-current-bg.png"_spr
+                              : "range-default-bg.png"_spr;
+
+  if (m_background)
+  {
+    m_background->setContentSize(contentSize);
+    m_background->setPosition({contentSize.width / 2, contentSize.height / 2});
+
+    return;
+  }
 
   m_background = CCScale9Sprite::create(bg_spr);
   m_background->setContentSize(contentSize);
@@ -179,19 +225,21 @@ void StageRangeCell::updateBackgroundTexture()
 
 void StageRangeCell::updateExpandButton()
 {
+  const auto cellSize = m_head->getContentSize();
+
   if (m_expandBtnMenu)
   {
+    m_expandBtnMenu->stopAllActions();
+    m_expandBtnMenu->setPosition({cellSize.width - 5.f, cellSize.height / 2});
+
     if (auto *sprite = typeinfo_cast<CCMenuItemSpriteExtra *>(m_expandBtnMenu->getChildByIndex(0)))
     {
       auto rotateTo = CCRotateTo::create(0.15f, m_isExpanded ? 0 : 180);
-      auto sequence = CCSequence::createWithTwoActions(CCDelayTime::create(0.15f), CCEaseInOut::create(rotateTo, 2));
-      sprite->runAction(sequence);
+      sprite->runAction(CCEaseInOut::create(rotateTo, 2));
     }
 
     return;
   }
-
-  const auto cellSize = m_head->getContentSize();
 
   // ! ---  Expand Button Menu --- !
   m_expandBtnMenu = CCMenu::create();
@@ -234,7 +282,10 @@ void StageRangeCell::updateTextColors()
 void StageRangeCell::updateMetaContent()
 {
   if (m_table)
+  {
+    m_table->setScale(1);
     m_table->setVisible(m_isExpanded);
+  }
 }
 
 void StageRangeCell::onToggle(CCObject *sender)
@@ -299,8 +350,8 @@ void StageRangeCell::setExpanded(bool expanded, bool triggerCallback)
 {
   m_isExpanded = expanded;
 
-  updateExpandButton();
   updateMetaContent();
+  updateExpandButton();
   updateLayoutWrapper();
 
   if (triggerCallback && onExpandChanged)

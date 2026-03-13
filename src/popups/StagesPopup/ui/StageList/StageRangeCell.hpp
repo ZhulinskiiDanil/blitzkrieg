@@ -1,14 +1,18 @@
 #pragma once
 #include <Geode/Geode.hpp>
 #include <Geode/loader/Event.hpp>
-#include "../../../../ui/Include.hpp"
+#include <fmt/core.h>
+#include <string>
 
+#include "../../../../ui/Include.hpp"
 #include "../../../../events/StagesChangedEvent.hpp"
 #include "../../../../events/StageRangesChangedEvent.hpp"
 #include "../../../../events/UpdateScrollLayoutEvent.hpp"
 #include "../../../../store/GlobalStore.hpp"
 #include "../../../../serialization/profile/index.hpp"
 #include "../../../../utils/getFirstUncheckedStage.hpp"
+#include "../../../../utils/formatTimePlayed.hpp"
+#include "../../../../helpers/CustomActions.hpp"
 
 #include "MetaTable.hpp"
 
@@ -34,12 +38,14 @@ private:
   bool m_isExpanded = false;
 
   void onToggle(CCObject *sender);
-  void updateBackgroundTexture();
   void updateTextColors();
-  void updateExpandButton();
   void updateMetaContent();
-  void updateLayoutWrapper();
+  void updateExpandButton();
+  void updateBackgroundTexture();
+  void updateLayoutWrapper(bool isInitialRender = false);
   void onExpand(CCObject *);
+  void onFinishExpandAnimation();
+  void onFinishTableAnimation();
 
 public:
   static StageRangeCell *create(Range *range, GJGameLevel *level, const CCSize &cellSize);
