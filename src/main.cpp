@@ -186,11 +186,11 @@ public:
         auto stageSound = !sfxStagePath.empty() &&
                                   sfxUseCustomSounds
                               ? geode::utils::string::pathToString(sfxStagePath)
-                              : "stage_complete.mp3"_spr;
+                              : fmt::format("{}/stage_complete.mp3", Mod::get()->getResourcesDir());
         auto progressSound = !sfxProgressPath.empty() &&
                                      sfxUseCustomSounds
                                  ? geode::utils::string::pathToString(sfxProgressPath)
-                                 : "progress_complete.mp3"_spr;
+                                 : fmt::format("{}/progress_complete.mp3", Mod::get()->getResourcesDir());
 
         std::string actualSound = (isStage) ? stageSound : progressSound;
         result = system->createStream(actualSound.c_str(), FMOD_DEFAULT | FMOD_LOOP_OFF | FMOD_2D | FMOD_LOWMEM, &exinfo, &sound);

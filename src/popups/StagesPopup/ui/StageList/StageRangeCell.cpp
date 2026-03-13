@@ -199,6 +199,8 @@ void StageRangeCell::onFinishTableAnimation()
 
 void StageRangeCell::updateBackgroundTexture()
 {
+  if (m_background)
+    m_background->removeFromParentAndCleanup(true);
 
   auto contentSize = m_content->getContentSize();
   auto bg_spr = m_disabled
@@ -206,14 +208,6 @@ void StageRangeCell::updateBackgroundTexture()
                 : m_checked   ? "range-completed-bg.png"_spr
                 : m_isCurrent ? "range-current-bg.png"_spr
                               : "range-default-bg.png"_spr;
-
-  if (m_background)
-  {
-    m_background->setContentSize(contentSize);
-    m_background->setPosition({contentSize.width / 2, contentSize.height / 2});
-
-    return;
-  }
 
   m_background = CCScale9Sprite::create(bg_spr);
   m_background->setContentSize(contentSize);
