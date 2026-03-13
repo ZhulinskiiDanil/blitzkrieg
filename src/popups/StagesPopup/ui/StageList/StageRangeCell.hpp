@@ -44,9 +44,14 @@ private:
 public:
   static StageRangeCell *create(Range *range, GJGameLevel *level, const CCSize &cellSize);
 
+  std::function<void(StageRangeCell *target, bool triggerCallback)> onExpandChanged;
+
   bool init(Range *range, GJGameLevel *level, const CCSize &cellSize);
 
+  void setExpanded(bool expanded, bool triggerCallback = false);
   void setDisabled(bool disabled);
+
   bool isDisabled() const { return m_disabled; }
   bool isChecked() const { return m_checked; }
+  bool isExpanded() const { return m_isExpanded; }
 };

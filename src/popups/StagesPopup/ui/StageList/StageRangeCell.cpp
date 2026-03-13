@@ -180,7 +180,16 @@ void StageRangeCell::updateBackgroundTexture()
 void StageRangeCell::updateExpandButton()
 {
   if (m_expandBtnMenu)
-    m_expandBtnMenu->removeFromParentAndCleanup(true);
+  {
+    if (auto *sprite = typeinfo_cast<CCMenuItemSpriteExtra *>(m_expandBtnMenu->getChildByIndex(0)))
+    {
+      auto rotateTo = CCRotateTo::create(0.15f, m_isExpanded ? 0 : 180);
+      auto sequence = CCSequence::createWithTwoActions(CCDelayTime::create(0.15f), CCEaseInOut::create(rotateTo, 2));
+      sprite->runAction(sequence);
+    }
+
+    return;
+  }
 
   const auto cellSize = m_head->getContentSize();
 
@@ -195,16 +204,13 @@ void StageRangeCell::updateExpandButton()
           ->setAutoGrowAxis(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setCrossAxisAlignment(AxisAlignment::Center));
-  // m_expandBtnMenu->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
   m_head->addChild(m_expandBtnMenu);
 
   // ! ---  Expand Button --- !
-  const auto sprName = m_isExpanded
-                           ? "purple-chevron-up-btn.png"_spr
-                           : "purple-chevron-down-btn.png"_spr;
-  auto spr = CCSprite::createWithSpriteFrameName(sprName);
+  auto spr = CCSprite::createWithSpriteFrameName("purple-chevron-up-btn.png"_spr);
   const auto expandBtn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(StageRangeCell::onExpand));
   expandBtn->ignoreAnchorPointForPosition(true);
+  expandBtn->setRotation(m_isExpanded ? 0 : 180);
   expandBtn->setScale(.5f);
   expandBtn->m_baseScale = expandBtn->getScale();
 
@@ -286,11 +292,19 @@ void StageRangeCell::onToggle(CCObject *sender)
 
 void StageRangeCell::onExpand(CCObject *sender)
 {
-  m_isExpanded = !m_isExpanded;
+  setExpanded(!m_isExpanded, true);
+}
+
+void StageRangeCell::setExpanded(bool expanded, bool triggerCallback)
+{
+  m_isExpanded = expanded;
 
   updateExpandButton();
   updateMetaContent();
   updateLayoutWrapper();
+
+  if (triggerCallback && onExpandChanged)
+    onExpandChanged(this, m_isExpanded);
 }
 
 void StageRangeCell::setDisabled(bool disabled)

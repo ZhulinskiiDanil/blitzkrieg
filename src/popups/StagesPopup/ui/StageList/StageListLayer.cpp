@@ -175,6 +175,15 @@ void StageListLayer::reload()
       cell->ignoreAnchorPointForPosition(true);
       cell->setDisabled(isDisabled);
 
+      cell->onExpandChanged = [this, row](StageRangeCell *target, bool expanded)
+      {
+        for (auto &anotherCell : CCArrayExt<StageRangeCell *>(row->getChildren()))
+          if (anotherCell != target)
+            anotherCell->setExpanded(expanded);
+
+        row->updateLayout();
+      };
+
       row->addChild(cell);
       row->updateLayout();
     }
