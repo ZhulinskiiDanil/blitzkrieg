@@ -226,5 +226,8 @@ public:
         return nullptr;
     }
 
-    bool isLegal() { return !m_fields->isNoclip; }
+    bool isLegal()
+    {
+        return !m_fields->isNoclip && !m_isIgnoreDamageEnabled && !m_ignoreDamage;
+    }
 };
