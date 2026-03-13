@@ -112,39 +112,3 @@ void CCActionFloat::update(float time)
     m_callback(value);
   }
 }
-
-//
-// ! --- CallFunc --- !
-//
-CallFunc *CallFunc::create(std::function<void()> func)
-{
-  auto ret = new CallFunc();
-
-  if (ret && ret->initWithFunction(func))
-  {
-    ret->autorelease();
-    return ret;
-  }
-
-  CC_SAFE_DELETE(ret);
-  return nullptr;
-}
-
-bool CallFunc::initWithFunction(std::function<void()> func)
-{
-  m_func = func;
-  return true;
-}
-
-void CallFunc::update(float time)
-{
-  execute();
-}
-
-void CallFunc::execute()
-{
-  if (m_func)
-  {
-    m_func();
-  }
-}

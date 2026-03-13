@@ -67,17 +67,3 @@ protected:
 
   std::function<void(float)> m_callback;
 };
-
-class CallFunc : public CCActionInstant
-{
-public:
-  static CallFunc *create(std::function<void()> func);
-
-  bool initWithFunction(std::function<void()> func);
-
-  void update(float time) override;
-  void execute();
-
-protected:
-  std::function<void()> m_func;
-};
