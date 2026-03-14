@@ -65,6 +65,11 @@
       "type": "title",
       "name": "Interface"
     },
+    "disable-progress-expansion-animation": {
+      "type": "bool",
+      "name": "Disable progress expansion statistics animation",
+      "default": false
+    },
     "expand-progress-by-default": {
       "type": "bool",
       "name": "Expand progress details by default",

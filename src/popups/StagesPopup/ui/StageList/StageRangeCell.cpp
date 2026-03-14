@@ -145,16 +145,18 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
 
 void StageRangeCell::updateLayoutWrapper(bool isInitialRender)
 {
+  const bool animDisabled = Mod::get()->getSettingValue<bool>("disable-progress-expansion-animation");
   this->stopAllActions();
 
-  // Layout calculations
   auto oldContentSize = m_content->getContentSize();
   m_content->updateLayout();
   auto newContentSize = m_content->getContentSize();
-  m_content->setContentSize(oldContentSize);
+
+  if (!animDisabled)
+    m_content->setContentSize(oldContentSize);
 
   // No more need for calculations, temporary hide table to finish animations
-  if (m_table)
+  if (m_table && !animDisabled)
     m_table->setVisible(isInitialRender ? m_isExpanded : !m_isExpanded);
 
   auto resizeTo = CCEaseInOut::create(CCResizeTo::create(0.26f, newContentSize.width, newContentSize.height), 2);
@@ -170,24 +172,39 @@ void StageRangeCell::updateLayoutWrapper(bool isInitialRender)
   auto spawnDelay = CCSpawn::create(delay, !m_isExpanded ? actionFloat : nullptr, nullptr);
   auto animateTable = CCCallFunc::create(this, callfunc_selector(StageRangeCell::onFinishExpandAnimation));
 
-  this->runAction(CCSequence::create(animateTable, spawnDelay, spawnResize, nullptr));
+  if (animDisabled)
+  {
+    this->setContentSize(newContentSize);
+    m_content->setPosition({0, this->getContentHeight()});
+    m_content->setContentSize(newContentSize);
+    m_content->updateLayout();
+    updateBackgroundTexture();
+    UpdateScrollLayoutEvent().send();
+  }
+  else
+  {
+    this->runAction(CCSequence::create(animateTable, spawnDelay, spawnResize, nullptr));
+  }
 }
 
 void StageRangeCell::onFinishExpandAnimation()
 {
   if (m_table)
   {
+    if (m_isExpanded)
+      m_table->setVisible(true);
+
+    const bool animDisabled = Mod::get()->getSettingValue<bool>("disable-progress-expansion-animation");
     m_table->stopAllActions();
 
     auto scaleTo = CCSequence::createWithTwoActions(CCDelayTime::create(m_isExpanded ? .26f : 0), CCScaleTo::create(0.15f, m_isExpanded ? 1 : 0));
     auto endFunc = CCCallFunc::create(this, callfunc_selector(StageRangeCell::onFinishTableAnimation));
 
-    m_table->setScale(!m_isExpanded ? 1 : 0);
-
-    if (m_isExpanded)
-      m_table->setVisible(true);
-
-    m_table->runAction(CCSequence::createWithTwoActions(CCEaseInOut::create(scaleTo, 2), endFunc));
+    if (!animDisabled)
+    {
+      m_table->setScale(!m_isExpanded ? 1 : 0);
+      m_table->runAction(CCSequence::createWithTwoActions(CCEaseInOut::create(scaleTo, 2), endFunc));
+    }
   }
 }
 
