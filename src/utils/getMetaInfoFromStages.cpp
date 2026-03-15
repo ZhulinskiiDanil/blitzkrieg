@@ -7,6 +7,8 @@ StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
   int completed = 0;
   int currStagePlaytime = 0;
   int currStageAttempts = 0;
+  int currStageTotalRanges = 0;
+  int currStageCompletedRanges = 0;
   auto currentStage = getFirstUncheckedStage(stages);
   std::vector<Stage> *consideredStages = new std::vector<Stage>();
 
@@ -16,6 +18,10 @@ StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
     {
       if (range.consider)
       {
+        if (range.checked)
+          currStageCompletedRanges++;
+
+        currStageTotalRanges++;
         currStagePlaytime += range.timePlayed;
         currStageAttempts += range.attempts;
       }
@@ -44,5 +50,13 @@ StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
     }
   }
 
-  return {total, completed, currStagePlaytime, currStageAttempts, currentStage, consideredStages};
+  return {
+      total,
+      completed,
+      currStagePlaytime,
+      currStageAttempts,
+      currStageTotalRanges,
+      currStageCompletedRanges,
+      currentStage,
+      consideredStages};
 }

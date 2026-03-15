@@ -65,6 +65,11 @@
       "type": "title",
       "name": "Interface"
     },
+    "replace-practice-bar-with-blitzkrieg": {
+      "type": "bool",
+      "name": "Display Blitzkrieg stats instead of practice bar",
+      "default": true
+    },
     "disable-progress-expansion-animation": {
       "type": "bool",
       "name": "Disable progress expansion statistics animation",
