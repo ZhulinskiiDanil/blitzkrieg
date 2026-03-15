@@ -5,6 +5,7 @@
 
 #include "../../utils/selectJsonFile.hpp"
 #include "../../utils/getMetaInfoFromStages.hpp"
+#include "../../utils/ui/replacePracticeBarWithProgression.hpp"
 #include "../../serialization/profile/index.hpp"
 #include "../../store/GlobalStore.hpp"
 

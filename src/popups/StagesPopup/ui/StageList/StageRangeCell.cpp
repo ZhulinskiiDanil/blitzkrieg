@@ -52,14 +52,12 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   // m_content->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
   m_content->setID("progress-cell-content"_spr);
   this->addChild(m_content);
-  updateLayoutWrapper();
 
   // ! --- Head --- !
   m_head = CCLayer::create();
   m_head->setContentSize(cellSize);
   m_head->setID("progress-cell-head"_spr);
   m_content->addChild(m_head);
-  updateLayoutWrapper();
 
   // ! --- Background --- !
   updateBackgroundTexture();
@@ -145,7 +143,8 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
 
 void StageRangeCell::updateLayoutWrapper(bool isInitialRender)
 {
-  const bool animDisabled = Mod::get()->getSettingValue<bool>("disable-progress-expansion-animation");
+  log::debug("==========");
+  const bool animDisabled = Mod::get()->getSettingValue<bool>("disable-progress-expansion-animation") || isInitialRender;
   this->stopAllActions();
 
   auto oldContentSize = m_content->getContentSize();

@@ -15,6 +15,13 @@ void BlitzPauseLayer::customSetup()
     modBtn->setID("blitzkrieg-button");
     leftMenu->addChild(modBtn);
     leftMenu->updateLayout();
+
+    auto practiceModeBar = this->getChildByID("practice-progress-bar");
+    auto practiceModeLabel = this->getChildByID("practice-mode-label");
+    auto practiceModePercentage = this->getChildByID("practice-progress-label");
+
+    std::string levelId = level->m_levelID ? geode::utils::numToString(level->m_levelID.value()) : geode::utils::numToString(EditorIDs::getID(level));
+    replacePracticeBarWithProgression(levelId, practiceModeBar, practiceModeLabel, practiceModePercentage);
 }
 
 void BlitzPauseLayer::onQuit(CCObject *sender)
@@ -26,7 +33,5 @@ void BlitzPauseLayer::onQuit(CCObject *sender)
 void BlitzPauseLayer::onPopup()
 {
     const auto level = PlayLayer::get()->m_level;
-    std::string levelId = geode::utils::numToString(EditorIDs::getID(level));
-
     StagesPopup::create(level)->show();
 }
