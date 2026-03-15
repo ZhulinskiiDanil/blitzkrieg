@@ -143,7 +143,6 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
 
 void StageRangeCell::updateLayoutWrapper(bool isInitialRender)
 {
-  log::debug("==========");
   const bool animDisabled = Mod::get()->getSettingValue<bool>("disable-progress-expansion-animation") || isInitialRender;
   this->stopAllActions();
 
@@ -154,7 +153,6 @@ void StageRangeCell::updateLayoutWrapper(bool isInitialRender)
   if (!animDisabled)
     m_content->setContentSize(oldContentSize);
 
-  // No more need for calculations, temporary hide table to finish animations
   if (m_table && !animDisabled)
     m_table->setVisible(isInitialRender ? m_isExpanded : !m_isExpanded);
 
