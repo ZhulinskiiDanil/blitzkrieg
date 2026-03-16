@@ -176,8 +176,7 @@ public:
         memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
         exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
         exinfo.nonblockcallback = BlitzPlayLayer::fmodNonBlockCallback;
-
-        BKGlobal::sfxGroup->setVolume(GameManager::get()->m_sfxVolume);
+        BKGlobal::sfxGroup->setVolume(GameManager::get()->m_sfxVolume * Mod::get()->getSettingValue<float>("sfx-volume"));
 
         auto engine = FMODAudioEngine::get();
         auto system = engine->m_system;
@@ -195,7 +194,7 @@ public:
                                  ? geode::utils::string::pathToString(sfxProgressPath)
                                  : fmt::format("{}/progress_complete.mp3", Mod::get()->getResourcesDir());
 
-        std::string actualSound = (isStage) ? stageSound : progressSound;
+        std::string actualSound = isStage ? stageSound : progressSound;
         result = system->createStream(actualSound.c_str(), FMOD_DEFAULT | FMOD_LOOP_OFF | FMOD_2D | FMOD_LOWMEM, &exinfo, &sound);
 
         if (result != FMOD_OK)

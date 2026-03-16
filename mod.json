@@ -65,45 +65,56 @@
       "type": "title",
       "name": "Interface"
     },
+    "expand-progress-by-default": {
+      "type": "bool",
+      "name": "Auto-expand progress details",
+      "description": "Automatically expand progress details in the stage browser.",
+      "default": true
+    },
+    "disable-progress-expansion-animation": {
+      "type": "bool",
+      "name": "Disable expansion animation",
+      "description": "Disable the animation when progress statistics expand.",
+      "default": false
+    },
     "replace-practice-bar-with-blitzkrieg": {
       "type": "bool",
-      "name": "Display Blitzkrieg stats instead of practice bar",
+      "name": "Blitzkrieg instead of practice bar",
+      "description": "Display Blitzkrieg statistics instead of the practice progress bar.",
       "default": true
     },
     "practice-bar-divisions-color": {
-      "name": "Color of stage divisions in progression",
       "type": "color",
-      "default": "#ffffff"
-    },
-    "practice-bar-divisions-transparency": {
-      "name": "Transparency of stage divisions in progression",
-      "type": "float",
-      "default": 0.4,
-      "min": 0.1,
-      "max": 1,
-      "control": {
-        "slider": true
-      }
+      "name": "Practice stage divider color",
+      "description": "Color of the stage division markers in the progression bar.",
+      "default": "#ffffff",
+      "enable-if": "replace-practice-bar-with-blitzkrieg"
     },
     "practice-bar-stages-fill-color": {
       "name": "Stage progression fill color",
       "type": "color",
-      "default": "#ff0052"
+      "default": "#ff0052",
+      "enable-if": "replace-practice-bar-with-blitzkrieg"
     },
     "practice-bar-ranges-fill-color": {
       "name": "Run progression fill color",
       "type": "color",
-      "default": "#ffc8cf"
+      "default": "#ffc8cf",
+      "enable-if": "replace-practice-bar-with-blitzkrieg"
     },
-    "disable-progress-expansion-animation": {
-      "type": "bool",
-      "name": "Disable progress expansion statistics animation",
-      "default": false
-    },
-    "expand-progress-by-default": {
-      "type": "bool",
-      "name": "Expand progress details by default",
-      "default": true
+    "practice-bar-divisions-transparency": {
+      "type": "float",
+      "name": "Stage divider opacity",
+      "description": "Transparency of stage divisions in the progression bar.",
+      "default": 0.4,
+      "min": 0.1,
+      "max": 1,
+      "enable-if": "replace-practice-bar-with-blitzkrieg",
+      "control": {
+        "slider": true,
+        "slider-step": 0.1,
+        "arrow-step": 0.1
+      }
     },
     "notifications-settings": {
       "type": "title",
@@ -128,6 +139,19 @@
       "type": "bool",
       "default": false,
       "description": "Use custom sounds for the SFX's!"
+    },
+    "sfx-volume": {
+      "name": "SFX volume ratio",
+      "type": "float",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "enable-if": "sfx-use-custom-sounds",
+      "control": {
+        "slider": true,
+        "slider-step": 0.1,
+        "arrow-step": 0.1
+      }
     },
     "sfx-progress-path": {
       "name": "Progress-Pass SFX",
