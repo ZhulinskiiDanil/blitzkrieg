@@ -162,14 +162,14 @@ void ToggablePercentagesList::reload()
 					j == m_startposes.size() - 1 ? fmt::format("<small>{:.2f}% - 100.00%</small>", m_startposes[j]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", m_startposes[j], m_startposes[j + 1]).c_str(), "gjFont17.fnt");
 			runFromLabel->setScale(0.25f);
 			runFromLabel->setAnchorPoint({1.0f, 0.0f});
-			runFromLabel->setPosition({cell->getContentWidth() - buttonMenu->getContentWidth() - 6 - 2, 4.0f});
+			runFromLabel->setPosition({cell->getContentWidth() - buttonMenu->getContentWidth() - 6 - 4, 4.0f});
 			cell->addChild(runFromLabel);
 
 			// ! --- Run To Label --- !
 			auto runToLabel = Label::create(j == 0 ? fmt::format("<small>0.00% - {:.2f}%</small>", m_startposes[0]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", m_startposes[j - 1], m_startposes[j]).c_str(), "gjFont17.fnt");
 			runToLabel->setScale(0.25f);
 			runToLabel->setAnchorPoint({1.0f, 1.0f});
-			runToLabel->setPosition({cell->getContentWidth() - buttonMenu->getContentWidth() - 6 - 2, cell->getContentHeight() - 4.0f});
+			runToLabel->setPosition({cell->getContentWidth() - buttonMenu->getContentWidth() - 6 - 4, cell->getContentHeight() - 4.0f});
 			cell->addChild(runToLabel);
 
 			row->addChild(cell);

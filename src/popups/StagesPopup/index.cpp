@@ -26,7 +26,10 @@ bool StagesPopup::init(GJGameLevel *level)
     return false;
   }
 
+  std::string levelId = level->m_levelID ? utils::numToString(level->m_levelID.value()) : utils::numToString(EditorIDs::getID(level));
+
   this->m_level = level;
+  this->m_profile = GlobalStore::get()->getProfileByLevel(levelId);
 
   drawTabs();
   drawContent();
@@ -37,6 +40,19 @@ bool StagesPopup::init(GJGameLevel *level)
 void StagesPopup::drawContent()
 {
   geode::TabButton *activeButton = tabButtons[0];
+
+  if (m_isFirstLaunch)
+  {
+    m_isFirstLaunch = false;
+
+    if (!this->m_profile.id.empty())
+    {
+      activeButton = tabButtons[1];
+      activateTab(activeButton);
+
+      return;
+    }
+  }
 
   for (auto *btn : tabButtons)
   {
@@ -96,11 +112,10 @@ void StagesPopup::drawCurrentStage()
 {
   Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
-  Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
-  Stage *currentStage = getFirstUncheckedStage(profile);
+  Stage *currentStage = getFirstUncheckedStage(m_profile);
 
-  if (!currentStage && !profile.data.stages.empty())
-    currentStage = &profile.data.stages.back();
+  if (!currentStage && !m_profile.data.stages.empty())
+    currentStage = &m_profile.data.stages.back();
 
   const auto contentSize = CCSize(
       m_size.width - padding.left - padding.right,
@@ -112,7 +127,7 @@ void StagesPopup::drawCurrentStage()
 
   // ! --- Title --- !
   drawCurrentStageTitle(
-      profile.data.stages, padding);
+      m_profile.data.stages, padding);
 
   // ! --- StageListLayer --- !
   auto stageListContentSize = CCSize(contentSize.width, contentSize.height);
