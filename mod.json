@@ -134,8 +134,13 @@
       "type": "title",
       "name": "SFX"
     },
+    "ignore-built-in-game-sfx": {
+      "name": "Ignore the game's built-in sfx",
+      "type": "bool",
+      "default": false
+    },
     "sfx-volume": {
-      "name": "SFX volume ratio",
+      "name": "SFX volume",
       "type": "float",
       "default": 1,
       "min": 0,

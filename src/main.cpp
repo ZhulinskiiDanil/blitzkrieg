@@ -50,7 +50,10 @@ public:
         if (BKGlobal::sfxGroup == nullptr)
             system->createChannelGroup("blitzkrieg", &BKGlobal::sfxGroup);
 
-        BKGlobal::sfxGroup->setVolume(GameManager::get()->m_sfxVolume);
+        if (Mod::get()->getSettingValue<bool>("ignore-built-in-game-sfx"))
+            BKGlobal::sfxGroup->setVolume(Mod::get()->getSettingValue<float>("sfx-volume"));
+        else
+            BKGlobal::sfxGroup->setVolume(GameManager::get()->m_sfxVolume * Mod::get()->getSettingValue<float>("sfx-volume"));
 
         m_fields->runClosedListener = RunClosedEvent().listen(
             [this](float from, float to, Profile *profile, Range *closedRange, Stage *closedStage)
@@ -176,7 +179,11 @@ public:
         memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
         exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
         exinfo.nonblockcallback = BlitzPlayLayer::fmodNonBlockCallback;
-        BKGlobal::sfxGroup->setVolume(GameManager::get()->m_sfxVolume * Mod::get()->getSettingValue<float>("sfx-volume"));
+
+        if (Mod::get()->getSettingValue<bool>("ignore-built-in-game-sfx"))
+            BKGlobal::sfxGroup->setVolume(Mod::get()->getSettingValue<float>("sfx-volume"));
+        else
+            BKGlobal::sfxGroup->setVolume(GameManager::get()->m_sfxVolume * Mod::get()->getSettingValue<float>("sfx-volume"));
 
         auto engine = FMODAudioEngine::get();
         auto system = engine->m_system;
