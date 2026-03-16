@@ -297,6 +297,7 @@ Profile GlobalStore::getProfileByLevel(std::string const &levelId)
 
 Range GlobalStore::getCurrentRange(std::string &profileId)
 {
+  const float eps = 0.01f;
   Range *maxRange = nullptr;
   int currentStage = 0;
 
@@ -317,7 +318,7 @@ Range GlobalStore::getCurrentRange(std::string &profileId)
 
       for (auto &range : stage.ranges)
       {
-        if (!range.checked && range.from <= (runStart + 0.1f))
+        if (range.consider && !range.checked && std::abs(range.from - runStart) < eps)
         {
           if (!maxRange || range.from > maxRange->from)
           {

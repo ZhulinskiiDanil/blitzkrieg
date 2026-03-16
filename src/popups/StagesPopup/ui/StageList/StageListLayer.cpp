@@ -92,6 +92,7 @@ bool StageListLayer::init(
   m_lockSpr = CCSprite::createWithSpriteFrameName("GJ_lock_001.png");
   m_lockSpr->setPosition(m_contentSize / 2);
   m_lockSpr->setScale(4.f);
+  m_lockSpr->setOpacity(255 * .25f);
   m_lockSpr->setVisible(false);
 
   this->addChild(m_lockSpr);
