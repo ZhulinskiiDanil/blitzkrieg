@@ -134,24 +134,23 @@
       "type": "title",
       "name": "SFX"
     },
-    "sfx-use-custom-sounds": {
-      "name": "Use Custom SFX's",
-      "type": "bool",
-      "default": false,
-      "description": "Use custom sounds for the SFX's!"
-    },
     "sfx-volume": {
       "name": "SFX volume ratio",
       "type": "float",
       "default": 1,
       "min": 0,
       "max": 1,
-      "enable-if": "sfx-use-custom-sounds",
       "control": {
         "slider": true,
         "slider-step": 0.1,
         "arrow-step": 0.1
       }
+    },
+    "sfx-use-custom-sounds": {
+      "name": "Use Custom SFX's",
+      "type": "bool",
+      "default": false,
+      "description": "Use custom sounds for the SFX's!"
     },
     "sfx-progress-path": {
       "name": "Progress-Pass SFX",
