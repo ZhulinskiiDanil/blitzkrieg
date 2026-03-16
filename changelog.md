@@ -1,3 +1,8 @@
+# 2.1.0
+- Replaced the practice bar with the Blitzkrieg progression system
+- If a profile is attached to a level, the stage browser now opens by default
+- Added the ability to adjust the SFX volume ratio
+
 # 2.0.1
 - Fixed a bug where the player had already completed a level, but on the way to the portal there was a hitbox that he was clinging to, and safe mode identified this as a no-clip and did not count runs to 100%. Example levels: "Poocubed, Cat Planet"
 
