@@ -44,7 +44,7 @@ private:
   std::vector<CCNode *> contentContainers;
   std::vector<CCMenuItemToggle *> stageCheckboxes;
   GJGameLevel *m_level = nullptr;
-  Profile m_profile;
+  std::string m_levelId;
   bool m_isFirstLaunch = true;
 
   CCNode *m_currentStageNode = nullptr;

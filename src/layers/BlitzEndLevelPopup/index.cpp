@@ -21,8 +21,8 @@ void BlitzEndLevelLayer::customSetup()
 
 void BlitzEndLevelLayer::onPopup()
 {
-    const auto level = PlayLayer::get()->m_level;
-    std::string levelId = geode::utils::numToString(EditorIDs::getID(level));
+    auto level = PlayLayer::get()->m_level;
+    std::string levelId = level->m_levelID ? utils::numToString(level->m_levelID.value()) : utils::numToString(EditorIDs::getID(level));
 
     StagesPopup::create(level)->show();
 }

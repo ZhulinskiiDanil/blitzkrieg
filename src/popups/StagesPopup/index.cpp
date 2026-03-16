@@ -29,7 +29,7 @@ bool StagesPopup::init(GJGameLevel *level)
   std::string levelId = level->m_levelID ? utils::numToString(level->m_levelID.value()) : utils::numToString(EditorIDs::getID(level));
 
   this->m_level = level;
-  this->m_profile = GlobalStore::get()->getProfileByLevel(levelId);
+  this->m_levelId = levelId;
 
   drawTabs();
   drawContent();
@@ -39,13 +39,14 @@ bool StagesPopup::init(GJGameLevel *level)
 
 void StagesPopup::drawContent()
 {
+  auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
   geode::TabButton *activeButton = tabButtons[0];
 
   if (m_isFirstLaunch)
   {
     m_isFirstLaunch = false;
 
-    if (!this->m_profile.id.empty())
+    if (!profile.id.empty())
     {
       activeButton = tabButtons[1];
       activateTab(activeButton);
@@ -89,7 +90,8 @@ void StagesPopup::drawProfilesList()
 {
   Padding padding{12.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
 
-  const auto profiles = GlobalStore::get()->getProfiles();
+  auto profiles = GlobalStore::get()->getProfiles();
+  auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
 
   m_profilesListNode = CCNode::create();
   m_profilesListNode->setID("stages-popup-profiles-list"_spr);
@@ -112,10 +114,11 @@ void StagesPopup::drawCurrentStage()
 {
   Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
-  Stage *currentStage = getFirstUncheckedStage(m_profile);
+  auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
+  Stage *currentStage = getFirstUncheckedStage(profile);
 
-  if (!currentStage && !m_profile.data.stages.empty())
-    currentStage = &m_profile.data.stages.back();
+  if (!currentStage && !profile.data.stages.empty())
+    currentStage = &profile.data.stages.back();
 
   const auto contentSize = CCSize(
       m_size.width - padding.left - padding.right,
@@ -127,7 +130,7 @@ void StagesPopup::drawCurrentStage()
 
   // ! --- Title --- !
   drawCurrentStageTitle(
-      m_profile.data.stages, padding);
+      profile.data.stages, padding);
 
   // ! --- StageListLayer --- !
   auto stageListContentSize = CCSize(contentSize.width, contentSize.height);
