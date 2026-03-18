@@ -20,6 +20,7 @@ public:
   void setStartposes(std::vector<float> startposes);
   std::vector<float> getStartposes();
   std::vector<float> getEnabledStartposes();
+  bool hasChanged();
 
 protected:
   bool init(CCSize size, std::vector<float> startposes, std::vector<float> disabledStartposes);

@@ -200,6 +200,22 @@ std::vector<float> ToggablePercentagesList::getEnabledStartposes()
 	return m_enabledStartposes;
 }
 
+bool ToggablePercentagesList::hasChanged()
+{
+	const float eps = 1e-5f;
+
+	if (m_startposes.size() != m_enabledStartposes.size())
+		return true;
+
+	for (size_t i = 0; i < m_startposes.size(); ++i)
+	{
+		if (std::fabs(m_startposes[i] - m_enabledStartposes[i]) > eps)
+			return true;
+	}
+
+	return false;
+}
+
 void ToggablePercentagesList::onToggleStartpos(CCObject *sender)
 {
 	auto checkbox = static_cast<CCMenuItemToggler *>(sender);
