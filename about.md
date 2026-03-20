@@ -4,6 +4,8 @@ Blitzkrieg Tracker is a mod that simplifies using the **<cy>Blitzkrieg training 
 
 Instead of managing spreadsheets or manually tracking runs, the mod automatically records your **<cg>progress directly during gameplay</c>**.
 
+The Blitzkrieg training tactic was originally **invented by [Rudder](https://www.youtube.com/@TheRealRudder)**. This mod is inspired by and designed to support that method by automating its tracking process.
+
 # Quick Tutorial
 
 Getting started with Blitzkrieg is simple:
@@ -58,6 +60,10 @@ Stage statistics also include **<cg>total attempts and total playtime</c>**.
 **<cg>English Tutorial</c>**
 
 [Watch the English tutorial](https://youtu.be/v2CqPpV1kds)
+
+**<cg>Spanish Tutorial</c>**
+
+[Watch the Spanish tutorial](https://www.youtube.com/watch?v=3zeuT4ggzZk)
 
 **<cg>Russian Tutorial</c>**
 
