@@ -81,8 +81,8 @@ void StagesPopup::drawContent()
       drawProfilesList();
     else if (btnId == "tabBtnCurrentStage"_spr)
       drawCurrentStage();
-    else if (btnId == "tabBtnLastRuns"_spr)
-      drawLastRuns();
+    else if (btnId == "tabBtnStageGraph"_spr)
+      drawStagesGraph();
   }
 }
 
@@ -140,6 +140,27 @@ void StagesPopup::drawCurrentStage()
   m_currentStageNode->addChild(stageList);
   m_mainLayer->addChild(m_currentStageNode);
   contentContainers.push_back(m_currentStageNode);
+}
+
+void StagesPopup::drawStagesGraph()
+{
+  Padding padding{45.f, 45.f, 30.f, 10.f}; // top, bottom, left, right
+
+  m_currentStageGraphNode = CCNode::create();
+  m_currentStageGraphNode->setID("stages-popup-profiles-list"_spr);
+  m_currentStageGraphNode->setTag(1);
+
+  const auto contentSize = CCSize(
+      m_size.width - padding.left - padding.right,
+      m_size.height - padding.top - padding.bottom);
+
+  // ! --- StagesGraphLayer --- !
+  auto stagesGraphLayer = StagesGraphLayer::create(m_level, contentSize);
+  stagesGraphLayer->setPosition({padding.left, padding.bottom});
+  m_currentStageGraphNode->addChild(stagesGraphLayer);
+
+  m_mainLayer->addChild(m_currentStageGraphNode);
+  contentContainers.push_back(m_currentStageGraphNode);
 }
 
 void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padding)
@@ -208,11 +229,6 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padd
       });
 }
 
-void StagesPopup::drawLastRuns()
-{
-  drawCurrentStage();
-}
-
 void StagesPopup::drawTabs()
 {
   auto oldTabsNode = m_mainLayer->getChildByID("stages-popup-tabs-node"_spr);
@@ -244,11 +260,19 @@ void StagesPopup::drawTabs()
   tabBtnCurrentStage->setTag(2);
   tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
 
+  auto tabBtnCurrentStageGraph = TabButton::create(
+      "Stage Graph",
+      this,
+      menu_selector(StagesPopup::onCurrentStageToggle));
+  tabBtnCurrentStageGraph->setAnchorPoint({0.5f, 0.f});
+  tabBtnCurrentStageGraph->setTag(3);
+  tabBtnCurrentStageGraph->setID("tabBtnStageGraph"_spr);
+
   // ! --- Menu --- !
   auto tabMenu = CCMenu::create();
   tabMenu->addChild(tabBtnProfilesList);
   tabMenu->addChild(tabBtnCurrentStage);
-  // tabMenu->addChild(tabBtnLastRuns);
+  tabMenu->addChild(tabBtnCurrentStageGraph);
   tabMenu->alignItemsHorizontallyWithPadding(btnsGap);
   tabMenu->setPosition({m_size.width / 2, m_size.height - 3.5f});
   tabMenu->setZOrder(1);
@@ -257,6 +281,7 @@ void StagesPopup::drawTabs()
   tabButtons.clear();
   tabButtons.push_back(tabBtnProfilesList);
   tabButtons.push_back(tabBtnCurrentStage);
+  tabButtons.push_back(tabBtnCurrentStageGraph);
 
   // ! --- Tab Buttons Backgrounds --- !
   for (auto *btn : tabButtons)

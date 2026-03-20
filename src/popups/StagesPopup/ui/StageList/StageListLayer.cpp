@@ -160,7 +160,7 @@ void StageListLayer::reload()
     auto row = CCLayer::create();
     row->setLayout(
         RowLayout::create()
-            ->setGap(5.f)
+            ->setGap(2.5f)
             ->setAutoScale(false)
             ->setCrossAxisLineAlignment(AxisAlignment::End));
     row->setContentSize({totalWidth, cellHeight});

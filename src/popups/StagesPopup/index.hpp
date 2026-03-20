@@ -15,6 +15,7 @@
 
 #include "./ui/StageList/StageListLayer.hpp"
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
+#include "./ui/StagesGraph/StagesGraphLayer.hpp"
 
 #include "../../ui/Include.hpp"
 #include "../../store/GlobalStore.hpp"
@@ -47,8 +48,9 @@ private:
   std::string m_levelId;
   bool m_isFirstLaunch = true;
 
-  CCNode *m_currentStageNode = nullptr;
   CCNode *m_profilesListNode = nullptr;
+  CCNode *m_currentStageNode = nullptr;
+  CCNode *m_currentStageGraphNode = nullptr;
   CCLabelBMFont *m_currentStageTitleLabel = nullptr;
   Label *m_totalStatLabel = nullptr;
 
@@ -60,7 +62,7 @@ private:
   void drawProfilesList();
   void drawCurrentStage();
   void drawCurrentStageTitle(std::vector<Stage> &stages, Padding padding);
-  void drawLastRuns();
+  void drawStagesGraph();
 
   bool init(GJGameLevel *);
 

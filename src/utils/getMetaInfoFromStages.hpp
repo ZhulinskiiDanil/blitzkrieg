@@ -16,3 +16,6 @@ struct StageMetaInfo
 };
 
 StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages);
+
+int getStagePlaytime(Stage *stage);
+int getStageAttempts(Stage *stage);

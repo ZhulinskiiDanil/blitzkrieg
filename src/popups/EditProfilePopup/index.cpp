@@ -145,15 +145,43 @@ void EditProfilePopup::onSave(CCObject *)
   if (!m_profile || !m_level)
     return;
 
-  auto regeneratedProfile = generateProfile("_mergeProfile", m_percentagesList->getEnabledStartposes());
-  auto mergedProfile = mergeProfiles(*m_profile, regeneratedProfile.as<Profile>().unwrap(), false);
+  auto newStartposes = m_percentagesList->getEnabledStartposes();
 
-  mergedProfile.profileName = m_profileNameInput->getString();
-  mergedProfile.discordWebhookForRunNotifications = m_discordWebhookInput->getString();
-  mergedProfile.discordWebhookForRunNotificationsEnabled = m_webhookEnabled;
+  if (m_percentagesList->hasChanged())
+  {
+    geode::createQuickPopup(
+        "Start Positions Changed",
+        "You have modified the start positions.\n"
+        "These changes cannot be undone.\n\n"
+        "Do you want to save them?",
+        "Cancel",
+        "Confirm",
+        [this, newStartposes](auto, bool confirmed)
+        {
+          if (!confirmed)
+            return;
 
-  GlobalStore::get()->updateProfile(mergedProfile);
+          auto regenerated = generateProfile("_mergeProfile", newStartposes);
+          auto merged = mergeProfiles(*m_profile, regenerated.as<Profile>().unwrap(), false);
 
+          merged.profileName = m_profileNameInput->getString();
+          merged.discordWebhookForRunNotifications = m_discordWebhookInput->getString();
+          merged.discordWebhookForRunNotificationsEnabled = m_webhookEnabled;
+
+          GlobalStore::get()->updateProfile(merged);
+          ProfilesChangedEvent().send();
+          this->onClose(nullptr);
+        });
+
+    return;
+  }
+
+  auto merged = mergeProfiles(*m_profile, generateProfile("_mergeProfile", newStartposes).as<Profile>().unwrap(), false);
+  merged.profileName = m_profileNameInput->getString();
+  merged.discordWebhookForRunNotifications = m_discordWebhookInput->getString();
+  merged.discordWebhookForRunNotificationsEnabled = m_webhookEnabled;
+
+  GlobalStore::get()->updateProfile(merged);
   ProfilesChangedEvent().send();
   this->onClose(nullptr);
 }

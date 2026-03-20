@@ -60,3 +60,25 @@ StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
       currentStage,
       consideredStages};
 }
+
+int getStagePlaytime(Stage *stage)
+{
+  int res = 0;
+
+  for (auto &range : stage->ranges)
+    if (range.consider)
+      res += range.timePlayed;
+
+  return res;
+}
+
+int getStageAttempts(Stage *stage)
+{
+  int res = 0;
+
+  for (auto &range : stage->ranges)
+    if (range.consider)
+      res += range.attempts;
+
+  return res;
+}
