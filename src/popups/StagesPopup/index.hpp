@@ -17,6 +17,7 @@
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
 #include "./ui/StagesGraph/StagesGraphLayer.hpp"
 
+#include "../../ui/types/index.hpp"
 #include "../../ui/Include.hpp"
 #include "../../store/GlobalStore.hpp"
 #include "../../events/StageSwitchedEvent.hpp"
@@ -29,14 +30,6 @@
 #include "../../utils/getMetaInfoFromStages.hpp"
 
 using namespace geode::prelude;
-
-struct Padding
-{
-  float top;
-  float bottom;
-  float left;
-  float right;
-};
 
 class StagesPopup : public geode::Popup
 {

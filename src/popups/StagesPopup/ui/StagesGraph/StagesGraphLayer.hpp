@@ -1,7 +1,9 @@
 #pragma once
 #include <Geode/Geode.hpp>
 
+#include "../../../../ui/types/index.hpp"
 #include "../../../../ui/Graph.hpp"
+#include "../../../../ui/RectNode.hpp"
 #include "../../../../store/GlobalStore.hpp"
 #include "../../../../utils/getMetaInfoFromStages.hpp"
 
@@ -10,7 +12,7 @@ using namespace geode::prelude;
 class StagesGraphLayer : public CCLayer
 {
 private:
-  CCSize m_contentSize;
+  CCSize m_size;
   Graph *m_graph = nullptr;
   GJGameLevel *m_level = nullptr;
 

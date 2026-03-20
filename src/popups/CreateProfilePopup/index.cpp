@@ -222,9 +222,9 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   m_checkboxesMenu->setAnchorPoint({0.0f, 0.0f});
   m_checkboxesMenu->setPosition({12.0f, m_button1->getPositionY() + m_button1->getContentHeight() / 2.0f + 13.0f});
   m_checkboxesMenu->setLayout(RowLayout::create()
-                                  ->setAxisReverse(true)
                                   ->setGap(5.0f)
-                                  ->setAutoScale(false));
+                                  ->setAutoScale(false)
+                                  ->setAxisReverse(true));
 
   // ! --- Percentages Checkbox --- !
   m_percentagesCheckbox = CCMenuItemToggler::createWithStandardSprites(

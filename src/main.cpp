@@ -62,8 +62,6 @@ public:
                     return ListenerResult::Propagate;
 
                 std::string msg = generateDSMessageByClosedRun(from, to, profile, closedRange, closedStage);
-
-                // "https://discord.com/api/webhooks/1481282532098965697/r19jznUeKnqSQwrJbLSecqUad36N4wp-UEME2R1lgQ9uSSAKUUECheGYNdJRC2VxqVkb";
                 std::string webhook = profile->discordWebhookForRunNotifications;
 
                 utils::web::MultipartForm form;

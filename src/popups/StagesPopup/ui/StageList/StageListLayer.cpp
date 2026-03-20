@@ -54,7 +54,7 @@ bool StageListLayer::init(
 
   if (!m_stages || m_stages->size() <= 0)
   {
-    auto bigFontLabel = CCLabelBMFont::create("First attach the profile!", "bigFont.fnt");
+    auto bigFontLabel = CCLabelBMFont::create("Attach your profile first", "bigFont.fnt");
     bigFontLabel->setScale(.75f);
     bigFontLabel->setOpacity(255 * .6f);
     bigFontLabel->setPosition(contentSize / 2);

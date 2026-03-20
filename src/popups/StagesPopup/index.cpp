@@ -148,15 +148,10 @@ void StagesPopup::drawStagesGraph()
 
   m_currentStageGraphNode = CCNode::create();
   m_currentStageGraphNode->setID("stages-popup-profiles-list"_spr);
-  m_currentStageGraphNode->setTag(1);
-
-  const auto contentSize = CCSize(
-      m_size.width - padding.left - padding.right,
-      m_size.height - padding.top - padding.bottom);
+  m_currentStageGraphNode->setTag(3);
 
   // ! --- StagesGraphLayer --- !
-  auto stagesGraphLayer = StagesGraphLayer::create(m_level, contentSize);
-  stagesGraphLayer->setPosition({padding.left, padding.bottom});
+  auto stagesGraphLayer = StagesGraphLayer::create(m_level, m_size);
   m_currentStageGraphNode->addChild(stagesGraphLayer);
 
   m_mainLayer->addChild(m_currentStageGraphNode);

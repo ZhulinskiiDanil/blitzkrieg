@@ -17,31 +17,80 @@ bool Graph::init(const CCSize &size)
   if (!CCLayer::init())
     return false;
 
-  m_contentSize = size;
-  this->setContentSize(m_contentSize);
+  m_uuid = generateUUID();
+  m_size = size;
+  this->setContentSize(m_size);
 
   m_container = CCNode::create();
   this->addChild(m_container);
 
+  m_selectedPointsList = GraphPointDisplayList::create();
+  m_selectedPointsList->setAnchorPoint({.5f, 1});
+  m_selectedPointsList->setPosition(m_size / 2);
+  m_selectedPointsList->setVisible(false);
+  this->addChild(m_selectedPointsList);
+
+  m_graphPointHoverListener = GraphPointHoverEvent().listen(
+      [this](std::string graphUUID, std::string lineUUID, std::string pointUUID, bool hovered, float val, float x, float y)
+      {
+        if (graphUUID != m_uuid)
+          return;
+
+        std::string text;
+        m_selectedPointsList->setVisible(hovered);
+        m_selectedPointsList->setPosition({x, y - 5});
+
+        if (hovered)
+        {
+          auto it = m_formatters.find(lineUUID);
+
+          if (it != m_formatters.end())
+            text = it->second(x, y, val);
+          else
+            text = fmt::format("(X: {:.2f}, Y: {:.2f})", x, y);
+        }
+
+        m_selectedPointsList->updatePointText(text, pointUUID, hovered);
+      });
+
   return true;
 }
 
-void Graph::addLine(const std::vector<CCPoint> &points, const ccColor3B &color)
+std::string Graph::addLine(const std::vector<GraphDot> &points, const ccColor3B &color, const ccColor3B &dotsColor)
 {
-  m_lines.push_back({points, color});
+  auto uuid = generateUUID();
+  m_lines.push_back({uuid, points, color, dotsColor});
+
+  return uuid;
 }
 
-void Graph::setData(const std::vector<CCPoint> &points, const ccColor3B &color)
+void Graph::setFormatterByLineUUID(std::string lineUUID, std::function<std::string(float x, float y, float val)> formatter)
 {
-  m_lines.clear();
-  m_lines.push_back({points, color});
+  m_formatters[lineUUID] = formatter;
 }
 
-void Graph::setLineColor(int index, const ccColor3B &color)
+void Graph::setLineColor(const std::string &uuid, const ccColor3B &color)
 {
-  if (index < 0 || index >= m_lines.size())
-    return;
-  m_lines[index].color = color;
+  for (auto &line : m_lines)
+  {
+    if (line.uuid == uuid)
+    {
+      line.color = color;
+      return;
+    }
+  }
+}
+
+void Graph::setLineDotsColor(const std::string &uuid, const ccColor3B &color)
+{
+  for (auto &line : m_lines)
+  {
+    if (line.uuid == uuid)
+    {
+      line.dotsColor = color;
+      return;
+    }
+  }
 }
 
 void Graph::setGrid(int everyX, int everyY, const ccColor4B &color)
@@ -81,16 +130,19 @@ void Graph::redraw()
     }
   }
 
+  int linesYCount = (maxY - minY) / m_gridEveryY;
+  maxY += (maxY - minY) / linesYCount * static_cast<int>(linesYCount * 0.2);
+
   CCPoint scale{
-      (maxX > minX) ? m_contentSize.width / (maxX - minX) : 1.f,
-      (maxY > minY) ? m_contentSize.height / (maxY - minY) : 1.f};
+      (maxX > minX) ? m_size.width / (maxX - minX) : 1.f,
+      (maxY > minY) ? m_size.height / (maxY - minY) : 1.f};
 
   // ===== CLIPPING =====
   CCPoint maskShape[4] = {
       ccp(0, 0),
-      ccp(m_contentSize.width, 0),
-      ccp(m_contentSize.width, m_contentSize.height),
-      ccp(0, m_contentSize.height)};
+      ccp(m_size.width, 0),
+      ccp(m_size.width, m_size.height),
+      ccp(0, m_size.height)};
 
   auto clipping = CCClippingNode::create();
   m_container->addChild(clipping);
@@ -111,7 +163,7 @@ void Graph::redraw()
     {
       grid->drawSegment(
           ccp(i * scale.x, 0),
-          ccp(i * scale.x, m_contentSize.height),
+          ccp(i * scale.x, m_size.height),
           0.3f,
           ccc4FFromccc4B(m_gridColor));
     }
@@ -123,7 +175,7 @@ void Graph::redraw()
     {
       grid->drawSegment(
           ccp(0, i * scale.y),
-          ccp(m_contentSize.width, i * scale.y),
+          ccp(m_size.width, i * scale.y),
           0.3f,
           ccc4FFromccc4B(m_gridColor));
     }
@@ -148,6 +200,20 @@ void Graph::redraw()
           (l.points[i].y - minY) * scale.y);
 
       line->drawSegment(a, b, 1.f, ccc4FFromccc3B(l.color));
+      line->setZOrder(0);
+
+      auto pointA = GraphPoint::create(m_uuid, l.uuid, l.points[i - 1].y, ccc4FFromccc3B(l.dotsColor));
+      pointA->setPosition(a);
+      pointA->setZOrder(1);
+      clipping->addChild(pointA);
+
+      if (i == l.points.size() - 1)
+      {
+        auto pointB = GraphPoint::create(m_uuid, l.uuid, l.points[i - 1].y, ccc4FFromccc3B(l.dotsColor));
+        pointB->setPosition(b);
+        pointB->setZOrder(1);
+        clipping->addChild(pointB);
+      }
     }
 
     clipping->addChild(line);
