@@ -70,7 +70,7 @@ bool StageListLayer::init(
 
   m_scroll->m_contentLayer->setLayout(
       ColumnLayout::create()
-          ->setGap(2.5f)
+          ->setGap(5)
           ->setAxisReverse(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setAutoGrowAxis(m_scroll->getContentHeight())
@@ -160,7 +160,7 @@ void StageListLayer::reload()
     auto row = CCLayer::create();
     row->setLayout(
         RowLayout::create()
-            ->setGap(2.5f)
+            ->setGap(5)
             ->setAutoScale(false)
             ->setCrossAxisLineAlignment(AxisAlignment::End));
     row->setContentSize({totalWidth, cellHeight});

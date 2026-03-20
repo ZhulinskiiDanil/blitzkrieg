@@ -21,7 +21,10 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   this->setContentSize(cellSize);
   const bool expandedByDefault = Mod::get()->getSettingValue<bool>("expand-progress-by-default");
 
+  m_size = cellSize;
   m_range = range;
+  m_from = range->from;
+  m_to = range->to;
   m_id = range->id;
   m_checked = m_range->checked;
   m_isExpanded = expandedByDefault;
@@ -60,7 +63,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   m_content->addChild(m_head);
 
   // ! --- Background --- !
-  updateBackgroundTexture();
+  updateTexture();
 
   // ! --- Range Label --- !
   const float diff = std::abs(m_range->from - m_range->to);
@@ -131,7 +134,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
       {"Time Played:", timePlayed},
   };
 
-  m_table = MetaTable::create(tableData, m_head->getContentWidth(), {0, 5.f, 5.f, 5.f});
+  m_table = MetaTable::create(tableData, m_head->getContentWidth(), {5, 5, 5, 5});
   m_content->addChild(m_table);
 
   updateMetaContent();
@@ -162,7 +165,7 @@ void StageRangeCell::updateLayoutWrapper(bool isInitialRender)
                                             m_head->setPosition(this->getContentWidth() / 2, this->getContentHeight() - m_head->getContentHeight() / 2);
                                             m_content->setPosition({0, this->getContentHeight()});
                                             m_content->setContentSize(this->getContentSize());
-                                            updateBackgroundTexture();
+                                            updateTexture();
                                             UpdateScrollLayoutEvent().send(); });
   auto delay = CCDelayTime::create(!m_isExpanded ? 0.26f : 0);
   auto spawnResize = CCSpawn::createWithTwoActions(resizeTo, actionFloat);
@@ -175,7 +178,7 @@ void StageRangeCell::updateLayoutWrapper(bool isInitialRender)
     m_content->setPosition({0, this->getContentHeight()});
     m_content->setContentSize(newContentSize);
     m_content->updateLayout();
-    updateBackgroundTexture();
+    updateTexture();
     UpdateScrollLayoutEvent().send();
   }
   else
@@ -211,10 +214,58 @@ void StageRangeCell::onFinishTableAnimation()
     m_table->setVisible(m_isExpanded);
 }
 
-void StageRangeCell::updateBackgroundTexture()
+void StageRangeCell::updateTexture()
 {
+  if (!m_head)
+    return;
+
   if (m_background)
     m_background->removeFromParentAndCleanup(true);
+
+  if (m_lineBg)
+    m_lineBg->removeFromParentAndCleanup(true);
+
+  if (m_midBg)
+    m_midBg->removeFromParentAndCleanup(true);
+
+  if (m_mid)
+    m_mid->removeFromParentAndCleanup(true);
+
+  float lineBgPaddingX = 5;
+  float lineBgW = m_size.width - lineBgPaddingX * 2;
+  float lineBgH = 2;
+
+  float midBgW = lineBgW * ((m_to - m_from) / 100.f);
+  float midBgX = lineBgPaddingX + lineBgW * (m_from / 100.f);
+
+  auto lineBgColor = m_disabled
+                         ? ccc4FFromccc4B({56, 38, 38, 255})
+                     : m_checked   ? ccc4FFromccc4B({48, 66, 45, 255})
+                     : m_isCurrent ? ccc4FFromccc4B({61, 58, 42, 255})
+                                   : ccc4FFromccc4B({54, 54, 54, 255});
+  auto midBgColor = m_disabled
+                        ? ccc4FFromccc4B({87, 54, 54, 255})
+                    : m_checked   ? ccc4FFromccc4B({67, 92, 62, 255})
+                    : m_isCurrent ? ccc4FFromccc4B({97, 90, 52, 255})
+                                  : ccc4FFromccc4B({84, 84, 84, 255});
+  auto midColor = m_disabled
+                      ? ccc4FFromccc4B({150, 83, 83, 255})
+                  : m_checked   ? ccc4FFromccc4B({97, 166, 83, 255})
+                  : m_isCurrent ? ccc4FFromccc4B({158, 145, 77, 255})
+                                : ccc4FFromccc4B({160, 160, 160, 255});
+
+  m_lineBg = RectNode::create(
+      {lineBgW, lineBgH}, lineBgColor, 1);
+  m_midBg = RectNode::create({midBgW, lineBgH + 2}, midBgColor, lineBgH / 2 + 2);
+  m_mid = RectNode::create({midBgW - 2, lineBgH}, midColor, lineBgH / 2);
+
+  m_lineBg->setPosition({lineBgPaddingX, lineBgH - 2});
+  m_midBg->setPosition({midBgX, lineBgH - 3});
+  m_mid->setPosition({midBgX + 1, lineBgH - 2});
+
+  m_head->addChild(m_lineBg);
+  m_head->addChild(m_midBg);
+  m_head->addChild(m_mid);
 
   auto contentSize = m_content->getContentSize();
   auto bg_spr = m_disabled
@@ -304,7 +355,7 @@ void StageRangeCell::onToggle(CCObject *sender)
   m_checkbox->toggle(m_checked);
 
   updateTextColors();
-  updateBackgroundTexture();
+  updateTexture();
 
   if (!m_level || m_disabled || m_id.empty())
     return;
@@ -376,5 +427,5 @@ void StageRangeCell::setDisabled(bool disabled)
     m_checkbox->setColor({255, 255, 255});
 
   updateTextColors();
-  updateBackgroundTexture();
+  updateTexture();
 }
