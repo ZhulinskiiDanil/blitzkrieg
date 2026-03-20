@@ -162,7 +162,13 @@ void BlitzkriegProfile::createBackground()
 
 void BlitzkriegProfile::createLabels()
 {
+  bool streamerModEnabled = Mod::get()->getSettingValue<bool>("enable-streamer-mode");
+
   std::string profileName = m_profile.profileName;
+
+  if (streamerModEnabled && !profileName.empty())
+    profileName = profileName.substr(0, 1) + "...";
+
   if (profileName.length() > 20)
     profileName = profileName.substr(0, 20) + "...";
 

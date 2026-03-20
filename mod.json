@@ -117,6 +117,16 @@
         "arrow-step": 0.1
       }
     },
+    "streamer-mode": {
+      "type": "title",
+      "name": "Streamer mode"
+    },
+    "enable-streamer-mode": {
+      "type": "bool",
+      "name": "Enable streamer mode",
+      "description": "Streamer mode hides profile names, leaving only the first letter. You can hide more information in the settings",
+      "default": false
+    },
     "notifications-settings": {
       "type": "title",
       "name": "Notifications"
