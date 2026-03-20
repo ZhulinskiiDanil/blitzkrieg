@@ -205,6 +205,26 @@
           }
         ]
       }
+    },
+    "keybinds": {
+      "type": "title",
+      "name": "Keybinds"
+    },
+    "next-stage-keybind": {
+      "type": "keybind",
+      "name": "Switch to the next stage",
+      "default": [
+        "D",
+        "E"
+      ]
+    },
+    "prev-stage-keybind": {
+      "type": "keybind",
+      "name": "Switch to the previous stage",
+      "default": [
+        "A",
+        "Q"
+      ]
     }
   }
 }

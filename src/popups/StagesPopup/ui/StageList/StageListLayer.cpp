@@ -126,6 +126,22 @@ bool StageListLayer::init(
 
   reload();
 
+  this->addEventListener(
+      KeybindSettingPressedEventV3(Mod::get(), "prev-stage-keybind"),
+      [this](Keybind const &keybind, bool down, bool repeat, double timestamp)
+      {
+        if (down && !repeat)
+          onPrevStage();
+      });
+
+  this->addEventListener(
+      KeybindSettingPressedEventV3(Mod::get(), "next-stage-keybind"),
+      [this](Keybind const &keybind, bool down, bool repeat, double timestamp)
+      {
+        if (down && !repeat)
+          onNextStage();
+      });
+
   return true;
 }
 
@@ -224,7 +240,7 @@ void StageListLayer::drawArrows()
   m_buttonLeft = CCMenuItemSpriteExtra::create(
       btnLeftSpr,
       this,
-      menu_selector(StageListLayer::onPrevStage));
+      menu_selector(StageListLayer::onPrevStageBtn));
   m_buttonMenuLeft->addChild(m_buttonLeft);
   m_buttonMenuLeft->updateLayout();
 
@@ -244,7 +260,7 @@ void StageListLayer::drawArrows()
   m_buttonRight = CCMenuItemSpriteExtra::create(
       btnRightSpr,
       this,
-      menu_selector(StageListLayer::onNextStage));
+      menu_selector(StageListLayer::onNextStageBtn));
   m_buttonMenuRight->addChild(m_buttonRight);
   m_buttonMenuRight->updateLayout();
 
@@ -258,7 +274,17 @@ void StageListLayer::scrollToTop()
     m_scroll->scrollToTop();
 }
 
-void StageListLayer::onPrevStage(CCObject *sender)
+void StageListLayer::onPrevStageBtn(CCObject *sender)
+{
+  onPrevStage();
+}
+
+void StageListLayer::onNextStageBtn(CCObject *sender)
+{
+  onNextStage();
+}
+
+void StageListLayer::onPrevStage()
 {
   const auto stagesMetaInfo = getMetaInfoFromStages(*m_stages);
 
@@ -273,7 +299,7 @@ void StageListLayer::onPrevStage(CCObject *sender)
   reload();
 }
 
-void StageListLayer::onNextStage(CCObject *sender)
+void StageListLayer::onNextStage()
 {
   const auto stagesMetaInfo = getMetaInfoFromStages(*m_stages);
 

@@ -48,8 +48,10 @@ public:
   void reload();
   void drawArrows();
 
-  void onPrevStage(CCObject *);
-  void onNextStage(CCObject *);
+  void onPrevStage();
+  void onNextStage();
+  void onPrevStageBtn(CCObject *);
+  void onNextStageBtn(CCObject *);
 
   void scrollToTop();
 
