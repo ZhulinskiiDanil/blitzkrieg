@@ -155,18 +155,15 @@ StartPosLayer::~StartPosLayer()
 
 void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
 {
-  log::debug("loadLevelsFinished");
+  m_levels.clear();
 
   for (GJGameLevel *level : CCArrayExt<GJGameLevel *>(levels))
-  {
     m_levels.push_back(level);
-  }
 
   m_searchBarMenu->setVisible(true);
   m_levelsCountLabel->setVisible(true);
   m_loadingCircle->setVisible(false);
   m_leftButton->setVisible(m_page > 1);
-  log::info("page: {}, totalPages: {}", m_page, m_totalPages);
   m_rightButton->setVisible(m_page < m_totalPages);
   m_pageButton->setVisible(true);
 
@@ -175,7 +172,7 @@ void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
 
 void StartPosLayer::loadLevelsFailed(char const *key, int p1)
 {
-  log::warn("Failed to load featured levels: {} (key: {})", p1, key);
+  log::warn("Failed to load Nayloren's levels: {} (key: {})", p1, key);
 }
 
 void StartPosLayer::loadLevels()
@@ -198,7 +195,6 @@ void StartPosLayer::loadLevels()
     levelsIdsString += std::to_string(id);
   }
   auto gdStr = gd::string{levelsIdsString.data(), levelsIdsString.size()};
-  log::info("{}", gdStr);
 
   auto glm = GameLevelManager::get();
   glm->m_levelManagerDelegate = this;
@@ -230,36 +226,28 @@ void StartPosLayer::reload()
   tableView->moveToTop();
 }
 
-void StartPosLayer::loadStartPosLevelList()
+void StartPosLayer::page(size_t page)
 {
-  m_listener.spawn(web::WebRequest().get(fmt::format("{}/levels?page={}&limit={}", API_URL, m_page, m_lvlsPerPage)),
-                   [this](web::WebResponse value)
-                   {
-                     if (value.ok())
-                     {
-                       auto data = value.json();
-                       auto json = data.ok().value();
-                       auto res = json.as<PaginationResponse<std::vector<StartPosLevel>>>();
+  m_page = std::clamp(page, (size_t)1, m_totalPages);
 
-                       if (!res.isErr())
-                       {
-                         auto data = res.unwrap();
-
-                         m_searchResults = data.data;
-                         m_totalLevels = data.total;
-                         m_totalPages = data.totalPages;
-
-                         loadLevels();
-                       }
-                     }
-                     else
-                     {
-                       log::error("Error");
-                     }
-                   });
-
-  auto req = web::WebRequest();
+  showLoading();
+  loadStartPosLevelList();
 }
+
+void StartPosLayer::showLoading()
+{
+  m_pageLabel->setString(fmt::to_string(m_page).c_str());
+  m_loadingCircle->setVisible(true);
+  if (auto listView = m_levelList->m_listView)
+    listView->setVisible(false);
+  m_searchBarMenu->setVisible(false);
+  m_levelsCountLabel->setVisible(false);
+  m_leftButton->setVisible(false);
+  m_rightButton->setVisible(false);
+  m_pageButton->setVisible(false);
+}
+
+// ! === Rows === !
 
 unsigned int StartPosLayer::numberOfSectionsInTableView(TableView *table)
 {
@@ -286,6 +274,12 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
       if (m_levels[i]->m_levelID == startposLevel.levelId)
         levelObj = m_levels[i];
     }
+
+    if (!levelObj)
+    {
+      return nullptr;
+    }
+
     cell->loadFromLevel(levelObj);
     cell->updateBGColor(index);
 
@@ -301,7 +295,8 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
       if (m_levels[i]->m_levelID == startposLevel.originalId)
         levelObj = m_levels[i];
     }
-    if (!levelObj) return nullptr;
+    if (!levelObj)
+      return nullptr;
 
     cell->loadFromLevel(levelObj);
     cell->updateBGColor(index);
@@ -326,28 +321,6 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
   return nullptr;
 }
 
-void StartPosLayer::page(size_t page)
-{
-  m_page = std::clamp(page, (size_t)1, m_totalPages);
-  log::info("{}", m_page);
-
-  showLoading();
-  loadStartPosLevelList();
-}
-
-void StartPosLayer::showLoading()
-{
-  m_pageLabel->setString(fmt::to_string(m_page).c_str());
-  m_loadingCircle->setVisible(true);
-  if (auto listView = m_levelList->m_listView)
-    listView->setVisible(false);
-  m_searchBarMenu->setVisible(false);
-  m_levelsCountLabel->setVisible(false);
-  m_leftButton->setVisible(false);
-  m_rightButton->setVisible(false);
-  m_pageButton->setVisible(false);
-}
-
 float StartPosLayer::cellHeightForRowAtIndexPath(CCIndexPath &indexPath, TableView *table)
 {
   bool isDefaultLevel = m_searchResults[indexPath.m_row].levelId > 0;
@@ -360,4 +333,34 @@ float StartPosLayer::cellHeightForRowAtIndexPath(CCIndexPath &indexPath, TableVi
     return m_customCellHeigth;
   else
     return m_levelCellHeigth;
+}
+
+void StartPosLayer::loadStartPosLevelList()
+{
+  m_listener.spawn(web::WebRequest().get(fmt::format("{}/levels?page={}&limit={}", API_URL, m_page, m_lvlsPerPage)),
+                   [this](web::WebResponse value)
+                   {
+                     if (value.ok())
+                     {
+                       auto data = value.json();
+                       auto json = data.ok().value();
+                       auto res = json.as<PaginationResponse<std::vector<StartPosLevel>>>();
+
+                       if (!res.isErr())
+                       {
+                         auto data = res.unwrap();
+
+                         m_searchResults = data.data;
+                         m_totalLevels = data.total;
+                         m_totalPages = data.totalPages;
+
+                         loadLevels();
+                       }
+                     }
+                     else
+                     {
+                     }
+                   });
+
+  auto req = web::WebRequest();
 }
