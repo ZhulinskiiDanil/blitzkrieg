@@ -49,6 +49,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
       ColumnLayout::create()
           ->setGap(0)
           ->setAxisAlignment(AxisAlignment::End)
+          ->setCrossAxisAlignment(AxisAlignment::Center)
           ->setAxisReverse(true)
           ->setAutoScale(false)
           ->setAutoGrowAxis(true));

@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include <Geode/Geode.hpp>
+#include "../utils.hpp"
 
 #include "Range.hpp"
 #include "Stage.hpp"
@@ -10,18 +10,6 @@
 #include "Profile.hpp"
 
 using namespace geode::prelude;
-
-// Additional function for safely parsing value
-template <class T>
-T getOr(matjson::Value const &value, std::string_view key, T fallback)
-{
-  if (auto val = value.get(key))
-  {
-    auto v = val.unwrap().as<T>();
-    return v.unwrapOr(fallback);
-  }
-  return fallback;
-}
 
 // ! --- Range ---- !
 template <>
