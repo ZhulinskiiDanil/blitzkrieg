@@ -45,7 +45,7 @@ bool StartPosLayer::init()
 
   m_levelList = GJListLayer::create(
       nullptr,
-      "StartPos copies",
+      "Nayloren's StartPos copies",
       {0, 0, 0, 180},
       356.0f, 220.0f, 0);
   m_levelList->setPosition(winSize / 2.0f - m_levelList->getContentSize() / 2.0f);
@@ -155,6 +155,7 @@ StartPosLayer::~StartPosLayer()
 
 void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
 {
+  m_downloadUrls.clear();
   m_levels.clear();
 
   for (GJGameLevel *level : CCArrayExt<GJGameLevel *>(levels))
@@ -172,6 +173,14 @@ void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
 
 void StartPosLayer::loadLevelsFailed(char const *key, int p1)
 {
+  m_loadingCircle->setVisible(false);
+
+  FLAlertLayer::create(
+      "Load Error",
+      fmt::format("Failed to load Nayloren's levels: {} (key: {})", p1, key),
+      "OK")
+      ->show();
+
   log::warn("Failed to load Nayloren's levels: {} (key: {})", p1, key);
 }
 
@@ -247,6 +256,22 @@ void StartPosLayer::showLoading()
   m_pageButton->setVisible(false);
 }
 
+void StartPosLayer::onOpenDownloadLink(CCObject *sender)
+{
+  int i = sender->getTag();
+  auto it = m_downloadUrls.find(i);
+
+  if (it != m_downloadUrls.end())
+  {
+    std::string url = it->second;
+
+    if (!url.empty())
+    {
+      geode::utils::web::openLinkInBrowser(url);
+    }
+  }
+}
+
 // ! === Rows === !
 
 unsigned int StartPosLayer::numberOfSectionsInTableView(TableView *table)
@@ -266,7 +291,7 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
 
   if (startposLevel.levelId > 0)
   {
-    auto cell = LevelCell::create(m_levelList->getContentWidth(), 90.0f);
+    auto cell = LevelCell::create(m_levelList->getContentWidth(), m_levelCellHeigth);
     GJGameLevel *levelObj = nullptr;
 
     for (int i = 0; i < m_levels.size(); i++)
@@ -285,38 +310,76 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
 
     return cell;
   }
-  else if (startposLevel.originalId > 0 && !startposLevel.downloadUrl.empty())
-  {
-    auto cell = LevelCell::create(m_levelList->getContentWidth(), 90.0f);
-    GJGameLevel *levelObj = nullptr;
-
-    for (int i = 0; i < m_levels.size(); i++)
-    {
-      if (m_levels[i]->m_levelID == startposLevel.originalId)
-        levelObj = m_levels[i];
-    }
-    if (!levelObj)
-      return nullptr;
-
-    cell->loadFromLevel(levelObj);
-    cell->updateBGColor(index);
-
-    return cell;
-  }
   else if (!startposLevel.downloadUrl.empty())
   {
-    auto cell = new TableViewCell("text-cell", m_levelList->getContentWidth(), 30.0f);
-    cell->autorelease();
+    auto cell = new TableViewCell("text-cell", m_levelList->getContentWidth(), m_customCellHeigth);
+    cell->m_mainLayer->setContentSize({m_levelList->getContentWidth(), m_customCellHeigth});
 
-    auto label = CCLabelBMFont::create(std::to_string(startposLevel.id).c_str(), "goldFont.fnt");
-    label->setAnchorPoint({0.5f, 0.5f});
-    cell->m_mainLayer->setContentSize({m_levelList->getContentWidth(), 30.0f});
-    label->setPosition(cell->m_mainLayer->getContentSize() / 2.0f);
+    // ! --- Level Name Label --- !
+    auto levelNameLabel = CCLabelBMFont::create(startposLevel.levelName.c_str(), "bigFont.fnt");
 
-    cell->m_mainLayer->addChild(label);
+    float availableWidth = cell->m_mainLayer->getContentWidth() - 20.0f;
+
+    float labelWidth = levelNameLabel->getContentWidth();
+
+    float scale = 1.0f;
+    if (labelWidth > 0.0f)
+      scale = availableWidth / labelWidth;
+
+    scale = std::min(scale, 0.75f);
+
+    levelNameLabel->setScale(scale);
+    levelNameLabel->setAnchorPoint({0, 1});
+    levelNameLabel->setPosition(10, cell->m_mainLayer->getContentHeight() - 8);
+    cell->m_mainLayer->addChild(levelNameLabel);
+
+    // ! --- Author Label --- !
+    auto authorLabel = CCLabelBMFont::create("By Nayloren", "goldFont.fnt");
+    authorLabel->setScale(.6f);
+    authorLabel->setAnchorPoint({0, 1});
+    authorLabel->setPosition(10, levelNameLabel->getPositionY() - levelNameLabel->getScaledContentHeight() - 1);
+    cell->m_mainLayer->addChild(authorLabel);
+
+    // ! --- Button --- !
+    auto spr = ButtonSprite::create("Download .gmd");
+    auto btn = CCMenuItemSpriteExtra::create(
+        spr, this, menu_selector(StartPosLayer::onOpenDownloadLink));
+    btn->setAnchorPoint({0, 0});
+    btn->setScale(.8f);
+    btn->setTag(index);
+    btn->m_baseScale = .75f;
+
+    m_downloadUrls[index] = startposLevel.downloadUrl;
+
+    // ! --- Button Menu --- !
+    auto btnMenu = CCMenu::create();
+    btnMenu->setContentSize(btn->getScaledContentSize());
+    btnMenu->setPosition({10, 10});
+
+    btnMenu->addChild(btn);
+    cell->m_mainLayer->addChild(btnMenu);
 
     return cell;
   }
+
+  // else if (startposLevel.originalId > 0 && !startposLevel.downloadUrl.empty())
+  // {
+  //   auto cell = LevelCell::create(m_levelList->getContentWidth(), m_levelCellHeigth);
+  //   GJGameLevel *levelObj = nullptr;
+
+  //   for (int i = 0; i < m_levels.size(); i++)
+  //   {
+  //     if (m_levels[i]->m_levelID == startposLevel.originalId)
+  //       levelObj = m_levels[i];
+  //   }
+  //   if (!levelObj)
+  //     return nullptr;
+
+  //   cell->loadFromLevel(levelObj);
+  //   cell->updateBGColor(index);
+
+  //   return cell;
+  // }
 
   return nullptr;
 }

@@ -5,11 +5,11 @@
 #include "../../serialization/startpos/index.hpp"
 
 class StartPosLayer : public CCLayer,
-					  public SetIDPopupDelegate,
-					  public LevelManagerDelegate,
-					  public TableViewDelegate,
-					  public TableViewDataSource,
-					  public CCScrollLayerExtDelegate
+											public SetIDPopupDelegate,
+											public LevelManagerDelegate,
+											public TableViewDelegate,
+											public TableViewDataSource,
+											public CCScrollLayerExtDelegate
 {
 public:
 	static StartPosLayer *create();
@@ -43,17 +43,22 @@ protected:
 	size_t m_totalPages = 0;
 	std::vector<GJGameLevel *> m_levels;
 	std::vector<StartPosLevel> m_searchResults;
+	std::unordered_map<int, std::string> m_downloadUrls;
 
 	std::string m_info = "HI!";
 	float m_levelCellHeigth = 90.0f;
-	float m_customCellHeigth = 50.0f;
+	float m_customCellHeigth = 90.0f;
 
 	bool init() override;
+
+	void onOpenDownloadLink(CCObject *sender);
+
+	void page(size_t page);
+	void showLoading();
+
 	void loadLevels();
 	void loadLevelsFinished(CCArray *levels, char const *key) override;
 	void loadLevelsFailed(char const *key, int p1) override;
-	void page(size_t page);
-	void showLoading();
 
 	virtual int numberOfRowsInSection(unsigned int section, TableView *tableView) override;
 	virtual unsigned int numberOfSectionsInTableView(TableView *tableView) override;

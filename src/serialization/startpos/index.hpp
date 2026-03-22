@@ -17,9 +17,11 @@ struct matjson::Serialize<StartPosLevel>
         .id = getOr<int>(value, "id", -1),
         .levelId = getOr<int>(value, "level_id", -1),
         .originalId = getOr<int>(value, "original_id", -1),
+        .levelName = getOr<std::string>(value, "levelname", ""),
         .downloadUrl = getOr<std::string>(value, "download_url", ""),
         .updatedAt = getOr<std::string>(value, "updated_at", ""),
-        .createdAt = getOr<std::string>(value, "created_at", "")});
+        .createdAt = getOr<std::string>(value, "created_at", "")
+      });
   }
 
   static matjson::Value toJson(StartPosLevel const &glr)
@@ -28,9 +30,10 @@ struct matjson::Serialize<StartPosLevel>
     obj["id"] = glr.id;
     obj["level_id"] = glr.levelId;
     obj["original_id"] = glr.originalId;
+    obj["levelname"] = glr.levelName;
+    obj["download_url"] = glr.downloadUrl;
     obj["created_id"] = glr.createdAt;
     obj["updated_id"] = glr.updatedAt;
-    obj["download_url"] = glr.downloadUrl;
     return obj;
   }
 };
