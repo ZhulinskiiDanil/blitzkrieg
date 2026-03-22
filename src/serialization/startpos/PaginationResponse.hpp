@@ -4,7 +4,8 @@
 #include <vector>
 
 template <typename T>
-struct PaginationResponse {
+struct PaginationResponse
+{
     T data;
     int page;
     int totalPage;

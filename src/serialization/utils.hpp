@@ -13,5 +13,6 @@ T getOr(matjson::Value const &value, std::string_view key, T fallback)
     auto v = val.unwrap().as<T>();
     return v.unwrapOr(fallback);
   }
+
   return fallback;
 }

@@ -2,7 +2,8 @@
 
 #include <string>
 
-struct StartposLevel {
+struct StartPosLevel
+{
     int id;
     int levelID;
     std::string downloadURL;

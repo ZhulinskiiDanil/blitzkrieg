@@ -1,6 +1,6 @@
 #pragma once
 
 #include "./PaginationResponse.hpp"
-#include "./StartposLevel.hpp"
+#include "./StartPosLevel.hpp"
 
-using GetLevelsResponse = PaginationResponse<std::vector<StartposLevel>>;
+using GetLevelsResponse = PaginationResponse<std::vector<StartPosLevel>>;
