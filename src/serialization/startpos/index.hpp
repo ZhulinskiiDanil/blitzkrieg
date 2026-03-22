@@ -20,8 +20,7 @@ struct matjson::Serialize<StartPosLevel>
         .levelName = getOr<std::string>(value, "levelname", ""),
         .downloadUrl = getOr<std::string>(value, "download_url", ""),
         .updatedAt = getOr<std::string>(value, "updated_at", ""),
-        .createdAt = getOr<std::string>(value, "created_at", "")
-      });
+        .createdAt = getOr<std::string>(value, "created_at", "")});
   }
 
   static matjson::Value toJson(StartPosLevel const &glr)

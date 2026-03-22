@@ -6,6 +6,7 @@
 #include "./GraphPointDisplayList.hpp"
 #include "../utils/generateUUID.hpp"
 #include "../events/GraphPointHoverEvent.hpp"
+#include "../helpers/CustomActions.hpp"
 
 using namespace geode::prelude;
 

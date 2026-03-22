@@ -38,7 +38,7 @@ bool Graph::init(const CCSize &size)
 
         std::string text;
         m_selectedPointsList->setVisible(hovered);
-        m_selectedPointsList->setPosition({x, y - 5});
+        // m_selectedPointsList->stopAllActions();
 
         if (hovered)
         {
@@ -50,7 +50,20 @@ bool Graph::init(const CCSize &size)
             text = fmt::format("(X: {:.2f}, Y: {:.2f})", x, y);
         }
 
+        bool isYReversed = y > m_size.height / 2;
+        bool isXReversed = x > m_size.width / 2;
+        auto anchorXTo = isXReversed ? 1.f : 0.f;
+        auto anchorYTo = isYReversed ? 1.f : 0.f;
+
+        m_selectedPointsList->setAnchorPoint({isXReversed ? 1.f : 0.f, isYReversed ? 1.f : 0.f});
+        m_selectedPointsList->setPosition({isXReversed ? x - 2.f : x + 2.f, isYReversed ? y - 2.f : y + 2.f});
         m_selectedPointsList->updatePointText(text, pointUUID, hovered);
+
+        // auto moveTo = CCMoveTo::create(0.1f, {isXReversed ? x - 2.f : x + 2.f,
+        //                                       isYReversed ? y - 2.f : y + 2.f});
+        // auto easeMove = CCEaseInOut::create(moveTo, 2.f);
+
+        // m_selectedPointsList->runAction(easeMove);
       });
 
   return true;
