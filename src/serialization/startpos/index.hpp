@@ -7,26 +7,30 @@
 
 using namespace geode::prelude;
 
-// ! --- GetLevelsResponse ---- !
-template <typename T>
-struct matjson::Serialize<PaginationResponse<T>>
+// ! --- StartPosLevel ---- !
+template <>
+struct matjson::Serialize<StartPosLevel>
 {
-  static geode::Result<PaginationResponse> fromJson(matjson::Value const &value)
+  static geode::Result<StartPosLevel> fromJson(matjson::Value const &value)
   {
-    return geode::Ok(PaginationResponse{
-        .data = getOr<T>(value, "data", {}),
-        .page = getOr<int>(value, "page", 1),
-        .totalPage = getOr<int>(value, "totalPage", 1),
-        .total = getOr<int>(value, "total", 0)});
+    return geode::Ok(StartPosLevel{
+        .id = getOr<int>(value, "id", -1),
+        .levelId = getOr<int>(value, "level_id", -1),
+        .originalId = getOr<int>(value, "original_id", -1),
+        .downloadUrl = getOr<std::string>(value, "download_url", ""),
+        .updatedAt = getOr<std::string>(value, "updated_at", ""),
+        .createdAt = getOr<std::string>(value, "created_at", "")});
   }
 
-  static matjson::Value toJson(PaginationResponse const &glr)
+  static matjson::Value toJson(StartPosLevel const &glr)
   {
     auto obj = matjson::Value::object();
-    obj["data"] = glr.data;
-    obj["page"] = glr.page;
-    obj["totalPage"] = glr.totalPage;
-    obj["total"] = glr.total;
+    obj["id"] = glr.id;
+    obj["level_id"] = glr.levelId;
+    obj["original_id"] = glr.originalId;
+    obj["created_id"] = glr.createdAt;
+    obj["updated_id"] = glr.updatedAt;
+    obj["download_url"] = glr.downloadUrl;
     return obj;
   }
 };
@@ -47,33 +51,35 @@ struct matjson::Serialize<std::vector<StartPosLevel>>
     return geode::Ok(result);
   }
 
-  static matjson::Value toJson(std::vector<StartPosLevel> const &StartPosLevels)
+  static matjson::Value toJson(std::vector<StartPosLevel> const &levels)
   {
     auto arr = matjson::Value::array();
-    for (auto const &level : StartPosLevels)
-      arr.push(level);
+    for (auto const &l : levels)
+      arr.push(l);
     return arr;
   }
 };
 
-// ! --- StartPosLevel ---- !
-template <>
-struct matjson::Serialize<StartPosLevel>
+// ! --- PaginationResponse --- !
+template <typename T>
+struct matjson::Serialize<PaginationResponse<T>>
 {
-  static geode::Result<StartPosLevel> fromJson(matjson::Value const &value)
+  static geode::Result<PaginationResponse<T>> fromJson(matjson::Value const &value)
   {
-    return geode::Ok(GetLevelsResponse{
-        .id = getOr<int>(value, "id", 0),
-        .levelID = getOr<int>(value, "levelid", 0),
-        .downloadURL = getOr<std::string>(value, "downloadurl", "")});
+    return geode::Ok(PaginationResponse{
+        .data = getOr<T>(value, "data", {}),
+        .page = getOr<int>(value, "page", 1),
+        .totalPage = getOr<int>(value, "totalPage", 1),
+        .total = getOr<int>(value, "total", 0)});
   }
 
-  static matjson::Value toJson(GetLevelsResponse const &glr)
+  static matjson::Value toJson(PaginationResponse<T> const &glr)
   {
     auto obj = matjson::Value::object();
-    obj["id"] = glr.id;
-    obj["levelid"] = glr.levelID;
-    obj["downloadurl"] = glr.downloadURL;
+    obj["data"] = glr.data;
+    obj["page"] = glr.page;
+    obj["totalPage"] = glr.totalPage;
+    obj["total"] = glr.total;
     return obj;
   }
 };

@@ -22,6 +22,6 @@ class $modify(MyLevelSearchLayer, LevelSearchLayer)
 
     void onStartposBtn(CCObject *sender)
     {
-        CCDirector::get()->pushScene(CCTransitionFade::create(0.5f, StartposLayer::scene()));
+        CCDirector::get()->pushScene(CCTransitionFade::create(0.5f, StartPosLayer::scene()));
     }
 };

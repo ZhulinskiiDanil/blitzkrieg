@@ -5,6 +5,9 @@
 struct StartPosLevel
 {
     int id;
-    int levelID;
-    std::string downloadURL;
+    int levelId;
+    int originalId;
+    std::string downloadUrl;
+    std::string updatedAt;
+    std::string createdAt;
 };
