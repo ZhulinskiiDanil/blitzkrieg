@@ -1,13 +1,15 @@
 #pragma once
 
+#include <Geode/Geode.hpp>
+
 #include <string>
 #include <vector>
-#include "../utils.hpp"
 
-#include "Range.hpp"
-#include "Stage.hpp"
-#include "ProfileData.hpp"
-#include "Profile.hpp"
+#include "./Range.hpp"
+#include "./Stage.hpp"
+#include "./ProfileData.hpp"
+#include "./Profile.hpp"
+#include "../../utils/getOr.hpp"
 
 using namespace geode::prelude;
 

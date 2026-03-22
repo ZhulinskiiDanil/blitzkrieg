@@ -1,9 +1,11 @@
 #pragma once
 
-#include "../utils.hpp"
-#include "StartPosLevel.hpp"
-#include "PaginationResponse.hpp"
-#include "GetLevelsResponse.hpp"
+#include <Geode/Geode.hpp>
+
+#include "./StartPosLevel.hpp"
+#include "./PaginationResponse.hpp"
+#include "./GetLevelsResponse.hpp"
+#include "../../utils/getOr.hpp"
 
 using namespace geode::prelude;
 
