@@ -45,7 +45,7 @@ bool StartPosLayer::init()
 
   m_levelList = GJListLayer::create(
       nullptr,
-      "Startpos copies",
+      "StartPos copies",
       {0, 0, 0, 180},
       356.0f, 220.0f, 0);
   m_levelList->setPosition(winSize / 2.0f - m_levelList->getContentSize() / 2.0f);
@@ -54,12 +54,12 @@ bool StartPosLayer::init()
   addChild(m_levelList, 5);
 
   m_searchBarMenu = CCMenu::create();
-  m_searchBarMenu->setContentSize({356.0f, 30.0f});
+  m_searchBarMenu->setContentSize({m_levelList->getContentWidth(), 30.0f});
   m_searchBarMenu->setPosition({0.0f, 190.0f});
   m_searchBarMenu->setID("search-bar-menu");
   m_levelList->addChild(m_searchBarMenu);
 
-  auto searchBarBG = CCLayerColor::create({194, 114, 62, 255}, 356.0f, 30.0f);
+  auto searchBarBG = CCLayerColor::create({194, 114, 62, 255}, m_levelList->getContentWidth(), 30.0f);
   searchBarBG->setID("search-bar-backgrownd");
   m_searchBarMenu->addChild(searchBarBG);
 
@@ -91,19 +91,21 @@ bool StartPosLayer::init()
   m_backButton->setID("back-button");
   btnsMenu->addChild(m_backButton);
 
-  m_leftButton = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_arrow_03_001.png", 1.0f, [this](auto) { /*page(m_page - 1);*/ });
+  m_leftButton = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_arrow_03_001.png", 1.0f, [this](auto)
+                                                               { page(m_page - 1); });
   m_leftButton->setPosition({24.0f, winSize.height / 2.0f});
   m_leftButton->setID("prev-page-button");
   btnsMenu->addChild(m_leftButton);
 
   auto rightBtnSpr = CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png");
   rightBtnSpr->setFlipX(true);
-  m_rightButton = CCMenuItemExt::createSpriteExtra(rightBtnSpr, [this](auto) { /*page(m_page + 1);*/ });
+  m_rightButton = CCMenuItemExt::createSpriteExtra(rightBtnSpr, [this](auto)
+                                                   { page(m_page + 1); });
   m_rightButton->setPosition({winSize.width - 24.0f, winSize.height / 2.0f});
   m_rightButton->setID("next-page-button");
   btnsMenu->addChild(m_rightButton);
 
-  m_infoButton = InfoAlertButton::create("Startpos copies", m_info, 1.0f);
+  m_infoButton = InfoAlertButton::create("StartPos copies", m_info, 1.0f);
   m_infoButton->setPosition({30.0f, 30.0f});
   m_infoButton->setID("info-button");
   btnsMenu->addChild(m_infoButton);
@@ -112,8 +114,6 @@ bool StartPosLayer::init()
   auto refreshButton = CCMenuItemExt::createSpriteExtra(refreshBtnSpr, [this](auto)
                                                         {
                                                           m_searchBar->setString("");
-                                                          // g_levelFilters = g_defaultFilters;
-                                                          // g_storedFilters = g_defaultFilters;
 
                                                           // showLoading();
                                                           // loadGlobalList();
@@ -138,17 +138,10 @@ bool StartPosLayer::init()
   m_pageButton->setID("page-button");
   btnsMenu->addChild(m_pageButton);
 
-  m_levelsList = CCLayer::create();
-  m_levelsList->ignoreAnchorPointForPosition(true);
-  m_levelsList->setAnchorPoint({0, 0});
-  m_levelsList->setLayout(ColumnLayout::create()
-                              ->setGap(5)
-                              ->setAxisReverse(true)
-                              ->setAxisAlignment(AxisAlignment::End)
-                              ->setAutoGrowAxis(m_levelList->getContentHeight())
-                              ->ignoreInvisibleChildren(false));
-  m_levelsList->setContentSize(m_levelList->getContentSize());
-  m_levelList->addChild(m_levelsList);
+  m_loadingCircle = LoadingCircle::create();
+  m_loadingCircle->setParentLayer(this);
+  m_loadingCircle->setID("loading-circle");
+  m_loadingCircle->show();
 
   loadStartPosLevelList();
 
@@ -169,6 +162,14 @@ void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
     m_levels.push_back(level);
   }
 
+  m_searchBarMenu->setVisible(true);
+  m_levelsCountLabel->setVisible(true);
+  m_loadingCircle->setVisible(false);
+  m_leftButton->setVisible(m_page > 1);
+  log::info("page: {}, totalPages: {}", m_page, m_totalPages);
+  m_rightButton->setVisible(m_page < m_totalPages);
+  m_pageButton->setVisible(true);
+
   reload();
 }
 
@@ -184,37 +185,49 @@ void StartPosLayer::loadLevels()
   for (size_t i = 0; i < m_searchResults.size(); ++i)
   {
     auto levelId = m_searchResults[i].levelId;
+    auto originalId = m_searchResults[i].originalId;
 
-    if (levelId == -1)
+    int id = levelId == -1 ? originalId : levelId;
+
+    if (id <= 0)
       continue;
 
-    if (i > 0 && i != m_searchResults.size())
-    {
+    if (!levelsIdsString.empty())
       levelsIdsString += ",";
-    }
 
-    levelsIdsString += std::to_string(levelId);
+    levelsIdsString += std::to_string(id);
   }
+  auto gdStr = gd::string{levelsIdsString.data(), levelsIdsString.size()};
+  log::info("{}", gdStr);
 
   auto glm = GameLevelManager::get();
   glm->m_levelManagerDelegate = this;
-  glm->getOnlineLevels(GJSearchObject::create(SearchType::Type26, levelsIdsString));
+  glm->getOnlineLevels(GJSearchObject::create(SearchType::Type26, gdStr));
 }
 
 void StartPosLayer::reload()
 {
-  for (int i = 0; i < m_levels.size(); i++)
+  if (auto listView = m_levelList->m_listView)
   {
-    auto level = m_levels[i];
-
-    auto levelCell = LevelCell::create(m_levelsList->getContentWidth(), 90);
-    levelCell->setAnchorPoint({0, 0});
-    levelCell->loadFromLevel(level);
-    levelCell->updateBGColor(i);
-    m_levelsList->addChild(levelCell);
+    listView->removeFromParentAndCleanup(true);
+    m_levelList->m_listView = nullptr;
   }
 
-  m_levelsList->updateLayout();
+  auto listView = CustomListView::create(CCArray::create(), BoomListType::Level, 190.0f, m_levelList->getContentWidth());
+  listView->retain();
+  m_levelList->addChild(listView, 6, 9);
+  m_levelList->m_listView = listView;
+
+  auto tableView = listView->m_tableView;
+  tableView->m_delegate = this;
+  tableView->m_tableDelegate = this;
+  tableView->m_dataSource = this;
+  tableView->setTouchEnabled(true);
+
+  tableView->setContentSize({m_levelList->getContentWidth(), 190.0f});
+
+  tableView->reloadData();
+  tableView->moveToTop();
 }
 
 void StartPosLayer::loadStartPosLevelList()
@@ -234,6 +247,7 @@ void StartPosLayer::loadStartPosLevelList()
 
                          m_searchResults = data.data;
                          m_totalLevels = data.total;
+                         m_totalPages = data.totalPages;
 
                          loadLevels();
                        }
@@ -245,4 +259,105 @@ void StartPosLayer::loadStartPosLevelList()
                    });
 
   auto req = web::WebRequest();
+}
+
+unsigned int StartPosLayer::numberOfSectionsInTableView(TableView *table)
+{
+  return 1;
+}
+
+int StartPosLayer::numberOfRowsInSection(unsigned int section, TableView *table)
+{
+  return m_searchResults.size();
+}
+
+TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, TableView *table)
+{
+  int index = indexPath.m_row;
+  auto startposLevel = m_searchResults[index];
+
+  if (startposLevel.levelId > 0)
+  {
+    auto cell = LevelCell::create(m_levelList->getContentWidth(), 90.0f);
+    GJGameLevel *levelObj = nullptr;
+
+    for (int i = 0; i < m_levels.size(); i++)
+    {
+      if (m_levels[i]->m_levelID == startposLevel.levelId)
+        levelObj = m_levels[i];
+    }
+    cell->loadFromLevel(levelObj);
+    cell->updateBGColor(index);
+
+    return cell;
+  }
+  else if (startposLevel.originalId > 0 && !startposLevel.downloadUrl.empty())
+  {
+    auto cell = LevelCell::create(m_levelList->getContentWidth(), 90.0f);
+    GJGameLevel *levelObj = nullptr;
+
+    for (int i = 0; i < m_levels.size(); i++)
+    {
+      if (m_levels[i]->m_levelID == startposLevel.originalId)
+        levelObj = m_levels[i];
+    }
+    if (!levelObj) return nullptr;
+
+    cell->loadFromLevel(levelObj);
+    cell->updateBGColor(index);
+
+    return cell;
+  }
+  else if (!startposLevel.downloadUrl.empty())
+  {
+    auto cell = new TableViewCell("text-cell", m_levelList->getContentWidth(), 30.0f);
+    cell->autorelease();
+
+    auto label = CCLabelBMFont::create(std::to_string(startposLevel.id).c_str(), "goldFont.fnt");
+    label->setAnchorPoint({0.5f, 0.5f});
+    cell->m_mainLayer->setContentSize({m_levelList->getContentWidth(), 30.0f});
+    label->setPosition(cell->m_mainLayer->getContentSize() / 2.0f);
+
+    cell->m_mainLayer->addChild(label);
+
+    return cell;
+  }
+
+  return nullptr;
+}
+
+void StartPosLayer::page(size_t page)
+{
+  m_page = std::clamp(page, (size_t)1, m_totalPages);
+  log::info("{}", m_page);
+
+  showLoading();
+  loadStartPosLevelList();
+}
+
+void StartPosLayer::showLoading()
+{
+  m_pageLabel->setString(fmt::to_string(m_page).c_str());
+  m_loadingCircle->setVisible(true);
+  if (auto listView = m_levelList->m_listView)
+    listView->setVisible(false);
+  m_searchBarMenu->setVisible(false);
+  m_levelsCountLabel->setVisible(false);
+  m_leftButton->setVisible(false);
+  m_rightButton->setVisible(false);
+  m_pageButton->setVisible(false);
+}
+
+float StartPosLayer::cellHeightForRowAtIndexPath(CCIndexPath &indexPath, TableView *table)
+{
+  bool isDefaultLevel = m_searchResults[indexPath.m_row].levelId > 0;
+  bool isOriginalLevel = m_searchResults[indexPath.m_row].originalId > 0 && !m_searchResults[indexPath.m_row].downloadUrl.empty();
+  bool isCustomLevel = !m_searchResults[indexPath.m_row].downloadUrl.empty();
+
+  if (isDefaultLevel || isOriginalLevel)
+    return m_levelCellHeigth;
+  else if (isCustomLevel)
+    return m_customCellHeigth;
+  else
+    return m_levelCellHeigth;
 }

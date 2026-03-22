@@ -8,6 +8,6 @@ struct PaginationResponse
 {
     T data;
     int page;
-    int totalPage;
+    int totalPages;
     int total;
 };

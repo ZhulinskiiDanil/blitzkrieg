@@ -4,9 +4,12 @@
 #include "../../config.hpp"
 #include "../../serialization/startpos/index.hpp"
 
-using namespace geode::prelude;
-
-class StartPosLayer : CCLayer, SetIDPopupDelegate, LevelManagerDelegate
+class StartPosLayer : public CCLayer,
+					  public SetIDPopupDelegate,
+					  public LevelManagerDelegate,
+					  public TableViewDelegate,
+					  public TableViewDataSource,
+					  public CCScrollLayerExtDelegate
 {
 public:
 	static StartPosLayer *create();
@@ -32,20 +35,28 @@ protected:
 	CCMenuItemSpriteExtra *m_lastButton;
 	LoadingCircle *m_loadingCircle;
 
-	CCLayer *m_levelsList;
-
 	TaskHolder<web::WebResponse> m_listener;
 	std::string m_query;
 	size_t m_page = 1;
 	size_t m_lvlsPerPage = 10;
 	size_t m_totalLevels = 0;
+	size_t m_totalPages = 0;
 	std::vector<GJGameLevel *> m_levels;
 	std::vector<StartPosLevel> m_searchResults;
 
 	std::string m_info = "HI!";
+	float m_levelCellHeigth = 90.0f;
+	float m_customCellHeigth = 50.0f;
 
 	bool init() override;
 	void loadLevels();
 	void loadLevelsFinished(CCArray *levels, char const *key) override;
 	void loadLevelsFailed(char const *key, int p1) override;
+	void page(size_t page);
+	void showLoading();
+
+	virtual int numberOfRowsInSection(unsigned int section, TableView *tableView) override;
+	virtual unsigned int numberOfSectionsInTableView(TableView *tableView) override;
+	virtual TableViewCell *cellForRowAtIndexPath(CCIndexPath &indexPath, TableView *tableView) override;
+	virtual float cellHeightForRowAtIndexPath(CCIndexPath &indexPath, TableView *tableView) override;
 };

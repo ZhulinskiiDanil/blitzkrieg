@@ -68,8 +68,8 @@ struct matjson::Serialize<PaginationResponse<T>>
   {
     return geode::Ok(PaginationResponse{
         .data = getOr<T>(value, "data", {}),
-        .page = getOr<int>(value, "page", 1),
-        .totalPage = getOr<int>(value, "totalPage", 1),
+        .page = getOr<int>(value, "page", 0),
+        .totalPages = getOr<int>(value, "totalPages", 0),
         .total = getOr<int>(value, "total", 0)});
   }
 
@@ -78,7 +78,7 @@ struct matjson::Serialize<PaginationResponse<T>>
     auto obj = matjson::Value::object();
     obj["data"] = glr.data;
     obj["page"] = glr.page;
-    obj["totalPage"] = glr.totalPage;
+    obj["totalPages"] = glr.totalPages;
     obj["total"] = glr.total;
     return obj;
   }
