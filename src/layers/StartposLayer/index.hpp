@@ -57,7 +57,7 @@ protected:
 	void onOpenDownloadLink(CCObject *sender);
 
 	void page(size_t page);
-	void showLoading();
+	void toggleLoading(bool isToggled);
 
 	void loadLevels();
 	void loadLevelsFinished(CCArray *levels, char const *key) override;

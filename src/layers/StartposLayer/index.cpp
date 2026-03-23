@@ -128,7 +128,7 @@ bool StartPosLayer::init()
                                                         {
                                                           m_searchBar->setString(m_query);
 
-                                                          showLoading();
+                                                          toggleLoading(true);
                                                           loadStartPosLevelList(); });
   refreshButton->setPosition({winSize.width - refreshBtnSpr->getContentWidth() / 2.0f - 4.0f, refreshBtnSpr->getContentHeight() / 2.0f + 4.0f});
   refreshButton->setID("refresh-button");
@@ -167,7 +167,8 @@ StartPosLayer::~StartPosLayer()
 
 void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
 {
-  m_isLoading = false;
+  toggleLoading(false);
+
   m_downloadUrls.clear();
   m_levels.clear();
 
@@ -186,8 +187,7 @@ void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
 
 void StartPosLayer::loadLevelsFailed(char const *key, int p1)
 {
-  m_loadingCircle->setVisible(false);
-  m_isLoading = false;
+  toggleLoading(false);
 
   FLAlertLayer::create(
       "Load Error",
@@ -253,21 +253,28 @@ void StartPosLayer::page(size_t page)
 {
   m_page = std::clamp(page, (size_t)1, m_totalPages);
 
-  showLoading();
+  toggleLoading(true);
   loadStartPosLevelList();
 }
 
-void StartPosLayer::showLoading()
+void StartPosLayer::toggleLoading(bool isToggled)
 {
-  m_pageLabel->setString(fmt::to_string(m_page).c_str());
-  m_loadingCircle->setVisible(true);
-  if (auto listView = m_levelList->m_listView)
-    listView->setVisible(false);
-  m_searchBarMenu->setVisible(false);
-  m_levelsCountLabel->setVisible(false);
-  m_leftButton->setVisible(false);
-  m_rightButton->setVisible(false);
-  m_pageButton->setVisible(false);
+  if (isToggled)
+  {
+    m_pageLabel->setString(fmt::to_string(m_page).c_str());
+    m_loadingCircle->setVisible(true);
+    if (auto listView = m_levelList->m_listView)
+      listView->setVisible(false);
+    m_levelsCountLabel->setVisible(false);
+    m_leftButton->setVisible(false);
+    m_rightButton->setVisible(false);
+    m_pageButton->setVisible(false);
+  }
+  else
+  {
+    m_loadingCircle->setVisible(false);
+    m_isLoading = false;
+  }
 }
 
 void StartPosLayer::onOpenDownloadLink(CCObject *sender)
@@ -429,14 +436,14 @@ void StartPosLayer::loadStartPosLevelList()
   if (m_isLoading)
     return;
   else
-    m_isLoading = true;
+    toggleLoading(true);
 
   std::string reqUrl = fmt::format("{}/levels?page={}&limit={}&levelName={}", API_URL, m_page, m_lvlsPerPage, encodeURIComponent(m_query));
 
   m_listener.spawn(web::WebRequest().get(reqUrl),
                    [this](web::WebResponse value)
                    {
-                     if (value.ok())
+                     if (value.ok() && value.code() == 200)
                      {
                        auto data = value.json();
                        auto json = data.ok().value();
@@ -452,10 +459,24 @@ void StartPosLayer::loadStartPosLevelList()
 
                          loadLevels();
                        }
+                       else
+                       {
+                         toggleLoading(false);
+                       }
                      }
                      else
                      {
-                       log::warn("Error while loading levels: {}", value.errorMessage());
+                       toggleLoading(false);
+
+                       std::string body = value.string().ok() ? value.string().unwrap() : "no body";
+
+                       FLAlertLayer::create(
+                           "Load Error",
+                           fmt::format("HTTP {}: {}", value.code(), body),
+                           "OK")
+                           ->show();
+
+                       log::warn("HTTP error {}: {}", value.code(), body);
                      }
                    });
 
