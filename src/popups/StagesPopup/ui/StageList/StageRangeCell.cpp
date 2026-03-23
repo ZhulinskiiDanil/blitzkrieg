@@ -246,14 +246,14 @@ void StageRangeCell::updateTexture()
                                    : ccc4FFromccc4B({54, 54, 54, 255});
   auto midBgColor = m_disabled
                         ? ccc4FFromccc4B({87, 54, 54, 255})
-                    : m_checked   ? ccc4FFromccc4B({67, 92, 62, 255})
+                    : m_checked   ? ccc4FFromccc4B({70, 117, 61, 255})
                     : m_isCurrent ? ccc4FFromccc4B({97, 90, 52, 255})
                                   : ccc4FFromccc4B({84, 84, 84, 255});
   auto midColor = m_disabled
-                      ? ccc4FFromccc4B({150, 83, 83, 255})
-                  : m_checked   ? ccc4FFromccc4B({97, 166, 83, 255})
+                      ? ccc4FFromccc4B({218, 80, 80, 255})
+                  : m_checked   ? ccc4FFromccc4B({98, 240, 70, 255})
                   : m_isCurrent ? ccc4FFromccc4B({158, 145, 77, 255})
-                                : ccc4FFromccc4B({160, 160, 160, 255});
+                                : ccc4FFromccc4B({201, 201, 201, 255});
 
   m_lineBg = RectNode::create(
       {lineBgW, lineBgH}, lineBgColor, 1);

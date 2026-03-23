@@ -22,9 +22,12 @@ StagesPopup *StagesPopup::create(GJGameLevel *level)
 bool StagesPopup::init(GJGameLevel *level)
 {
   if (!Popup::init(420, 250, "GJ_square01_custom.png"_spr))
-  {
     return false;
-  }
+
+  if (!Mod::get()->hasSavedValue("sort-stage-runs-asc-enabled"))
+    Mod::get()->setSavedValue("sort-stage-runs-asc-enabled", true);
+  if (!Mod::get()->hasSavedValue("hide-stage-completed-runs-enabled"))
+    Mod::get()->setSavedValue("hide-stage-completed-runs-enabled", false);
 
   std::string levelId = level->m_levelID ? utils::numToString(level->m_levelID.value()) : utils::numToString(EditorIDs::getID(level));
 
@@ -147,16 +150,16 @@ void StagesPopup::drawCurrentStage()
   auto sortBtnSpriteUp = CCSprite::createWithSpriteFrameName("sort-up-square-btn.png"_spr);
   auto sortBtnSpriteDown = CCSprite::createWithSpriteFrameName("sort-down-square-btn.png"_spr);
   auto sortBtnCheckbox = CCMenuItemToggler::create(sortBtnSpriteDown, sortBtnSpriteUp, this, menu_selector(StagesPopup::onToggleSort));
-  sortBtnCheckbox->toggle(false);
+  sortBtnCheckbox->toggle(!Mod::get()->getSavedValue<bool>("sort-stage-runs-asc-enabled"));
   sortBtnCheckbox->setAnchorPoint({0, 0});
   sortBtnCheckbox->setScale(.75f);
   filterButtonsMenu->addChild(sortBtnCheckbox);
 
   // ! --- Visability Toggle Button --- !
-  auto visabilityBtnSpriteUp = CCSprite::createWithSpriteFrameName("check-mark-square-btn.png"_spr);
-  auto visabilityBtnSpriteDown = CCSprite::createWithSpriteFrameName("check-mark-gray-square-btn.png"_spr);
-  auto visabilityBtnCheckbox = CCMenuItemToggler::create(visabilityBtnSpriteDown, visabilityBtnSpriteUp, this, menu_selector(StagesPopup::onToggleVisability));
-  visabilityBtnCheckbox->toggle(true);
+  auto visabilityBtnSpriteOn = CCSprite::createWithSpriteFrameName("check-mark-square-btn.png"_spr);
+  auto visabilityBtnSpriteOff = CCSprite::createWithSpriteFrameName("check-mark-gray-square-btn.png"_spr);
+  auto visabilityBtnCheckbox = CCMenuItemToggler::create(visabilityBtnSpriteOff, visabilityBtnSpriteOn, this, menu_selector(StagesPopup::onToggleVisability));
+  visabilityBtnCheckbox->toggle(!Mod::get()->getSavedValue<bool>("hide-stage-completed-runs-enabled"));
   visabilityBtnCheckbox->setAnchorPoint({0, 0});
   visabilityBtnCheckbox->setScale(.75f);
   filterButtonsMenu->addChild(visabilityBtnCheckbox);
@@ -167,6 +170,9 @@ void StagesPopup::drawCurrentStage()
   // ! --- StageListLayer --- !
   auto stageListContentSize = CCSize(contentSize.width, contentSize.height);
   m_stageList = StageListLayer::create(currentStage, m_level, stageListContentSize);
+  m_stageList->setSortBy(!sortBtnCheckbox->isToggled() ? StageListSortBy::ASC : StageListSortBy::DESC);
+  m_stageList->setRunsVisabilityForCompleted(!visabilityBtnCheckbox->isToggled());
+  m_stageList->reload();
   m_stageList->setPosition({padding.left, padding.bottom});
 
   m_currentStageNode->addChild(m_stageList);
@@ -181,6 +187,8 @@ void StagesPopup::onToggleSort(CCObject *sender)
     bool isToggled = checkbox->isToggled();
     m_stageList->setSortBy(isToggled ? StageListSortBy::ASC : StageListSortBy::DESC);
     m_stageList->reload();
+
+    Mod::get()->setSavedValue("sort-stage-runs-asc-enabled", isToggled);
   }
 }
 
@@ -191,6 +199,8 @@ void StagesPopup::onToggleVisability(CCObject *sender)
     bool isToggled = checkbox->isToggled();
     m_stageList->setRunsVisabilityForCompleted(isToggled);
     m_stageList->reload();
+
+    Mod::get()->setSavedValue("hide-stage-completed-runs-enabled", isToggled);
   }
 }
 
