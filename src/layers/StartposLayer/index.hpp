@@ -3,6 +3,8 @@
 
 #include "../../config.hpp"
 #include "../../serialization/startpos/index.hpp"
+#include "../../utils/encodeURIComponent.hpp"
+#include "../../ui/RectNode.hpp"
 
 class StartPosLayer : public CCLayer,
 											public SetIDPopupDelegate,
@@ -48,6 +50,7 @@ protected:
 	std::string m_info = "HI!";
 	float m_levelCellHeigth = 90.0f;
 	float m_customCellHeigth = 90.0f;
+	bool m_isLoading = false;
 
 	bool init() override;
 

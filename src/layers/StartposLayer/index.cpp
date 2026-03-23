@@ -54,31 +54,44 @@ bool StartPosLayer::init()
   addChild(m_levelList, 5);
 
   m_searchBarMenu = CCMenu::create();
-  m_searchBarMenu->setContentSize({m_levelList->getContentWidth(), 30.0f});
-  m_searchBarMenu->setPosition({0.0f, 190.0f});
+  m_searchBarMenu->setContentSize({m_levelList->getContentWidth(), 30});
+  m_searchBarMenu->setPosition({0, m_levelList->getContentHeight() - 30});
   m_searchBarMenu->setID("search-bar-menu");
   m_levelList->addChild(m_searchBarMenu);
 
-  auto searchBarBG = CCLayerColor::create({194, 114, 62, 255}, m_levelList->getContentWidth(), 30.0f);
+  auto searchBarBG = RectNode::create(
+      {m_searchBarMenu->getContentWidth(), m_searchBarMenu->getContentHeight()},
+      ccc4FFromccc4B({0, 0, 0, static_cast<int>(255 * .1f)}));
   searchBarBG->setID("search-bar-backgrownd");
   m_searchBarMenu->addChild(searchBarBG);
 
-  m_searchBar = TextInput::create(367.0f, "Search levels...");
+  // ! --- Search Button --- !
+  auto searchBtn = CCMenuItemExt::createSpriteExtraWithFrameName("gj_findBtn_001.png", 0.7f, [this](auto)
+                                                                 {
+                                                                  if (m_searchBar) {
+                                                                    m_page = 1;
+                                                                    m_query = m_searchBar->getString();
+                                                                    loadStartPosLevelList();
+                                                                  } });
+  searchBtn->setAnchorPoint({1, 0.5f});
+  searchBtn->setPosition({m_searchBarMenu->getContentWidth() - 6, m_searchBarMenu->getContentHeight() / 2});
+  searchBtn->setID("search-button");
+  m_searchBarMenu->addChild(searchBtn);
+
+  // ! --- Search Bar --- !
+  m_searchBar = TextInput::create(
+      (m_searchBarMenu->getContentWidth() - searchBtn->getScaledContentWidth() - 5 * 3 - 1) * (1 / 0.75f),
+      "Search levels...");
+  m_searchBar->setScale(0.75f);
   m_searchBar->setMaxCharCount(35);
-  m_searchBar->setPosition({152.0f, 15.0f});
+  m_searchBar->setAnchorPoint({0, 0.5f});
+  m_searchBar->ignoreAnchorPointForPosition(true);
+  m_searchBar->setPosition({6, 0});
   m_searchBar->setTextAlign(TextInputAlign::Left);
   m_searchBar->getInputNode()->setLabelPlaceholderScale(0.70f);
   m_searchBar->getInputNode()->setMaxLabelScale(0.70f);
-  m_searchBar->setScale(0.75f);
   m_searchBar->setID("search-bar");
   m_searchBarMenu->addChild(m_searchBar);
-
-  auto searchBtn = CCMenuItemExt::createSpriteExtraWithFrameName("gj_findBtn_001.png", 0.7f, [this](auto) { /*search();*/ });
-  searchBtn->setPosition({m_searchBarMenu->getContentWidth() -
-                              searchBtn->getContentWidth() * searchBtn->getScaleX() / 2.0f - 15.0f,
-                          15.0f});
-  searchBtn->setID("search-button");
-  m_searchBarMenu->addChild(searchBtn);
 
   auto btnsMenu = CCMenu::create();
   btnsMenu->setPosition({0.0f, 0.0f});
@@ -113,11 +126,10 @@ bool StartPosLayer::init()
   auto refreshBtnSpr = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
   auto refreshButton = CCMenuItemExt::createSpriteExtra(refreshBtnSpr, [this](auto)
                                                         {
-                                                          m_searchBar->setString("");
+                                                          m_searchBar->setString(m_query);
 
-                                                          // showLoading();
-                                                          // loadGlobalList();
-                                                        });
+                                                          showLoading();
+                                                          loadStartPosLevelList(); });
   refreshButton->setPosition({winSize.width - refreshBtnSpr->getContentWidth() / 2.0f - 4.0f, refreshBtnSpr->getContentHeight() / 2.0f + 4.0f});
   refreshButton->setID("refresh-button");
   btnsMenu->addChild(refreshButton);
@@ -155,6 +167,7 @@ StartPosLayer::~StartPosLayer()
 
 void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
 {
+  m_isLoading = false;
   m_downloadUrls.clear();
   m_levels.clear();
 
@@ -174,6 +187,7 @@ void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
 void StartPosLayer::loadLevelsFailed(char const *key, int p1)
 {
   m_loadingCircle->setVisible(false);
+  m_isLoading = false;
 
   FLAlertLayer::create(
       "Load Error",
@@ -267,7 +281,18 @@ void StartPosLayer::onOpenDownloadLink(CCObject *sender)
 
     if (!url.empty())
     {
-      geode::utils::web::openLinkInBrowser(url);
+      geode::createQuickPopup(
+          "Open Link",
+          fmt::format("Do you want to open this link?\n\n{}", url),
+          "Cancel",
+          "Open",
+          [url](auto, bool btn2)
+          {
+            if (btn2)
+            {
+              geode::utils::web::openLinkInBrowser(url);
+            }
+          });
     }
   }
 }
@@ -281,7 +306,8 @@ unsigned int StartPosLayer::numberOfSectionsInTableView(TableView *table)
 
 int StartPosLayer::numberOfRowsInSection(unsigned int section, TableView *table)
 {
-  return m_searchResults.size();
+  // At least 2 elements to fix the scroll even if we draw 1 or 0
+  return std::max(m_searchResults.size(), (size_t)2);
 }
 
 TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, TableView *table)
@@ -400,7 +426,14 @@ float StartPosLayer::cellHeightForRowAtIndexPath(CCIndexPath &indexPath, TableVi
 
 void StartPosLayer::loadStartPosLevelList()
 {
-  m_listener.spawn(web::WebRequest().get(fmt::format("{}/levels?page={}&limit={}", API_URL, m_page, m_lvlsPerPage)),
+  if (m_isLoading)
+    return;
+  else
+    m_isLoading = true;
+
+  std::string reqUrl = fmt::format("{}/levels?page={}&limit={}&levelName={}", API_URL, m_page, m_lvlsPerPage, encodeURIComponent(m_query));
+
+  m_listener.spawn(web::WebRequest().get(reqUrl),
                    [this](web::WebResponse value)
                    {
                      if (value.ok())
@@ -422,6 +455,7 @@ void StartPosLayer::loadStartPosLevelList()
                      }
                      else
                      {
+                       log::warn("Error while loading levels: {}", value.errorMessage());
                      }
                    });
 
