@@ -30,6 +30,7 @@
   "resources": {
     "sprites": [
       "resources/logo-circle.png",
+      "resources/startpos-button.png",
       "resources/sprites/*.png",
       "resources/sprites/range/*.png"
     ],

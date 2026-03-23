@@ -10,10 +10,10 @@ class $modify(MyLevelSearchLayer, LevelSearchLayer)
 
         auto filterMenu = this->getChildByID("other-filter-menu");
 
-        auto startposBtnSpr = CircleButtonSprite::createWithSpriteFrameName("startpos-button.png"_spr);
+        auto startposBtnSpr = CircleButtonSprite::createWithSprite("startpos-button.png"_spr);
         startposBtnSpr->setScale(0.8f);
         auto startposBtn = CCMenuItemSpriteExtra::create(startposBtnSpr, this, menu_selector(MyLevelSearchLayer::onStartposBtn));
-        startposBtn->setID("startpos-button");
+        startposBtn->setID("startpos-button"_spr);
         filterMenu->addChild(startposBtn);
         filterMenu->updateLayout();
 
