@@ -132,14 +132,66 @@ void StagesPopup::drawCurrentStage()
   drawCurrentStageTitle(
       profile.data.stages, padding);
 
+  auto filterButtonsMenu = CCMenu::create();
+  filterButtonsMenu->setLayout(RowLayout::create()
+                                   ->setGap(5)
+                                   ->setAxisReverse(true)
+                                   ->setAutoScale(false)
+                                   ->setAutoGrowAxis(true));
+
+  filterButtonsMenu->ignoreAnchorPointForPosition(false);
+  filterButtonsMenu->setPosition({m_size.width - padding.right, m_size.height - padding.top + 5});
+  filterButtonsMenu->setAnchorPoint({1, 0});
+
+  // ! --- Sort Toggle Button --- !
+  auto sortBtnSpriteUp = CCSprite::createWithSpriteFrameName("sort-up-square-btn.png"_spr);
+  auto sortBtnSpriteDown = CCSprite::createWithSpriteFrameName("sort-down-square-btn.png"_spr);
+  auto sortBtnCheckbox = CCMenuItemToggler::create(sortBtnSpriteDown, sortBtnSpriteUp, this, menu_selector(StagesPopup::onToggleSort));
+  sortBtnCheckbox->toggle(false);
+  sortBtnCheckbox->setAnchorPoint({0, 0});
+  sortBtnCheckbox->setScale(.75f);
+  filterButtonsMenu->addChild(sortBtnCheckbox);
+
+  // ! --- Visability Toggle Button --- !
+  auto visabilityBtnSpriteUp = CCSprite::createWithSpriteFrameName("check-mark-square-btn.png"_spr);
+  auto visabilityBtnSpriteDown = CCSprite::createWithSpriteFrameName("check-mark-gray-square-btn.png"_spr);
+  auto visabilityBtnCheckbox = CCMenuItemToggler::create(visabilityBtnSpriteDown, visabilityBtnSpriteUp, this, menu_selector(StagesPopup::onToggleVisability));
+  visabilityBtnCheckbox->toggle(true);
+  visabilityBtnCheckbox->setAnchorPoint({0, 0});
+  visabilityBtnCheckbox->setScale(.75f);
+  filterButtonsMenu->addChild(visabilityBtnCheckbox);
+
+  m_currentStageNode->addChild(filterButtonsMenu);
+  filterButtonsMenu->updateLayout();
+
   // ! --- StageListLayer --- !
   auto stageListContentSize = CCSize(contentSize.width, contentSize.height);
-  auto stageList = StageListLayer::create(currentStage, m_level, stageListContentSize);
-  stageList->setPosition({padding.left, padding.bottom});
+  m_stageList = StageListLayer::create(currentStage, m_level, stageListContentSize);
+  m_stageList->setPosition({padding.left, padding.bottom});
 
-  m_currentStageNode->addChild(stageList);
+  m_currentStageNode->addChild(m_stageList);
   m_mainLayer->addChild(m_currentStageNode);
   contentContainers.push_back(m_currentStageNode);
+}
+
+void StagesPopup::onToggleSort(CCObject *sender)
+{
+  if (auto checkbox = typeinfo_cast<CCMenuItemToggler *>(sender))
+  {
+    bool isToggled = checkbox->isToggled();
+    m_stageList->setSortBy(isToggled ? StageListSortBy::ASC : StageListSortBy::DESC);
+    m_stageList->reload();
+  }
+}
+
+void StagesPopup::onToggleVisability(CCObject *sender)
+{
+  if (auto checkbox = typeinfo_cast<CCMenuItemToggler *>(sender))
+  {
+    bool isToggled = checkbox->isToggled();
+    m_stageList->setRunsVisabilityForCompleted(isToggled);
+    m_stageList->reload();
+  }
 }
 
 void StagesPopup::drawStagesGraph()
@@ -170,7 +222,8 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padd
   m_currentStageTitleLabel = CCLabelBMFont::create(
       title.c_str(),
       "goldFont.fnt");
-  m_currentStageTitleLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 + 5}); // n - 2.5f
+  m_currentStageTitleLabel->setPosition({15, m_size.height - padding.top / 2 + 5}); // n - 2.5f
+  m_currentStageTitleLabel->setAnchorPoint({0, 0.5});
   m_currentStageNode->addChild(m_currentStageTitleLabel);
 
   std::string stat = "";
@@ -182,7 +235,8 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padd
   stat += formatTimePlayed(totalTimePlayed);
 
   m_totalStatLabel = Label::create(stat, "bigFont.fnt", .4f);
-  m_totalStatLabel->setPosition({m_size.width / 2, m_size.height - padding.top / 2 - 15});
+  m_totalStatLabel->setPosition({15, m_size.height - padding.top / 2 - 15});
+  m_totalStatLabel->setAnchorPoint({0, 0.5});
   m_currentStageNode->addChild(m_totalStatLabel);
 
   m_stageChangedListener = StageSwitchedEvent().listen(

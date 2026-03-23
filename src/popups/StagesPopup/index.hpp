@@ -37,15 +37,16 @@ private:
   std::vector<TabButton *> tabButtons;
   std::vector<CCNode *> contentContainers;
   std::vector<CCMenuItemToggle *> stageCheckboxes;
-  GJGameLevel *m_level = nullptr;
+  GJGameLevel *m_level;
   std::string m_levelId;
   bool m_isFirstLaunch = true;
 
-  CCNode *m_profilesListNode = nullptr;
-  CCNode *m_currentStageNode = nullptr;
-  CCNode *m_currentStageGraphNode = nullptr;
-  CCLabelBMFont *m_currentStageTitleLabel = nullptr;
-  Label *m_totalStatLabel = nullptr;
+  CCNode *m_profilesListNode;
+  CCNode *m_currentStageNode;
+  CCNode *m_currentStageGraphNode;
+  CCLabelBMFont *m_currentStageTitleLabel;
+  Label *m_totalStatLabel;
+  StageListLayer *m_stageList;
 
   geode::comm::ListenerHandle m_stageChangedListener;
   geode::comm::ListenerHandle m_stageRangesChangedListener;
@@ -63,6 +64,8 @@ private:
   void onProfilesListToggle(CCObject *);
   void onSettingsButton(CCObject *);
   void activateTab(TabButton *btnToActivate);
+  void onToggleSort(CCObject *sender);
+  void onToggleVisability(CCObject *sender);
 
   ~StagesPopup()
   {

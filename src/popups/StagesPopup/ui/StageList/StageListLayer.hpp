@@ -16,17 +16,23 @@
 
 using namespace geode::prelude;
 
+enum StageListSortBy
+{
+  ASC,
+  DESC
+};
+
 class StageListLayer : public CCLayer
 {
 private:
   CCSize m_contentSize;
-  ScrollLayer *m_scroll = nullptr;
-  CCSprite *m_lockSpr = nullptr;
+  ScrollLayer *m_scroll;
+  CCSprite *m_lockSpr;
 
-  CCMenu *m_buttonMenuLeft = nullptr;
-  CCMenu *m_buttonMenuRight = nullptr;
-  CCMenuItemSpriteExtra *m_buttonLeft = nullptr;
-  CCMenuItemSpriteExtra *m_buttonRight = nullptr;
+  CCMenu *m_buttonMenuLeft;
+  CCMenu *m_buttonMenuRight;
+  CCMenuItemSpriteExtra *m_buttonLeft;
+  CCMenuItemSpriteExtra *m_buttonRight;
 
   // EventListener<EventFilter<StagesChangedEvent>>
   ListenerHandle m_listener;
@@ -35,11 +41,20 @@ private:
   ListenerHandle m_listenerStageRangesChanged;
 
   Profile m_profile;
-  GJGameLevel *m_level = nullptr;
-  Stage *m_stage = nullptr;
-  std::vector<Stage> *m_stages = nullptr;
-  Stage *m_uncheckedStage = nullptr;
+  GJGameLevel *m_level;
+  Stage *m_stage;
+  std::vector<Stage> *m_stages;
+  Stage *m_uncheckedStage;
   int m_currentIndex;
+
+  // Sort / Filters
+  StageListSortBy m_sortBy = StageListSortBy::ASC;
+  bool m_hideCompletedRuns = false;
+
+  void onPrevStage();
+  void onNextStage();
+  void onPrevStageBtn(CCObject *);
+  void onNextStageBtn(CCObject *);
 
 public:
   static StageListLayer *create(Stage *stage, GJGameLevel *level, const CCSize &contentSize);
@@ -47,11 +62,8 @@ public:
 
   void reload();
   void drawArrows();
-
-  void onPrevStage();
-  void onNextStage();
-  void onPrevStageBtn(CCObject *);
-  void onNextStageBtn(CCObject *);
+  void setSortBy(StageListSortBy);
+  void setRunsVisabilityForCompleted(bool);
 
   void scrollToTop();
 

@@ -27,7 +27,7 @@ bool StageListLayer::init(
   m_contentSize = contentSize;
   m_level = level;
   m_profile = GlobalStore::get()->getProfileByLevel(m_level);
-  m_stage = stage;
+  m_stage = new Stage(*stage);
 
   m_listenerStageRangesChanged = StageRangesChangedEvent().listen(
       [this]()
@@ -164,9 +164,22 @@ void StageListLayer::reload()
   std::vector<Range *> visibleRanges;
   for (auto &r : m_stage->ranges)
     if (r.consider)
+    {
+      if (m_hideCompletedRuns && (r.checked && !m_stage->checked))
+        continue;
+
       visibleRanges.push_back(&r);
+    }
 
   size_t total = visibleRanges.size();
+  std::sort(visibleRanges.begin(), visibleRanges.end(),
+            [this](const Range *a, const Range *b)
+            {
+              if (m_sortBy == StageListSortBy::ASC)
+                return a->from < b->from;
+              else
+                return a->from > b->from;
+            });
 
   for (size_t i = 0; i < total;)
   {
@@ -210,6 +223,16 @@ void StageListLayer::reload()
 
   m_scroll->m_contentLayer->updateLayout();
   scrollToTop();
+}
+
+void StageListLayer::setSortBy(StageListSortBy sortBy)
+{
+  m_sortBy = sortBy;
+}
+
+void StageListLayer::setRunsVisabilityForCompleted(bool visible)
+{
+  m_hideCompletedRuns = visible;
 }
 
 void StageListLayer::drawArrows()
