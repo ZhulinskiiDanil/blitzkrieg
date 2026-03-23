@@ -24,7 +24,8 @@
   },
   "links": {
     "homepage": "https://dgkr-community.vercel.app/blitzkrieg",
-    "community": "https://discord.gg/duuG4RqJKh"
+    "community": "https://discord.gg/duuG4RqJKh",
+    "source": "https://github.com/ZhulinskiiDanil/blitzkrieg"
   },
   "resources": {
     "sprites": [
