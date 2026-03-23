@@ -169,18 +169,8 @@ void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
 {
   toggleLoading(false);
 
-  m_downloadUrls.clear();
-  m_levels.clear();
-
   for (GJGameLevel *level : CCArrayExt<GJGameLevel *>(levels))
     m_levels.push_back(level);
-
-  m_searchBarMenu->setVisible(true);
-  m_levelsCountLabel->setVisible(true);
-  m_loadingCircle->setVisible(false);
-  m_leftButton->setVisible(m_page > 1);
-  m_rightButton->setVisible(m_page < m_totalPages);
-  m_pageButton->setVisible(true);
 
   reload();
 }
@@ -200,6 +190,9 @@ void StartPosLayer::loadLevelsFailed(char const *key, int p1)
 
 void StartPosLayer::loadLevels()
 {
+  m_levels.clear();
+  m_downloadUrls.clear();
+
   std::string levelsIdsString;
 
   for (size_t i = 0; i < m_searchResults.size(); ++i)
@@ -457,7 +450,14 @@ void StartPosLayer::loadStartPosLevelList()
                          m_totalLevels = data.total;
                          m_totalPages = data.totalPages;
 
-                         loadLevels();
+                         if (data.data.size() > 0)
+                         {
+                           loadLevels();
+                         }
+                         else
+                         {
+                           toggleLoading(false);
+                         }
                        }
                        else
                        {
