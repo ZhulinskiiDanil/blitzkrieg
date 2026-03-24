@@ -24,7 +24,7 @@ public:
   void addProfiles(std::vector<Profile> const &newProfiles, bool overwrite = false);
   void setProfiles(std::vector<Profile> const &profiles);
   void updateProfile(Profile const &profile);
-  void upProfileById(const std::string &profileId);
+  void upProfileById(std::string const &profileId);
   void removeProfileById(std::string const &id);
   void pinProfileById(std::string profileId, bool isPinned);
   bool isProfilePinned(std::string profileId);
@@ -36,9 +36,9 @@ public:
   int checkRun(std::string profileId, float timePlayed = 0.f);
 
   // ! --- Search API --- !
-  Profile getProfileById(std::string &profileId);
-  Profile getProfileByLevel(GJGameLevel *level);
-  Profile getProfileByLevel(std::string const &levelId);
+  Profile *getProfileById(std::string const &profileId);
+  Profile *getProfileByLevel(GJGameLevel *level);
+  Profile *getProfileByLevel(std::string const &levelId);
   Range getCurrentRange(std::string &profileId);
 
   // ! --- Persistence --- !

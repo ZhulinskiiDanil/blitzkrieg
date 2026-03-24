@@ -124,10 +124,10 @@ public:
         if (ignorePractice && this->m_isPracticeMode)
             return;
 
-        if (isLegal() && !currentProfile.id.empty())
+        if (isLegal() && currentProfile)
         {
             const auto timePlayedForAttempt = m_fields->attEndTime - m_fields->attStartTime;
-            int res = GlobalStore::get()->checkRun(currentProfile.id, timePlayedForAttempt);
+            int res = GlobalStore::get()->checkRun(currentProfile->id, timePlayedForAttempt);
 
             if (res != -1)
                 playSound(!!res);

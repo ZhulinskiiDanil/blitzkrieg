@@ -49,7 +49,7 @@ void StagesPopup::drawContent()
   {
     m_isFirstLaunch = false;
 
-    if (!profile.id.empty())
+    if (profile)
     {
       activeButton = tabButtons[1];
       activateTab(activeButton);
@@ -118,10 +118,10 @@ void StagesPopup::drawCurrentStage()
   Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
   auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
-  Stage *currentStage = getFirstUncheckedStage(profile);
+  Stage *currentStage = getFirstUncheckedStage(*profile);
 
-  if (!currentStage && !profile.data.stages.empty())
-    currentStage = &profile.data.stages.back();
+  if (!currentStage && !profile->data.stages.empty())
+    return;
 
   const auto contentSize = CCSize(
       m_size.width - padding.left - padding.right,
@@ -133,7 +133,7 @@ void StagesPopup::drawCurrentStage()
 
   // ! --- Title --- !
   drawCurrentStageTitle(
-      profile.data.stages, padding);
+      profile->data.stages, padding);
 
   auto filterButtonsMenu = CCMenu::create();
   filterButtonsMenu->setLayout(RowLayout::create()
@@ -232,7 +232,7 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padd
   m_currentStageTitleLabel = CCLabelBMFont::create(
       title.c_str(),
       "goldFont.fnt");
-  m_currentStageTitleLabel->setPosition({15, m_size.height - padding.top / 2 + 5}); // n - 2.5f
+  m_currentStageTitleLabel->setPosition({padding.left + 5, m_size.height - padding.top / 2 + 5}); // n - 2.5f
   m_currentStageTitleLabel->setAnchorPoint({0, 0.5});
   m_currentStageNode->addChild(m_currentStageTitleLabel);
 
@@ -245,7 +245,7 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padd
   stat += formatTimePlayed(totalTimePlayed);
 
   m_totalStatLabel = Label::create(stat, "bigFont.fnt", .4f);
-  m_totalStatLabel->setPosition({15, m_size.height - padding.top / 2 - 15});
+  m_totalStatLabel->setPosition({padding.left + 6, m_size.height - padding.top / 2 - 15});
   m_totalStatLabel->setAnchorPoint({0, 0.5});
   m_currentStageNode->addChild(m_totalStatLabel);
 

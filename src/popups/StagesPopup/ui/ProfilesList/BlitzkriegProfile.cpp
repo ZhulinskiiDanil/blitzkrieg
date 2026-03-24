@@ -26,7 +26,7 @@ bool BlitzkriegProfile::init(Profile const &profile,
 
   m_profile = profile;
   m_stageMetaInfo = new StageMetaInfo(getMetaInfoFromStages(m_profile.data.stages));
-  m_isCurrent = !linkedProfile.id.empty() && linkedProfile.id == profile.id;
+  m_isCurrent = linkedProfile && linkedProfile->id == profile.id;
   m_level = level;
   m_size = size;
   m_isPinned = GlobalStore::get()->isProfilePinned(m_profile.id);
@@ -52,8 +52,8 @@ void BlitzkriegProfile::updateFromCurrentProfile()
   if (!m_level)
     return;
 
-  Profile current = GlobalStore::get()->getProfileByLevel(m_level);
-  bool shouldBeCurrent = (!current.id.empty() && current.id == m_profile.id);
+  Profile *current = GlobalStore::get()->getProfileByLevel(m_level);
+  bool shouldBeCurrent = (current && current->id == m_profile.id);
 
   if (m_isCurrent != shouldBeCurrent)
   {
@@ -179,8 +179,6 @@ void BlitzkriegProfile::createLabels()
 
   int currentStageNumber = std::max(m_stageMetaInfo->completed, 1);
 
-  if (currentStageNumber > m_stageMetaInfo->total / 2)
-    nameLabel->setColor({255, 210, 180});
   if (currentStageNumber >= m_stageMetaInfo->total)
     nameLabel->setColor({99, 224, 110});
 

@@ -29,11 +29,11 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   m_checked = m_range->checked;
   m_isExpanded = expandedByDefault;
   m_level = level;
-  Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
+  Profile *profile = GlobalStore::get()->getProfileByLevel(m_level);
 
-  if (!profile.id.empty())
+  if (!profile)
   {
-    const auto currentRange = GlobalStore::get()->getCurrentRange(profile.id);
+    const auto currentRange = GlobalStore::get()->getCurrentRange(profile->id);
 
     if (!currentRange.id.empty())
       m_isCurrent = currentRange.id == m_range->id;
@@ -361,9 +361,9 @@ void StageRangeCell::onToggle(CCObject *sender)
   if (!m_level || m_disabled || m_id.empty())
     return;
 
-  Profile profile = GlobalStore::get()->getProfileByLevel(m_level);
+  Profile *profile = GlobalStore::get()->getProfileByLevel(m_level);
 
-  for (auto &stage : profile.data.stages)
+  for (auto &stage : profile->data.stages)
   {
     bool isEveryProgressChecked = true;
 
@@ -397,7 +397,7 @@ void StageRangeCell::onToggle(CCObject *sender)
       stage.checked = true;
   }
 
-  GlobalStore::get()->updateProfile(profile);
+  GlobalStore::get()->updateProfile(*profile);
   StageRangesChangedEvent().send();
 }
 

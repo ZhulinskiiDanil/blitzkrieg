@@ -3,11 +3,7 @@
 void BlitzEndLevelLayer::customSetup()
 {
     EndLevelLayer::customSetup();
-    auto level = PlayLayer::get()->m_level;
-    m_fields->currentProfile = GlobalStore::get()->getProfileByLevel(level);
-
     auto hideLayerMenu = this->getChildByID("hide-layer-menu");
-
     auto modCircleLogo = CCSprite::create("logo-circle.png"_spr);
     auto modBtn = CCMenuItemExt::createSpriteExtra(modCircleLogo, [this](auto)
                                                    { onPopup(); });

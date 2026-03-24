@@ -27,25 +27,25 @@ bool StageListLayer::init(
   m_contentSize = contentSize;
   m_level = level;
   m_profile = GlobalStore::get()->getProfileByLevel(m_level);
-  m_stage = new Stage(*stage);
+  m_stage = stage;
 
   m_listenerStageRangesChanged = StageRangesChangedEvent().listen(
       [this]()
       {
         m_profile = GlobalStore::get()->getProfileByLevel(m_level);
-        m_uncheckedStage = getFirstUncheckedStage(m_profile);
+        m_uncheckedStage = getFirstUncheckedStage(*m_profile);
 
         return ListenerResult::Propagate;
       });
 
-  if (m_stage && !m_profile.id.empty())
+  if (m_stage && m_profile)
   {
-    m_stages = &m_profile.data.stages;
+    m_stages = &m_profile->data.stages;
     m_currentIndex = m_stage->stage - 1;
-    m_uncheckedStage = getFirstUncheckedStage(m_profile);
+    m_uncheckedStage = getFirstUncheckedStage(*m_profile);
 
-    if (!m_uncheckedStage && !m_profile.data.stages.empty())
-      m_uncheckedStage = &m_profile.data.stages.back();
+    if (!m_uncheckedStage)
+      return false;
   }
 
   this->setContentSize(m_contentSize);

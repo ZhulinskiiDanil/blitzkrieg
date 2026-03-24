@@ -40,10 +40,10 @@ private:
   ListenerHandle m_listenerUpdateScrollLayout;
   ListenerHandle m_listenerStageRangesChanged;
 
-  Profile m_profile;
   GJGameLevel *m_level;
-  Stage *m_stage;
+  Profile *m_profile;
   std::vector<Stage> *m_stages;
+  Stage *m_stage;
   Stage *m_uncheckedStage;
   int m_currentIndex;
 

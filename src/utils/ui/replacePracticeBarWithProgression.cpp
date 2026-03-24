@@ -16,10 +16,10 @@ void replacePracticeBarWithProgression(
 
   auto currentProfile = GlobalStore::get()->getProfileByLevel(levelId);
 
-  if (currentProfile.id.empty())
+  if (!currentProfile)
     return;
 
-  auto metaInfo = getMetaInfoFromStages(currentProfile.data.stages);
+  auto metaInfo = getMetaInfoFromStages(currentProfile->data.stages);
   auto practiceModeLabel = typeinfo_cast<CCLabelBMFont *>(_practiceModeLabel);
   auto practiceModePercentage = typeinfo_cast<CCLabelBMFont *>(_practiceModePercentage);
 

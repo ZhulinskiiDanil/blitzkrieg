@@ -29,12 +29,12 @@ bool StagesGraphLayer::init(GJGameLevel *level, const CCSize &contentSize)
       m_size.height - padding.top - padding.bottom);
 
   auto profile = GlobalStore::get()->getProfileByLevel(m_level);
-  auto &stages = profile.data.stages;
+  auto &stages = profile->data.stages;
   auto metaInfo = getMetaInfoFromStages(stages);
 
   CCLabelBMFont *bigFontLabel;
 
-  if (profile.id.empty())
+  if (!profile)
     bigFontLabel = CCLabelBMFont::create("Attach your profile first", "bigFont.fnt");
   else if (metaInfo.completed < 3)
     bigFontLabel = CCLabelBMFont::create("Complete at least 3 stages", "bigFont.fnt");

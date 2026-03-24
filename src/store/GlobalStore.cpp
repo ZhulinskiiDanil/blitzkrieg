@@ -121,17 +121,21 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
 {
   const float eps = 0.01f;
   const float runDiff = std::abs(runEnd - runStart);
-  auto currentProfile = getProfileById(profileId);
 
-  if (currentProfile.id.empty())
+  auto *currentProfile = getProfileById(profileId);
+
+  if (!currentProfile)
+  {
+    log::error("Profile not found!");
     return -1;
+  }
 
   Stage *targetStage = nullptr;
   Range *targetRange = nullptr;
   bool progressHasChecked = false;
   bool isStageClosed = false;
 
-  for (auto &stage : currentProfile.data.stages)
+  for (auto &stage : currentProfile->data.stages)
   {
     if (stage.checked)
       continue;
@@ -140,8 +144,10 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
     std::vector<Range *> candidates;
 
     for (auto &range : stage.ranges)
+    {
       if (runStart <= range.from && range.consider)
         candidates.push_back(&range);
+    }
 
     if (!candidates.empty())
     {
@@ -149,12 +155,13 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
                                         [eps](Range *a, Range *b)
                                         {
                                           if (std::fabs(a->from - b->from) < eps)
-                                          {
-                                            return a->to < b->to; // if from are almost equal, look at to
-                                          }
+                                            return a->to < b->to;
+
                                           return a->from < b->from;
                                         });
+
       Range *toCheckActualRange = nullptr;
+
       for (auto *r : candidates)
       {
         if (r->consider && !r->checked && runEnd >= r->to)
@@ -168,6 +175,7 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
       {
         toCheck->attempts++;
         toCheck->timePlayed += timePlayed;
+
         auto bestRunDiff = std::abs(toCheck->bestRunFrom - toCheck->bestRunTo);
 
         if (bestRunDiff < runDiff)
@@ -188,13 +196,10 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
         break;
       }
 
-      if (toCheckActualRange)
-      {
-        toCheckActualRange->timePlayed += timePlayed;
-        toCheckActualRange->attempts++;
-      }
+      toCheckActualRange->timePlayed += timePlayed;
+      toCheckActualRange->attempts++;
 
-      if (!toCheckActualRange || toCheckActualRange->checked)
+      if (toCheckActualRange->checked)
         break;
 
       auto bestRunDiff = std::abs(toCheckActualRange->bestRunFrom - toCheckActualRange->bestRunTo);
@@ -233,8 +238,11 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
 
   if (targetStage)
   {
-    bool allChecked = std::all_of(targetStage->ranges.begin(), targetStage->ranges.end(), [](const Range &r)
-                                  { return r.checked || !r.consider; });
+    bool allChecked = std::all_of(targetStage->ranges.begin(), targetStage->ranges.end(),
+                                  [](const Range &r)
+                                  {
+                                    return r.checked || !r.consider;
+                                  });
 
     if (allChecked)
     {
@@ -243,11 +251,10 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
     }
   }
 
-  // ! Notify about closed stage or range
   if (targetRange)
-    RunClosedEvent().send(runStart, runEnd, &currentProfile, targetRange, isStageClosed ? targetStage : nullptr);
+    RunClosedEvent().send(runStart, runEnd, currentProfile, targetRange, isStageClosed ? targetStage : nullptr);
 
-  updateProfile(currentProfile);
+  updateProfile(*currentProfile);
 
   if (progressHasChecked)
     return isStageClosed ? 1 : 0;
@@ -256,7 +263,7 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
 }
 
 // ! --- Search API --- !
-Profile GlobalStore::getProfileById(std::string &profileId)
+Profile *GlobalStore::getProfileById(const std::string &profileId)
 {
   auto it = std::find_if(m_profiles.begin(), m_profiles.end(),
                          [&](const Profile &p)
@@ -266,13 +273,13 @@ Profile GlobalStore::getProfileById(std::string &profileId)
 
   if (it != m_profiles.end())
   {
-    return *it;
+    return &(*it); // или просто: return &*it;
   }
 
-  return {};
+  return nullptr;
 }
 
-Profile GlobalStore::getProfileByLevel(GJGameLevel *level)
+Profile *GlobalStore::getProfileByLevel(GJGameLevel *level)
 {
   if (!level)
     return {};
@@ -281,18 +288,18 @@ Profile GlobalStore::getProfileByLevel(GJGameLevel *level)
   return getProfileByLevel(levelId);
 }
 
-Profile GlobalStore::getProfileByLevel(std::string const &levelId)
+Profile *GlobalStore::getProfileByLevel(std::string const &levelId)
 {
-  for (const auto profile : m_profiles)
+  for (auto &profile : m_profiles)
   {
     std::string key = levelId + "-" + profile.id;
     auto savedStr = Mod::get()->getSavedValue<std::string>(key);
 
     if (!savedStr.empty())
-      return profile;
+      return &profile;
   }
 
-  return {};
+  return nullptr;
 }
 
 Range GlobalStore::getCurrentRange(std::string &profileId)

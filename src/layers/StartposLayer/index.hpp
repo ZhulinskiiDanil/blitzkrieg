@@ -47,7 +47,7 @@ protected:
 	std::vector<StartPosLevel> m_searchResults;
 	std::unordered_map<int, std::string> m_downloadUrls;
 
-	std::string m_info = "HI!";
+	std::string m_info = "Blitzkrieg as a tactic works best when used on a proper StartPos Copy (SP for short). However, the vast majority of them available on the servers is really not that great. But worry not, we have a solution! Just try playing on our copies, which are made by the best StartPos makers in Geometry Dash. SPs are strategically placed at the most important parts of the level, linking it all together beautifully. Moreover, each StartPos starts with a short auto part, so that you have enough time to focus and concentrate on every single attempt. Give it a try!";
 	float m_levelCellHeigth = 90.0f;
 	float m_customCellHeigth = 90.0f;
 	bool m_isLoading = false;

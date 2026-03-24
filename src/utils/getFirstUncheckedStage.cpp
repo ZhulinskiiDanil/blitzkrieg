@@ -18,18 +18,3 @@ Stage *getFirstUncheckedStage(std::vector<Stage> &stages)
 
   return nullptr;
 }
-
-// Range *getFirstUncheckedRange(ProfileData &data)
-// {
-//   for (auto &stage : data.stages)
-//   {
-//     for (auto &range : stage.ranges)
-//     {
-//       if (!range.checked)
-//       {
-//         return &range;
-//       }
-//     }
-//   }
-//   return nullptr;
-// }
