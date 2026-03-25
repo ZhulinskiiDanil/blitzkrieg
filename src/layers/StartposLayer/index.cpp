@@ -434,8 +434,6 @@ void StartPosLayer::loadStartPosLevelList()
   m_lastQuery = m_query;
   std::string reqUrl = fmt::format("{}/levels?page={}&limit={}&levelName={}", API_URL, m_page, m_lvlsPerPage, encodeURIComponent(m_query));
 
-  log::debug("reqUrl {}", reqUrl);
-
   m_listener.spawn(web::WebRequest().get(reqUrl),
                    [this](web::WebResponse value)
                    {
