@@ -70,7 +70,6 @@ bool StartPosLayer::init()
                                                                  {
                                                                   if (m_searchBar) {
                                                                     m_page = 1;
-                                                                    m_query = m_searchBar->getString();
                                                                     loadStartPosLevelList();
                                                                   } });
   searchBtn->setAnchorPoint({1, 0.5f});
@@ -90,6 +89,8 @@ bool StartPosLayer::init()
   m_searchBar->setTextAlign(TextInputAlign::Left);
   m_searchBar->getInputNode()->setLabelPlaceholderScale(0.70f);
   m_searchBar->getInputNode()->setMaxLabelScale(0.70f);
+  m_searchBar->setCallback([this](std::string val)
+                           { m_query = val; });
   m_searchBar->setID("search-bar");
   m_searchBarMenu->addChild(m_searchBar);
 
@@ -155,14 +156,12 @@ bool StartPosLayer::init()
   m_loadingCircle->setID("loading-circle");
   m_loadingCircle->show();
 
+  setKeypadEnabled(true);
+  setKeyboardEnabled(true);
+
   loadStartPosLevelList();
 
   return true;
-}
-
-StartPosLayer::~StartPosLayer()
-{
-  GameLevelManager::get()->m_levelManagerDelegate = nullptr;
 }
 
 void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
@@ -246,28 +245,24 @@ void StartPosLayer::page(size_t page)
 {
   m_page = std::clamp(page, (size_t)1, m_totalPages);
 
-  toggleLoading(true);
+  log::debug("LoadStartPosLevelList");
+
   loadStartPosLevelList();
 }
 
 void StartPosLayer::toggleLoading(bool isToggled)
 {
-  if (isToggled)
-  {
-    m_pageLabel->setString(fmt::to_string(m_page).c_str());
-    m_loadingCircle->setVisible(true);
-    if (auto listView = m_levelList->m_listView)
-      listView->setVisible(false);
-    m_levelsCountLabel->setVisible(false);
-    m_leftButton->setVisible(false);
-    m_rightButton->setVisible(false);
-    m_pageButton->setVisible(false);
-  }
-  else
-  {
-    m_loadingCircle->setVisible(false);
-    m_isLoading = false;
-  }
+  if (auto listView = m_levelList->m_listView)
+    listView->setVisible(!isToggled);
+
+  m_pageLabel->setString(fmt::to_string(m_page).c_str());
+  m_loadingCircle->setVisible(isToggled);
+  m_levelsCountLabel->setVisible(!isToggled);
+  m_leftButton->setVisible(!isToggled);
+  m_rightButton->setVisible(!isToggled);
+  m_pageButton->setVisible(!isToggled);
+
+  m_isLoading = isToggled;
 }
 
 void StartPosLayer::onOpenDownloadLink(CCObject *sender)
@@ -340,12 +335,11 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
   {
     auto cell = new TableViewCell("text-cell", m_levelList->getContentWidth(), m_customCellHeigth);
     cell->m_mainLayer->setContentSize({m_levelList->getContentWidth(), m_customCellHeigth});
+    m_downloadUrls[index] = startposLevel.downloadUrl;
 
     // ! --- Level Name Label --- !
     auto levelNameLabel = CCLabelBMFont::create(startposLevel.levelName.c_str(), "bigFont.fnt");
-
     float availableWidth = cell->m_mainLayer->getContentWidth() - 20.0f;
-
     float labelWidth = levelNameLabel->getContentWidth();
 
     float scale = 1.0f;
@@ -366,24 +360,24 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
     authorLabel->setPosition(10, levelNameLabel->getPositionY() - levelNameLabel->getScaledContentHeight() - 1);
     cell->m_mainLayer->addChild(authorLabel);
 
+    // ! --- Button Menu --- !
+    auto btnMenu = CCMenu::create();
+    btnMenu->setPosition({10, 10});
+    cell->m_mainLayer->addChild(btnMenu);
+
     // ! --- Button --- !
     auto spr = ButtonSprite::create("Download .gmd");
     auto btn = CCMenuItemSpriteExtra::create(
         spr, this, menu_selector(StartPosLayer::onOpenDownloadLink));
-    btn->setAnchorPoint({0, 0});
+    btn->setAnchorPoint({.5, .5});
     btn->setScale(.8f);
     btn->setTag(index);
-    btn->m_baseScale = .75f;
+    btn->m_baseScale = .8f;
+    btn->m_scaleMultiplier = 1.1f;
 
-    m_downloadUrls[index] = startposLevel.downloadUrl;
-
-    // ! --- Button Menu --- !
-    auto btnMenu = CCMenu::create();
     btnMenu->setContentSize(btn->getScaledContentSize());
-    btnMenu->setPosition({10, 10});
-
+    btn->setPosition(btnMenu->getContentSize() / 2);
     btnMenu->addChild(btn);
-    cell->m_mainLayer->addChild(btnMenu);
 
     return cell;
   }
@@ -424,6 +418,12 @@ float StartPosLayer::cellHeightForRowAtIndexPath(CCIndexPath &indexPath, TableVi
     return m_levelCellHeigth;
 }
 
+void StartPosLayer::search()
+{
+  if (m_lastQuery != m_query)
+    loadStartPosLevelList();
+}
+
 void StartPosLayer::loadStartPosLevelList()
 {
   if (m_isLoading)
@@ -431,7 +431,10 @@ void StartPosLayer::loadStartPosLevelList()
   else
     toggleLoading(true);
 
+  m_lastQuery = m_query;
   std::string reqUrl = fmt::format("{}/levels?page={}&limit={}&levelName={}", API_URL, m_page, m_lvlsPerPage, encodeURIComponent(m_query));
+
+  log::debug("reqUrl {}", reqUrl);
 
   m_listener.spawn(web::WebRequest().get(reqUrl),
                    [this](web::WebResponse value)
@@ -481,4 +484,39 @@ void StartPosLayer::loadStartPosLevelList()
                    });
 
   auto req = web::WebRequest();
+}
+
+void StartPosLayer::keyDown(enumKeyCodes key, double d)
+{
+  switch (key)
+  {
+  case KEY_Left:
+  case CONTROLLER_Left:
+    if (m_leftButton->isVisible())
+      page(m_page - 1);
+    break;
+  case KEY_Right:
+  case CONTROLLER_Right:
+    if (m_rightButton->isVisible())
+      page(m_page + 1);
+    break;
+  case KEY_Enter:
+    search();
+    break;
+  default:
+    CCLayer::keyDown(key, d);
+    break;
+  }
+}
+
+void StartPosLayer::keyBackClicked()
+{
+  CCDirector::get()->popSceneWithTransition(0.5f, kPopTransitionFade);
+}
+
+StartPosLayer::~StartPosLayer()
+{
+  auto glm = GameLevelManager::get();
+  if (glm->m_levelManagerDelegate == this)
+    glm->m_levelManagerDelegate = nullptr;
 }

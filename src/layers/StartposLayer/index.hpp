@@ -50,6 +50,7 @@ protected:
 	std::string m_info = "Blitzkrieg as a tactic works best when used on a proper StartPos Copy (SP for short). However, the vast majority of them available on the servers is really not that great. But worry not, we have a solution! Just try playing on our copies, which are made by the best StartPos makers in Geometry Dash. SPs are strategically placed at the most important parts of the level, linking it all together beautifully. Moreover, each StartPos starts with a short auto part, so that you have enough time to focus and concentrate on every single attempt. Give it a try!";
 	float m_levelCellHeigth = 90.0f;
 	float m_customCellHeigth = 90.0f;
+	std::string m_lastQuery;
 	bool m_isLoading = false;
 
 	bool init() override;
@@ -58,6 +59,7 @@ protected:
 
 	void page(size_t page);
 	void toggleLoading(bool isToggled);
+	void search();
 
 	void loadLevels();
 	void loadLevelsFinished(CCArray *levels, char const *key) override;
@@ -67,4 +69,6 @@ protected:
 	virtual unsigned int numberOfSectionsInTableView(TableView *tableView) override;
 	virtual TableViewCell *cellForRowAtIndexPath(CCIndexPath &indexPath, TableView *tableView) override;
 	virtual float cellHeightForRowAtIndexPath(CCIndexPath &indexPath, TableView *tableView) override;
+	void keyDown(cocos2d::enumKeyCodes, double d) override;
+	void keyBackClicked() override;
 };
