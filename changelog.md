@@ -1,3 +1,16 @@
+# 2.2.0
+- Added the ability to sort and filter runs in the stage browser
+- Added the ability to switch to the startpos version from the original level layer
+- Added a visual progress line under each run for better visual perception
+- Added the Stage Graph showing playtime and number of attempts per stage
+- Added keybinds for stage switching (A <-, D ->, Q <-, E ->)
+- Added a list of starting positions for Nayloren's team copies (High-Quality Start Positions)
+- Added a streamer mode that hides profile names, leaving only one letter
+- General code improvements and cleanup
+- General stability improvements
+- Added GitHub source metadata
+- Removed the ability to save removed startposes in profiles
+
 # 2.1.0
 - Replaced the practice bar with the Blitzkrieg progression system
 - If a profile is attached to a level, the stage browser now opens by default

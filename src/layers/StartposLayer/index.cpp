@@ -45,7 +45,7 @@ bool StartPosLayer::init()
 
   m_levelList = GJListLayer::create(
       nullptr,
-      "Nayloren's StartPos copies",
+      "High-Quality Start Positions",
       {0, 0, 0, 180},
       356.0f, 220.0f, 0);
   m_levelList->setPosition(winSize / 2.0f - m_levelList->getContentSize() / 2.0f);
@@ -181,11 +181,11 @@ void StartPosLayer::loadLevelsFailed(char const *key, int p1)
 
   FLAlertLayer::create(
       "Load Error",
-      fmt::format("Failed to load Nayloren's levels: {} (key: {})", p1, key),
+      fmt::format("Failed to load StartPos levels: {} (key: {})", p1, key),
       "OK")
       ->show();
 
-  log::warn("Failed to load Nayloren's levels: {} (key: {})", p1, key);
+  log::warn("Failed to load StartPos levels: {} (key: {})", p1, key);
 }
 
 void StartPosLayer::loadLevels()
