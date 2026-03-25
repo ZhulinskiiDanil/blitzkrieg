@@ -17,6 +17,5 @@ void linkProfileWithLevel(const Profile &profile, GJGameLevel *level)
 
   // Link new profile
   std::string key = levelId + "-" + profile.id;
-  matjson::Value profileJson = profile;
-  Mod::get()->setSavedValue(key, profileJson.dump(matjson::NO_INDENTATION));
+  Mod::get()->setSavedValue(key, profile.id);
 }

@@ -14,7 +14,9 @@ class StagesGraphLayer : public CCLayer
 private:
   CCSize m_size;
   Graph *m_graph = nullptr;
+
   GJGameLevel *m_level = nullptr;
+  std::vector<Stage> *m_stages = nullptr;
 
 public:
   static StagesGraphLayer *create(GJGameLevel *level, const CCSize &contentSize);

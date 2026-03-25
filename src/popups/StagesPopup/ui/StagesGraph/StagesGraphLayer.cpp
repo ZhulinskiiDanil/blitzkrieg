@@ -22,6 +22,7 @@ bool StagesGraphLayer::init(GJGameLevel *level, const CCSize &contentSize)
 
   m_level = level;
   m_size = contentSize;
+  CCLabelBMFont *errorLabel = nullptr;
   this->setContentSize(m_size);
 
   const auto innerSize = CCSize(
@@ -29,22 +30,30 @@ bool StagesGraphLayer::init(GJGameLevel *level, const CCSize &contentSize)
       m_size.height - padding.top - padding.bottom);
 
   auto profile = GlobalStore::get()->getProfileByLevel(m_level);
-  auto &stages = profile->data.stages;
-  auto metaInfo = getMetaInfoFromStages(stages);
 
-  CCLabelBMFont *bigFontLabel;
-
-  if (!profile)
-    bigFontLabel = CCLabelBMFont::create("Attach your profile first", "bigFont.fnt");
-  else if (metaInfo.completed < 3)
-    bigFontLabel = CCLabelBMFont::create("Complete at least 3 stages", "bigFont.fnt");
-
-  if (bigFontLabel)
+  if (profile)
   {
-    bigFontLabel->setScale(.75f);
-    bigFontLabel->setOpacity(255 * .6f);
-    bigFontLabel->setPosition(m_size / 2);
-    this->addChild(bigFontLabel);
+    m_stages = &profile->data.stages;
+  }
+
+  if (!m_stages || m_stages->empty())
+  {
+    errorLabel = CCLabelBMFont::create("Attach your profile first", "bigFont.fnt");
+  }
+  else
+  {
+    auto metaInfo = getMetaInfoFromStages(*m_stages);
+
+    if (metaInfo.completed < 3)
+      errorLabel = CCLabelBMFont::create("Complete at least 3 stages", "bigFont.fnt");
+  }
+
+  if (errorLabel)
+  {
+    errorLabel->setScale(.75f);
+    errorLabel->setOpacity(255 * .6f);
+    errorLabel->setPosition(m_size / 2);
+    this->addChild(errorLabel);
     return true;
   }
 
@@ -94,7 +103,7 @@ bool StagesGraphLayer::init(GJGameLevel *level, const CCSize &contentSize)
   std::vector<GraphDot> playtimeData;
   std::vector<GraphDot> attemptsData;
 
-  int count = stages.size();
+  int count = m_stages->size();
 
   float minY = std::numeric_limits<float>::infinity();
   float maxY = -std::numeric_limits<float>::infinity();
@@ -103,8 +112,8 @@ bool StagesGraphLayer::init(GJGameLevel *level, const CCSize &contentSize)
   {
     float x = i + 1;
 
-    float playtime = static_cast<float>(getStagePlaytime(&stages[i]));
-    float attempts = static_cast<float>(getStageAttempts(&stages[i]));
+    float playtime = static_cast<float>(getStagePlaytime(&(*m_stages)[i]));
+    float attempts = static_cast<float>(getStageAttempts(&(*m_stages)[i]));
 
     playtimeData.push_back({x, playtime});
     attemptsData.push_back({x, attempts});

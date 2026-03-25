@@ -29,6 +29,9 @@ bool StageListLayer::init(
   m_profile = GlobalStore::get()->getProfileByLevel(m_level);
   m_stage = stage;
 
+  float padding = 5.f;
+  this->setContentSize(m_contentSize);
+
   m_listenerStageRangesChanged = StageRangesChangedEvent().listen(
       [this]()
       {
@@ -45,23 +48,11 @@ bool StageListLayer::init(
     m_uncheckedStage = getFirstUncheckedStage(*m_profile);
 
     if (!m_uncheckedStage)
-      return false;
+      return true;
   }
-
-  this->setContentSize(m_contentSize);
-
-  float padding = 5.f;
 
   if (!m_stages || m_stages->size() <= 0)
-  {
-    auto bigFontLabel = CCLabelBMFont::create("Attach your profile first", "bigFont.fnt");
-    bigFontLabel->setScale(.75f);
-    bigFontLabel->setOpacity(255 * .6f);
-    bigFontLabel->setPosition(contentSize / 2);
-
-    this->addChild(bigFontLabel);
     return true;
-  }
 
   // ! --- ScrollLayer --- !
   m_scroll = ScrollLayer::create(contentSize);
@@ -147,10 +138,10 @@ bool StageListLayer::init(
 
 void StageListLayer::reload()
 {
-  drawArrows();
-
   if (!m_stage || !m_uncheckedStage)
     return;
+
+  drawArrows();
 
   bool isDisabled = m_stage->stage > m_uncheckedStage->stage;
   m_scroll->m_contentLayer->removeAllChildrenWithCleanup(true);

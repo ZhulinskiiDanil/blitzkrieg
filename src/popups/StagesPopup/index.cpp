@@ -118,10 +118,7 @@ void StagesPopup::drawCurrentStage()
   Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
   auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
-  Stage *currentStage = getFirstUncheckedStage(*profile);
-
-  if (!currentStage && !profile->data.stages.empty())
-    return;
+  Stage *currentStage = profile ? getFirstUncheckedStage(*profile) : nullptr;
 
   const auto contentSize = CCSize(
       m_size.width - padding.left - padding.right,
@@ -130,6 +127,20 @@ void StagesPopup::drawCurrentStage()
   m_currentStageNode = CCNode::create();
   m_currentStageNode->setID("stages-popup-current-stage"_spr);
   m_currentStageNode->setTag(2);
+
+  m_mainLayer->addChild(m_currentStageNode);
+  contentContainers.push_back(m_currentStageNode);
+
+  if (!profile || profile->data.stages.size() <= 0)
+  {
+    auto errorLabel = CCLabelBMFont::create("Attach your profile first", "bigFont.fnt");
+    errorLabel->setScale(.75f);
+    errorLabel->setOpacity(255 * .6f);
+    errorLabel->setPosition(m_size / 2);
+
+    m_currentStageNode->addChild(errorLabel);
+    return;
+  }
 
   // ! --- Title --- !
   drawCurrentStageTitle(
@@ -170,14 +181,13 @@ void StagesPopup::drawCurrentStage()
   // ! --- StageListLayer --- !
   auto stageListContentSize = CCSize(contentSize.width, contentSize.height);
   m_stageList = StageListLayer::create(currentStage, m_level, stageListContentSize);
+  m_stageList->setPosition({padding.left, padding.bottom});
+
   m_stageList->setSortBy(!sortBtnCheckbox->isToggled() ? StageListSortBy::ASC : StageListSortBy::DESC);
   m_stageList->setRunsVisabilityForCompleted(!visabilityBtnCheckbox->isToggled());
   m_stageList->reload();
-  m_stageList->setPosition({padding.left, padding.bottom});
 
   m_currentStageNode->addChild(m_stageList);
-  m_mainLayer->addChild(m_currentStageNode);
-  contentContainers.push_back(m_currentStageNode);
 }
 
 void StagesPopup::onToggleSort(CCObject *sender)
@@ -226,7 +236,7 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padd
 
   std::string title = fmt::format(
       "Stage: {}/{}",
-      geode::utils::numToString(metaInfo.completed + 1),
+      geode::utils::numToString(std::min(metaInfo.completed + 1, metaInfo.total)),
       geode::utils::numToString(metaInfo.total));
 
   m_currentStageTitleLabel = CCLabelBMFont::create(
