@@ -46,9 +46,6 @@ bool StageListLayer::init(
     m_stages = &m_profile->data.stages;
     m_currentIndex = m_stage->stage - 1;
     m_uncheckedStage = getFirstUncheckedStage(*m_profile);
-
-    if (!m_uncheckedStage)
-      return true;
   }
 
   if (!m_stages || m_stages->size() <= 0)
@@ -138,12 +135,13 @@ bool StageListLayer::init(
 
 void StageListLayer::reload()
 {
-  if (!m_stage || !m_uncheckedStage)
+  if (!m_stage) {
     return;
+  }
 
   drawArrows();
 
-  bool isDisabled = m_stage->stage > m_uncheckedStage->stage;
+  bool isDisabled = m_uncheckedStage && m_stage->stage > m_uncheckedStage->stage;
   m_scroll->m_contentLayer->removeAllChildrenWithCleanup(true);
   m_lockSpr->setVisible(isDisabled);
 
@@ -153,6 +151,7 @@ void StageListLayer::reload()
   const float cellWidth = (totalWidth - gap) / 2.f;
 
   std::vector<Range *> visibleRanges;
+  
   for (auto &r : m_stage->ranges)
     if (r.consider)
     {
@@ -229,8 +228,8 @@ void StageListLayer::setRunsVisabilityForCompleted(bool visible)
 void StageListLayer::drawArrows()
 {
   const auto stagesMetaInfo = getMetaInfoFromStages(*m_stages);
-
-  if (!m_stages || stagesMetaInfo.consideredStages->empty() || stagesMetaInfo.consideredStages->size() < 2 || !stagesMetaInfo.currentStage)
+  
+  if (!m_stages || !m_stage || stagesMetaInfo.consideredStages->empty() || stagesMetaInfo.consideredStages->size() < 2)
     return;
 
   if (m_buttonMenuLeft)

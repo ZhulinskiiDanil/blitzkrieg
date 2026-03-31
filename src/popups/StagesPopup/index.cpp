@@ -118,7 +118,14 @@ void StagesPopup::drawCurrentStage()
   Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
   auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
-  Stage *currentStage = profile ? getFirstUncheckedStage(*profile) : nullptr;
+  Stage* currentStage = nullptr;
+
+  if (profile && !profile->data.stages.empty()) {
+    currentStage = getFirstUncheckedStage(*profile);
+    if (!currentStage) {
+      currentStage = &profile->data.stages.back();
+    }
+  }
 
   const auto contentSize = CCSize(
       m_size.width - padding.left - padding.right,
@@ -248,8 +255,25 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padd
 
   std::string stat = "";
 
-  float totalAttempts = metaInfo.currStageAttempts;
-  float totalTimePlayed = metaInfo.currStagePlaytime;
+  float totalAttempts = 0;
+  float totalTimePlayed = 0;
+
+  Stage* currentStage = metaInfo.currentStage;
+  if (!currentStage && !stages.empty()) {
+    currentStage = &stages.back();
+  }
+
+  if (currentStage)
+  {
+    for (const auto& range : currentStage->ranges)
+    {
+      if (range.consider)
+      {
+        totalAttempts += range.attempts;
+        totalTimePlayed += range.timePlayed;
+      }
+    }
+  }
 
   stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
   stat += formatTimePlayed(totalTimePlayed);
