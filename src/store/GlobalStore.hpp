@@ -8,6 +8,7 @@
 #include "../serialization/profile/index.hpp"
 #include "../utils/getSavedProfiles.hpp"
 #include "../utils/linkProfileWithLevel.hpp"
+#include "../utils/isStageDeepChecked.hpp"
 #include "../events/RunClosedEvent.hpp"
 
 using namespace geode::prelude;

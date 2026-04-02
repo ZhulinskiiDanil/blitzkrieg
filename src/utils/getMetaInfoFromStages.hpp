@@ -7,7 +7,7 @@ struct StageMetaInfo
 {
   int total;                            // amount of stages that has at least one range.consider == true
   int completed;                        // amount of deep checked stages
-  int currStagePlaytime;                // total playtime of the current stage (sum of timePlayed of all ranges in the current stage)
+  float currStagePlaytime;              // total playtime of the current stage (sum of timePlayed of all ranges in the current stage)
   int currStageAttempts;                // total attempts of the current stage (sum of attempts of all ranges in the current stage)
   int currStageTotalRanges;             // total ranges in the current stage
   int currStageCompletedRanges;         // total completed ranges in the current stage
@@ -17,5 +17,5 @@ struct StageMetaInfo
 
 StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages);
 
-int getStagePlaytime(Stage *stage);
+float getStagePlaytime(Stage *stage);
 int getStageAttempts(Stage *stage);

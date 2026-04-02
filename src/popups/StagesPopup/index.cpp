@@ -118,11 +118,13 @@ void StagesPopup::drawCurrentStage()
   Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
   auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
-  Stage* currentStage = nullptr;
+  Stage *currentStage = nullptr;
 
-  if (profile && !profile->data.stages.empty()) {
+  if (profile && !profile->data.stages.empty())
+  {
     currentStage = getFirstUncheckedStage(*profile);
-    if (!currentStage) {
+    if (!currentStage)
+    {
       currentStage = &profile->data.stages.back();
     }
   }
@@ -253,32 +255,26 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padd
   m_currentStageTitleLabel->setAnchorPoint({0, 0.5});
   m_currentStageNode->addChild(m_currentStageTitleLabel);
 
-  std::string stat = "";
+  std::string statLabel = "";
 
   float totalAttempts = 0;
   float totalTimePlayed = 0;
 
-  Stage* currentStage = metaInfo.currentStage;
-  if (!currentStage && !stages.empty()) {
+  Stage *currentStage = metaInfo.currentStage;
+
+  if (!currentStage && !stages.empty())
     currentStage = &stages.back();
-  }
 
   if (currentStage)
   {
-    for (const auto& range : currentStage->ranges)
-    {
-      if (range.consider)
-      {
-        totalAttempts += range.attempts;
-        totalTimePlayed += range.timePlayed;
-      }
-    }
+    totalAttempts = getStageAttempts(currentStage);
+    totalTimePlayed = getStagePlaytime(currentStage);
   }
 
-  stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
-  stat += formatTimePlayed(totalTimePlayed);
+  statLabel += fmt::format("{} <small>Attempts</small> ", totalAttempts);
+  statLabel += formatTimePlayed(totalTimePlayed);
 
-  m_totalStatLabel = Label::create(stat, "bigFont.fnt", .4f);
+  m_totalStatLabel = Label::create(statLabel, "bigFont.fnt", .4f);
   m_totalStatLabel->setPosition({padding.left + 6, m_size.height - padding.top / 2 - 15});
   m_totalStatLabel->setAnchorPoint({0, 0.5});
   m_currentStageNode->addChild(m_totalStatLabel);

@@ -137,7 +137,7 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
 
   for (auto &stage : currentProfile->data.stages)
   {
-    if (stage.checked)
+    if (isStageDeepChecked(stage))
       continue;
 
     targetStage = &stage;
@@ -154,7 +154,7 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
       auto *toCheck = *std::min_element(candidates.begin(), candidates.end(),
                                         [eps](Range *a, Range *b)
                                         {
-                                          if (std::fabs(a->from - b->from) < eps)
+                                          if (std::fabs(a->from - b->from) <= eps)
                                             return a->to < b->to;
 
                                           return a->from < b->from;
@@ -273,7 +273,7 @@ Profile *GlobalStore::getProfileById(const std::string &profileId)
 
   if (it != m_profiles.end())
   {
-    return &(*it); // или просто: return &*it;
+    return &(*it);
   }
 
   return nullptr;

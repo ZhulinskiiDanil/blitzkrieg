@@ -5,7 +5,7 @@ StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
 {
   int total = 0;
   int completed = 0;
-  int currStagePlaytime = 0;
+  float currStagePlaytime = 0;
   int currStageAttempts = 0;
   int currStageTotalRanges = 0;
   int currStageCompletedRanges = 0;
@@ -61,9 +61,9 @@ StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
       consideredStages};
 }
 
-int getStagePlaytime(Stage *stage)
+float getStagePlaytime(Stage *stage)
 {
-  int res = 0;
+  float res = 0;
 
   for (auto &range : stage->ranges)
     if (range.consider)
