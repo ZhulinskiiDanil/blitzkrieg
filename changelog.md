@@ -1,3 +1,12 @@
+# 2.2.1
+- Fixed Stage Browser issues for fully completed profiles
+- Fixed incorrect initial stats (Attempts / Time Played)
+- Fixed stage selection fallback (now opens on final stage)
+- Fixed missing navigation arrows
+- Improved logic for profiles without unchecked stages
+- Minor improvements and fixes
+- Thanks to [**jordiedh**](https://github.com/jordiedh) for the contribution
+
 # 2.2.0
 - Added the ability to sort and filter runs in the stage browser
 - Added the ability to switch to the startpos version from the original level layer
