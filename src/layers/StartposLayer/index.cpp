@@ -239,9 +239,6 @@ void StartPosLayer::reload()
 void StartPosLayer::page(size_t page)
 {
   m_page = std::clamp(page, (size_t)1, m_totalPages);
-
-  log::debug("LoadStartPosLevelList");
-
   loadStartPosLevelList();
 }
 
