@@ -126,11 +126,7 @@ bool StartPosLayer::init()
 
   auto refreshBtnSpr = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
   auto refreshButton = CCMenuItemExt::createSpriteExtra(refreshBtnSpr, [this](auto)
-                                                        {
-                                                          m_searchBar->setString(m_query);
-
-                                                          toggleLoading(true);
-                                                          loadStartPosLevelList(); });
+                                                        { loadStartPosLevelList(true); });
   refreshButton->setPosition({winSize.width - refreshBtnSpr->getContentWidth() / 2.0f - 4.0f, refreshBtnSpr->getContentHeight() / 2.0f + 4.0f});
   refreshButton->setID("refresh-button");
   btnsMenu->addChild(refreshButton);
@@ -143,10 +139,9 @@ bool StartPosLayer::init()
   pageBtnSpr->addChild(m_pageLabel);
   m_pageButton = CCMenuItemExt::createSpriteExtra(pageBtnSpr, [this](auto)
                                                   {
-                                                    // auto popup = SetIDPopup::create(m_page + 1, 1, (m_searchResults.size() + (m_lvlsPerPage == 10 ? 9 : 19)) / m_lvlsPerPage, "Go to Page", "Go", true, 1, 60.0f, false, false);
-                                                    // popup->m_delegate = this;
-                                                    // popup->show();
-                                                  });
+                                                    auto popup = SetIDPopup::create(m_page, 1, m_totalPages, "Go to Page", "Go", true, 1, 60.0f, false, false);
+                                                    popup->m_delegate = this;
+                                                    popup->show(); });
   m_pageButton->setPosition({winSize.width - m_pageButton->getContentWidth() * m_pageButton->getScaleX() / 2.0f - 3.0f, winSize.height - 39.5f});
   m_pageButton->setID("page-button");
   btnsMenu->addChild(m_pageButton);
@@ -230,8 +225,8 @@ void StartPosLayer::reload()
   m_levelList->m_listView = listView;
 
   auto tableView = listView->m_tableView;
-  tableView->m_delegate = this;
-  tableView->m_tableDelegate = this;
+  // tableView->m_delegate = this;
+  // tableView->m_tableDelegate = this;
   tableView->m_dataSource = this;
   tableView->setTouchEnabled(true);
 
@@ -248,6 +243,11 @@ void StartPosLayer::page(size_t page)
   log::debug("LoadStartPosLevelList");
 
   loadStartPosLevelList();
+}
+
+void StartPosLayer::setIDPopupClosed(SetIDPopup *, int pageValue)
+{
+  page(pageValue);
 }
 
 void StartPosLayer::toggleLoading(bool isToggled)
@@ -404,36 +404,27 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
   return nullptr;
 }
 
-float StartPosLayer::cellHeightForRowAtIndexPath(CCIndexPath &indexPath, TableView *table)
-{
-  bool isDefaultLevel = m_searchResults[indexPath.m_row].levelId > 0;
-  bool isOriginalLevel = m_searchResults[indexPath.m_row].originalId > 0 && !m_searchResults[indexPath.m_row].downloadUrl.empty();
-  bool isCustomLevel = !m_searchResults[indexPath.m_row].downloadUrl.empty();
-
-  if (isDefaultLevel || isOriginalLevel)
-    return m_levelCellHeigth;
-  else if (isCustomLevel)
-    return m_customCellHeigth;
-  else
-    return m_levelCellHeigth;
-}
-
 void StartPosLayer::search()
 {
-  if (m_lastQuery != m_query)
+  if (m_lastReqUrl != generateRequestURL())
     loadStartPosLevelList();
 }
 
-void StartPosLayer::loadStartPosLevelList()
+std::string StartPosLayer::generateRequestURL()
 {
-  if (m_isLoading)
+  return fmt::format("{}/levels?page={}&limit={}&levelName={}", API_URL, m_page, m_lvlsPerPage, encodeURIComponent(m_query));
+}
+
+void StartPosLayer::loadStartPosLevelList(bool isRefresh)
+{
+  std::string reqUrl = generateRequestURL();
+
+  if (m_isLoading || (reqUrl == m_lastReqUrl && !isRefresh))
     return;
   else
     toggleLoading(true);
 
-  m_lastQuery = m_query;
-  std::string reqUrl = fmt::format("{}/levels?page={}&limit={}&levelName={}", API_URL, m_page, m_lvlsPerPage, encodeURIComponent(m_query));
-
+  m_lastReqUrl = reqUrl;
   m_listener.spawn(web::WebRequest().get(reqUrl),
                    [this](web::WebResponse value)
                    {
