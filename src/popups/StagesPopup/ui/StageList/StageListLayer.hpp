@@ -9,6 +9,7 @@
 #include "../../../../events/StageRangesChangedEvent.hpp"
 #include "../../../../events/UpdateScrollLayoutEvent.hpp"
 
+#include "../../../../ui/RectNode.hpp"
 #include "../../../../utils/getFirstUncheckedStage.hpp"
 #include "../../../../utils/getMetaInfoFromStages.hpp"
 #include "../../../../serialization/profile/index.hpp"
@@ -26,8 +27,9 @@ class StageListLayer : public CCLayer
 {
 private:
   CCSize m_contentSize;
-  ScrollLayer *m_scroll;
   CCSprite *m_lockSpr;
+  ScrollLayer *m_scroll;
+  CCLayer *m_content;
 
   CCMenu *m_buttonMenuLeft;
   CCMenu *m_buttonMenuRight;

@@ -55,14 +55,14 @@ bool GraphPoint::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
   auto thisPos = this->getPosition();
 
   // toggle(true, thisPos.x, thisPos.y);
-  log::debug("ccTouchBegan");
+  // log::debug("ccTouchBegan");
 
   return true;
 }
 
 void GraphPoint::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
 {
-  log::debug("ccTouchMoved");
+  // log::debug("ccTouchMoved");
 }
 
 void GraphPoint::ccTouchEnd(CCTouch *pTouch, CCEvent *pEvent)
@@ -70,7 +70,7 @@ void GraphPoint::ccTouchEnd(CCTouch *pTouch, CCEvent *pEvent)
   auto thisPos = this->getPosition();
 
   // toggle(false, thisPos.x, thisPos.y);
-  log::debug("ccTouchEnd");
+  // log::debug("ccTouchEnd");
 }
 
 CCRect GraphPoint::getWorldSpaceBoundingBox(CCNode *node)

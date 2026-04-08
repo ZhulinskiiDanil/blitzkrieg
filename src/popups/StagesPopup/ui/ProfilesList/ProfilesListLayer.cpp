@@ -47,6 +47,14 @@ bool ProfilesListLayer::init(
 
   this->addChild(m_scroll);
 
+  // ! --- BG --- !
+  RectNode *bg = RectNode::create(contentSize, ccc4FFromccc4B({30, 30, 30, 255}), 8);
+  bg->ignoreAnchorPointForPosition(false);
+  bg->setAnchorPoint({0.5f, 0.5f});
+  bg->setPosition(contentSize / 2);
+  bg->setZOrder(-1);
+  this->addChild(bg);
+
   // ! --- Borders --- !
   auto borders = ListBorders::create();
   borders->setSpriteFrames("list-top.png"_spr, "list-side.png"_spr, 2.f); // 2.1f
@@ -56,10 +64,9 @@ bool ProfilesListLayer::init(
   borders->setAnchorPoint({0.5f, 0.5f});
   this->addChild(borders);
 
+  // ! Set borders color to dark gray
   for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
-  {
-    child->setColor(ccc3(15, 15, 15));
-  }
+    child->setColor(ccc3(50, 50, 50));
 
   // ! --- Bottom buttons --- !
   auto btnsGap = 5.f;
@@ -151,12 +158,12 @@ void ProfilesListLayer::reload()
     {
       if (pinned && !headerPinnedAdded)
       {
-        drawSectionHeader("Pinned");
+        // drawSectionHeader("Pinned");
         headerPinnedAdded = true;
       }
       else if (!pinned && !headerOtherAdded)
       {
-        drawSectionHeader("Other");
+        // drawSectionHeader("Other");
         headerOtherAdded = true;
       }
     }

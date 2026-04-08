@@ -5,6 +5,7 @@
 #include "./BlitzkriegProfile.hpp"
 #include "../../../CreateProfilePopup/index.hpp"
 
+#include "../../../../ui/RectNode.hpp"
 #include "../../../../events/ProfilesChangedEvent.hpp"
 #include "../../../../serialization/profile/index.hpp"
 #include "../../../../store/GlobalStore.hpp"

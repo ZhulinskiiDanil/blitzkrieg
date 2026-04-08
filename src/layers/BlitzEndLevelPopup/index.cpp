@@ -4,14 +4,15 @@ void BlitzEndLevelLayer::customSetup()
 {
     EndLevelLayer::customSetup();
     auto hideLayerMenu = this->getChildByID("hide-layer-menu");
-    auto modCircleLogo = CCSprite::create("logo-circle.png"_spr);
-    auto modBtn = CCMenuItemExt::createSpriteExtra(modCircleLogo, [this](auto)
-                                                   { onPopup(); });
-    modBtn->setScale(0.8f);
-    modBtn->m_baseScale = modBtn->getScale();
+    m_fields->m_logoSpr = CCSprite::create("logo-circle.png"_spr);
+    m_fields->m_logoSpr->setOpacity(255 * .5f);
+    m_fields->m_modBtn = CCMenuItemExt::createSpriteExtra(m_fields->m_logoSpr, [this](auto)
+                                                          { onPopup(); });
+    m_fields->m_modBtn->setScale(0.8f);
+    m_fields->m_modBtn->m_baseScale = m_fields->m_modBtn->getScale();
 
-    modBtn->setID("blitzkrieg-button");
-    hideLayerMenu->addChild(modBtn);
+    m_fields->m_modBtn->setID("blitzkrieg-button");
+    hideLayerMenu->addChild(m_fields->m_modBtn);
     hideLayerMenu->updateLayout();
 }
 

@@ -7,9 +7,21 @@ using namespace geode::prelude;
 
 class $modify(BlitzEndLevelLayer, EndLevelLayer)
 {
+    struct Fields
+    {
+        CCSprite *m_logoSpr;
+        CCMenuItemSpriteExtra *m_modBtn;
+    };
+
 private:
     void onPopup();
 
 public:
     void customSetup();
+
+    void onHideLayer(CCObject *sender)
+    {
+        EndLevelLayer::onHideLayer(sender);
+        m_fields->m_modBtn->setVisible(!m_hidden);
+    }
 };

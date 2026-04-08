@@ -56,7 +56,7 @@ void BlitzLevelInfoLayer::loadStartPosLevel()
                                        }
                                        else
                                        {
-                                           log::debug("Parse error: {}", res.unwrapErr());
+                                           log::warn("Parse error: {}", res.unwrapErr());
                                        }
                                    }
                                    else

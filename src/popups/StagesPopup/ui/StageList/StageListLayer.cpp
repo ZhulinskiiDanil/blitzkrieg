@@ -55,16 +55,31 @@ bool StageListLayer::init(
   m_scroll = ScrollLayer::create(contentSize);
   m_scroll->setContentSize({contentSize.width - padding * 2, contentSize.height - padding * 2});
   m_scroll->setPosition({padding, padding});
-
   m_scroll->m_contentLayer->setLayout(
+      ColumnLayout::create()
+          ->setAxisAlignment(AxisAlignment::End)
+          ->setAutoGrowAxis(m_scroll->getContentHeight()));
+
+  this->addChild(m_scroll);
+
+  // ! --- Scroll Content --- !
+  m_content = CCLayer::create();
+  m_content->setLayout(
       ColumnLayout::create()
           ->setGap(5)
           ->setAxisReverse(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setAutoGrowAxis(m_scroll->getContentHeight())
           ->ignoreInvisibleChildren(false));
+  m_scroll->m_contentLayer->addChild(m_content);
 
-  this->addChild(m_scroll);
+  // ! --- BG --- !
+  RectNode *bg = RectNode::create(contentSize, ccc4FFromccc4B({30, 30, 30, 255}), 8);
+  bg->ignoreAnchorPointForPosition(false);
+  bg->setAnchorPoint({0.5f, 0.5f});
+  bg->setPosition(contentSize / 2);
+  bg->setZOrder(-1);
+  this->addChild(bg);
 
   // ! --- Borders --- !
   auto borders = ListBorders::create();
@@ -73,6 +88,10 @@ bool StageListLayer::init(
   borders->setContentSize({contentSize.width, contentSize.height - 3});
   borders->setPosition({contentSize.width / 2, contentSize.height / 2 - .5f});
   borders->setAnchorPoint({0.5f, 0.5f});
+
+  // ! Set borders color to dark gray
+  for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
+    child->setColor(ccc3(50, 50, 50));
 
   this->addChild(borders);
 
@@ -85,11 +104,6 @@ bool StageListLayer::init(
 
   this->addChild(m_lockSpr);
 
-  for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
-  {
-    child->setColor(ccc3(15, 15, 15));
-  }
-
   m_listener = StagesChangedEvent().listen(
       [this]()
       {
@@ -99,16 +113,21 @@ bool StageListLayer::init(
   m_listenerUpdateScrollLayout = UpdateScrollLayoutEvent().listen(
       [this]()
       {
-        const auto arr = m_scroll->m_contentLayer->getChildren();
-        CCObject *child;
-
-        for (auto child : CCArrayExt(arr))
+        if (m_content)
         {
-          if (auto obj = typeinfo_cast<CCLayer *>(child))
-            obj->updateLayout();
-        };
+          const auto arr = m_content->getChildren();
+          CCObject *child;
 
-        m_scroll->m_contentLayer->updateLayout();
+          for (auto child : CCArrayExt(arr))
+          {
+            if (auto obj = typeinfo_cast<CCLayer *>(child))
+              obj->updateLayout();
+          };
+
+          m_content->updateLayout();
+          m_scroll->m_contentLayer->updateLayout();
+        }
+
         return ListenerResult::Propagate;
       });
 
@@ -135,14 +154,13 @@ bool StageListLayer::init(
 
 void StageListLayer::reload()
 {
-  if (!m_stage) {
+  if (!m_stage || !m_content)
     return;
-  }
 
   drawArrows();
 
   bool isDisabled = m_uncheckedStage && m_stage->stage > m_uncheckedStage->stage;
-  m_scroll->m_contentLayer->removeAllChildrenWithCleanup(true);
+  m_content->removeAllChildrenWithCleanup(true);
   m_lockSpr->setVisible(isDisabled);
 
   const float gap = 5.f;
@@ -151,7 +169,7 @@ void StageListLayer::reload()
   const float cellWidth = (totalWidth - gap) / 2.f;
 
   std::vector<Range *> visibleRanges;
-  
+
   for (auto &r : m_stage->ranges)
     if (r.consider)
     {
@@ -208,9 +226,10 @@ void StageListLayer::reload()
       row->updateLayout();
     }
 
-    m_scroll->m_contentLayer->addChild(row);
+    m_content->addChild(row);
   }
 
+  m_content->updateLayout();
   m_scroll->m_contentLayer->updateLayout();
   scrollToTop();
 }
@@ -228,7 +247,7 @@ void StageListLayer::setRunsVisabilityForCompleted(bool visible)
 void StageListLayer::drawArrows()
 {
   const auto stagesMetaInfo = getMetaInfoFromStages(*m_stages);
-  
+
   if (!m_stages || !m_stage || stagesMetaInfo.consideredStages->empty() || stagesMetaInfo.consideredStages->size() < 2)
     return;
 
