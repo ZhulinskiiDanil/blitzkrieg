@@ -66,7 +66,9 @@ Stage statistics also include **total attempts and total playtime**.
 # Tutorials
 
 **EN** - https://youtu.be/v2CqPpV1kds
+
 **ES** - https://youtu.be/3zeuT4ggzZk
+
 **RU** - https://youtu.be/d6jAYVD1144
 
 **Legacy RU (fallback)** - https://youtu.be/f02eTJmPgBI
