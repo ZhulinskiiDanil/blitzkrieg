@@ -500,6 +500,15 @@ void StartPosLayer::keyBackClicked()
   CCDirector::get()->popSceneWithTransition(0.5f, kPopTransitionFade);
 }
 
+// ! === Destructor === !
+
+// Fix input focus bug when exiting the layer while the search bar is focused
+void StartPosLayer::onExit()
+{
+  if (m_searchBar)
+    m_searchBar->defocus();
+}
+
 StartPosLayer::~StartPosLayer()
 {
   auto glm = GameLevelManager::get();

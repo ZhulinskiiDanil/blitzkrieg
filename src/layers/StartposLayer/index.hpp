@@ -49,6 +49,7 @@ protected:
 	bool m_isLoading = false;
 
 	bool init() override;
+	void onExit() override;
 
 	void onOpenDownloadLink(CCObject *sender);
 
