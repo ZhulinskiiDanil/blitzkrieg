@@ -93,7 +93,7 @@ void StagesPopup::drawContent()
 
 void StagesPopup::drawProfilesList()
 {
-  Padding padding{12.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
+  UIPadding padding{12.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
 
   auto profiles = GlobalStore::get()->getProfiles();
   auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
@@ -117,7 +117,7 @@ void StagesPopup::drawProfilesList()
 
 void StagesPopup::drawCurrentStage()
 {
-  Padding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
+  UIPadding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
   auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
   Stage *currentStage = nullptr;
@@ -376,7 +376,7 @@ void StagesPopup::onToggleVisability(CCObject *sender)
   }
 }
 
-void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padding)
+void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, UIPadding padding)
 {
   auto metaInfo = getMetaInfoFromStages(stages);
 

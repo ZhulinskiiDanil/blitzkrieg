@@ -18,7 +18,7 @@ bool HelpLayer::init(const CCSize &contentSize)
   if (!CCLayer::init())
     return false;
 
-  Padding padding{15.f, 15.f, 15.f, 15.f}; // top, bottom, left, right
+  UIPadding padding{15.f, 15.f, 15.f, 15.f}; // top, bottom, left, right
 
   m_size = contentSize;
   this->setContentSize(m_size);

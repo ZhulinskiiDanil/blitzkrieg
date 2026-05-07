@@ -15,7 +15,7 @@ class GraphPointDisplayList : public CCLayer
 private:
   RectNode *m_bg;
   CCLayer *m_container;
-  Padding m_padding;
+  UIPadding m_padding;
 
   std::unordered_map<std::string, CCNode *> m_items;
 

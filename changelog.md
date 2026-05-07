@@ -1,3 +1,13 @@
+# 2.2.2
+- Updated StartPos recommendation value to 8
+- Added best run line visualization in StageRangeCell
+- Fixed input focus issue when exiting layers by defocusing the search bar
+- Improved About section and refined various UI elements
+- Updated about.md content
+- Removed leftover debug logging from StartPosLayer
+- Minor internal refactors and cleanup
+- Update geode to 5.7.1
+
 # 2.2.1
 - Fixed Stage Browser issues for fully completed profiles
 - Fixed incorrect initial stats (Attempts / Time Played)

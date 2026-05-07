@@ -1,6 +1,6 @@
 #pragma once
 
-struct Padding
+struct UIPadding
 {
   float top;
   float bottom;

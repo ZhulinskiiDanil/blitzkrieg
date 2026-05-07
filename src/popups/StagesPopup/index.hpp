@@ -61,7 +61,7 @@ private:
   void drawStagesGraph();
   void drawHelpSection();
 
-  void drawCurrentStageTitle(std::vector<Stage> &stages, Padding padding);
+  void drawCurrentStageTitle(std::vector<Stage> &stages, UIPadding padding);
 
   bool init(GJGameLevel *);
 

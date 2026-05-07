@@ -18,7 +18,7 @@ bool StagesGraphLayer::init(GJGameLevel *level, const CCSize &contentSize)
   if (!CCLayer::init())
     return false;
 
-  Padding padding{45.f, 45.f, 30.f, 10.f}; // top, bottom, left, right
+  UIPadding padding{45.f, 45.f, 30.f, 10.f}; // top, bottom, left, right
 
   m_level = level;
   m_size = contentSize;
