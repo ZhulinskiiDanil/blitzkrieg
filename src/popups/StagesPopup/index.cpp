@@ -86,6 +86,8 @@ void StagesPopup::drawContent()
       drawCurrentStage();
     else if (btnId == "tabBtnStageGraph"_spr)
       drawStagesGraph();
+    else if (btnId == "tabBtnHelp"_spr)
+      drawHelpSection();
   }
 }
 
@@ -199,6 +201,157 @@ void StagesPopup::drawCurrentStage()
   m_currentStageNode->addChild(m_stageList);
 }
 
+void StagesPopup::drawStagesGraph()
+{
+  m_currentStageGraphNode = CCNode::create();
+  m_currentStageGraphNode->setID("stages-popup-profiles-list"_spr);
+  m_currentStageGraphNode->setTag(3);
+
+  // ! --- StagesGraphLayer --- !
+  auto stagesGraphLayer = StagesGraphLayer::create(m_level, m_size);
+  m_currentStageGraphNode->addChild(stagesGraphLayer);
+
+  m_mainLayer->addChild(m_currentStageGraphNode);
+  contentContainers.push_back(m_currentStageGraphNode);
+}
+
+void StagesPopup::drawHelpSection()
+{
+  m_helpNode = CCNode::create();
+  m_helpNode->setID("stages-popup-help"_spr);
+  m_helpNode->setTag(4);
+
+  // ! --- HelpLayer --- !
+  auto helpLayer = HelpLayer::create(m_size);
+  m_helpNode->addChild(helpLayer);
+
+  m_mainLayer->addChild(m_helpNode);
+  contentContainers.push_back(m_helpNode);
+}
+
+void StagesPopup::drawTabs()
+{
+  // Settings
+  const float TAB_BUTTONS_GAP = 2.f;
+
+  auto oldTabsNode = m_mainLayer->getChildByID("stages-popup-tabs-node"_spr);
+
+  if (oldTabsNode)
+    oldTabsNode->removeFromParentAndCleanup(true);
+
+  // ! --- Main Container --- !
+  auto tabsNode = CCNode::create();
+  tabsNode->setID("stages-popup-tabs-node"_spr);
+
+  // ! --- Buttons --- !
+  auto tabBtnProfilesList = TabButton::create(
+      "Profiles",
+      this,
+      menu_selector(StagesPopup::onTabButton));
+  tabBtnProfilesList->setAnchorPoint({0.5f, 0.f});
+  tabBtnProfilesList->setTag(1);
+  tabBtnProfilesList->setID("tabBtnProfilesList"_spr);
+  tabBtnProfilesList->toggle(true);
+
+  auto tabBtnCurrentStage = TabButton::create(
+      "Stage Browser",
+      this,
+      menu_selector(StagesPopup::onTabButton));
+  tabBtnCurrentStage->setAnchorPoint({0.5f, 0.f});
+  tabBtnCurrentStage->setTag(2);
+  tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
+
+  auto tabBtnCurrentStageGraph = TabButton::create(
+      "Stage Graph",
+      this,
+      menu_selector(StagesPopup::onTabButton));
+  tabBtnCurrentStageGraph->setAnchorPoint({0.5f, 0.f});
+  tabBtnCurrentStageGraph->setTag(3);
+  tabBtnCurrentStageGraph->setID("tabBtnStageGraph"_spr);
+
+  // auto tabBtnHelp = TabButton::create(
+  //     "Help",
+  //     this,
+  //     menu_selector(StagesPopup::onTabButton));
+  // tabBtnHelp->setAnchorPoint({0.5f, 0.f});
+  // tabBtnHelp->setTag(4);
+  // tabBtnHelp->setID("tabBtnHelp"_spr);
+
+  // ! --- Menu --- !
+  auto tabMenu = CCMenu::create();
+  tabMenu->setPosition({m_size.width / 2, m_size.height - 3.5f});
+  tabMenu->setZOrder(1);
+  tabMenu->setID("stages-popup-tab-menu"_spr);
+
+  tabButtons.clear();
+
+  tabMenu->addChild(tabBtnProfilesList);
+  tabButtons.push_back(tabBtnProfilesList);
+
+  tabMenu->addChild(tabBtnCurrentStage);
+  tabButtons.push_back(tabBtnCurrentStage);
+
+  tabMenu->addChild(tabBtnCurrentStageGraph);
+  tabButtons.push_back(tabBtnCurrentStageGraph);
+
+  tabMenu->alignItemsHorizontallyWithPadding(TAB_BUTTONS_GAP);
+
+  // tabMenu->addChild(tabBtnHelp);
+  // tabButtons.push_back(tabBtnHelp);
+
+  // ! --- Tab Buttons Backgrounds --- !
+  for (auto *btn : tabButtons)
+  {
+    auto gradient = CCSprite::create("tab-gradient-mask.png"_spr);
+    gradient->setAnchorPoint({0.5f, 0.f});
+    gradient->setPosition(tabMenu->convertToWorldSpace(btn->getPosition()));
+    gradient->setColor({82, 82, 82});
+    gradient->setZOrder(0);
+
+    tabsNode->addChild(gradient);
+  }
+
+  tabsNode->addChild(tabMenu);
+  m_mainLayer->addChild(tabsNode);
+
+  // ! --- Options Button --- !
+  CCNode *m = m_closeBtn->getParent();
+  CCSprite *settingsSpr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+  settingsSpr->setScale(0.8f);
+
+  CCMenuItemSpriteExtra *settingsBtn = CCMenuItemSpriteExtra::create(settingsSpr, this, menu_selector(StagesPopup::onSettingsButton));
+  CCSize settingsSize = settingsBtn->getContentSize();
+
+  settingsBtn->setPositionX(this->m_bgSprite->getContentWidth() - 3);
+  settingsBtn->setPositionY(3);
+  m->addChild(settingsBtn);
+}
+
+void StagesPopup::activateTab(TabButton *sender)
+{
+  if (!sender)
+    return;
+
+  // Deactivate all buttons except sender
+  for (auto *btn : tabButtons)
+  {
+    if (!btn)
+      continue;
+
+    if (btn != sender)
+      btn->toggle(false);
+  }
+
+  sender->toggle(true);
+  drawContent();
+}
+
+void StagesPopup::onTabButton(CCObject *obj)
+{
+  auto *btnStage = typeinfo_cast<TabButton *>(obj);
+  activateTab(btnStage);
+}
+
 void StagesPopup::onToggleSort(CCObject *sender)
 {
   if (auto checkbox = typeinfo_cast<CCMenuItemToggler *>(sender))
@@ -221,22 +374,6 @@ void StagesPopup::onToggleVisability(CCObject *sender)
 
     Mod::get()->setSavedValue("hide-stage-completed-runs-enabled", isToggled);
   }
-}
-
-void StagesPopup::drawStagesGraph()
-{
-  Padding padding{45.f, 45.f, 30.f, 10.f}; // top, bottom, left, right
-
-  m_currentStageGraphNode = CCNode::create();
-  m_currentStageGraphNode->setID("stages-popup-profiles-list"_spr);
-  m_currentStageGraphNode->setTag(3);
-
-  // ! --- StagesGraphLayer --- !
-  auto stagesGraphLayer = StagesGraphLayer::create(m_level, m_size);
-  m_currentStageGraphNode->addChild(stagesGraphLayer);
-
-  m_mainLayer->addChild(m_currentStageGraphNode);
-  contentContainers.push_back(m_currentStageGraphNode);
 }
 
 void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padding)
@@ -318,120 +455,7 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, Padding padd
       });
 }
 
-void StagesPopup::drawTabs()
-{
-  auto oldTabsNode = m_mainLayer->getChildByID("stages-popup-tabs-node"_spr);
-
-  if (oldTabsNode)
-    oldTabsNode->removeFromParentAndCleanup(true);
-
-  const float btnsGap = 2.f;
-
-  // ! --- Main Container --- !
-  auto tabsNode = CCNode::create();
-  tabsNode->setID("stages-popup-tabs-node"_spr);
-
-  // ! --- Buttons --- !
-  auto tabBtnProfilesList = TabButton::create(
-      "Profiles",
-      this,
-      menu_selector(StagesPopup::onProfilesListToggle));
-  tabBtnProfilesList->setAnchorPoint({0.5f, 0.f});
-  tabBtnProfilesList->setTag(1);
-  tabBtnProfilesList->setID("tabBtnProfilesList"_spr);
-  tabBtnProfilesList->toggle(true);
-
-  auto tabBtnCurrentStage = TabButton::create(
-      "Stage Browser",
-      this,
-      menu_selector(StagesPopup::onCurrentStageToggle));
-  tabBtnCurrentStage->setAnchorPoint({0.5f, 0.f});
-  tabBtnCurrentStage->setTag(2);
-  tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
-
-  auto tabBtnCurrentStageGraph = TabButton::create(
-      "Stage Graph",
-      this,
-      menu_selector(StagesPopup::onCurrentStageToggle));
-  tabBtnCurrentStageGraph->setAnchorPoint({0.5f, 0.f});
-  tabBtnCurrentStageGraph->setTag(3);
-  tabBtnCurrentStageGraph->setID("tabBtnStageGraph"_spr);
-
-  // ! --- Menu --- !
-  auto tabMenu = CCMenu::create();
-  tabMenu->addChild(tabBtnProfilesList);
-  tabMenu->addChild(tabBtnCurrentStage);
-  tabMenu->addChild(tabBtnCurrentStageGraph);
-  tabMenu->alignItemsHorizontallyWithPadding(btnsGap);
-  tabMenu->setPosition({m_size.width / 2, m_size.height - 3.5f});
-  tabMenu->setZOrder(1);
-  tabMenu->setID("stages-popup-tab-menu"_spr);
-
-  tabButtons.clear();
-  tabButtons.push_back(tabBtnProfilesList);
-  tabButtons.push_back(tabBtnCurrentStage);
-  tabButtons.push_back(tabBtnCurrentStageGraph);
-
-  // ! --- Tab Buttons Backgrounds --- !
-  for (auto *btn : tabButtons)
-  {
-    auto gradient = CCSprite::create("tab-gradient-mask.png"_spr);
-    gradient->setAnchorPoint({0.5f, 0.f});
-    gradient->setPosition(tabMenu->convertToWorldSpace(btn->getPosition()));
-    gradient->setColor({82, 82, 82});
-    gradient->setZOrder(0);
-
-    tabsNode->addChild(gradient);
-  }
-
-  tabsNode->addChild(tabMenu);
-  m_mainLayer->addChild(tabsNode);
-
-  // ! --- Options Button --- !
-  CCNode *m = m_closeBtn->getParent();
-  CCSprite *settingsSpr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
-  settingsSpr->setScale(0.8f);
-
-  CCMenuItemSpriteExtra *settingsBtn = CCMenuItemSpriteExtra::create(settingsSpr, this, menu_selector(StagesPopup::onSettingsButton));
-  CCSize settingsSize = settingsBtn->getContentSize();
-
-  settingsBtn->setPositionX(this->m_bgSprite->getContentWidth() - 3);
-  settingsBtn->setPositionY(3);
-  m->addChild(settingsBtn);
-}
-
 void StagesPopup::onSettingsButton(CCObject *)
 {
   geode::openSettingsPopup(Mod::get(), false);
-}
-
-void StagesPopup::activateTab(TabButton *sender)
-{
-  if (!sender)
-    return;
-
-  // Deactivate all buttons except sender
-  for (auto *btn : tabButtons)
-  {
-    if (!btn)
-      continue;
-
-    if (btn != sender)
-      btn->toggle(false);
-  }
-
-  sender->toggle(true);
-  drawContent();
-}
-
-void StagesPopup::onProfilesListToggle(CCObject *obj)
-{
-  auto *btnProfiles = typeinfo_cast<TabButton *>(obj);
-  activateTab(btnProfiles);
-}
-
-void StagesPopup::onCurrentStageToggle(CCObject *obj)
-{
-  auto *btnStage = typeinfo_cast<TabButton *>(obj);
-  activateTab(btnStage);
 }

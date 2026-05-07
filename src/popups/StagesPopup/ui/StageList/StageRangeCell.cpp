@@ -233,8 +233,13 @@ void StageRangeCell::updateTexture()
     m_mid->removeFromParentAndCleanup(true);
 
   float lineBgPaddingX = 5;
+  // 100% is max
+  // we have m_range->bestRunFrom
+  // and we have m_range->bestRunTo
   float lineBgW = m_size.width - lineBgPaddingX * 2;
   float lineBgH = 2;
+  float bestRunLineW = lineBgW * ((m_range->bestRunTo - m_range->bestRunFrom) / 100.f);
+  float bestRunLineX = lineBgPaddingX + lineBgW * (m_range->bestRunFrom / 100.f);
 
   float midBgW = lineBgW * ((m_to - m_from) / 100.f);
   float midBgX = lineBgPaddingX + lineBgW * (m_from / 100.f);
@@ -257,14 +262,19 @@ void StageRangeCell::updateTexture()
 
   m_lineBg = RectNode::create(
       {lineBgW, lineBgH}, lineBgColor, 1);
+  m_bestRunLineBg = RectNode::create(
+      {bestRunLineW, lineBgH}, midBgColor, 1);
   m_midBg = RectNode::create({midBgW, lineBgH + 2}, midBgColor, lineBgH / 2 + 2);
   m_mid = RectNode::create({midBgW - 2, lineBgH}, midColor, lineBgH / 2);
 
   m_lineBg->setPosition({lineBgPaddingX, lineBgH - 2});
+  m_bestRunLineBg->setPosition({bestRunLineX, lineBgH - 2});
   m_midBg->setPosition({midBgX, lineBgH - 3});
   m_mid->setPosition({midBgX + 1, lineBgH - 2});
 
   m_head->addChild(m_lineBg);
+  if (m_range->bestRunFrom >= 0 && m_range->bestRunTo > 0)
+    m_head->addChild(m_bestRunLineBg);
   m_head->addChild(m_midBg);
   m_head->addChild(m_mid);
 

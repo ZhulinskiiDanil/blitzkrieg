@@ -16,6 +16,7 @@
 #include "./ui/StageList/StageListLayer.hpp"
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
 #include "./ui/StagesGraph/StagesGraphLayer.hpp"
+#include "./ui/Help/HelpLayer.hpp"
 
 #include "../../ui/types/index.hpp"
 #include "../../ui/Include.hpp"
@@ -44,6 +45,7 @@ private:
   CCNode *m_profilesListNode;
   CCNode *m_currentStageNode;
   CCNode *m_currentStageGraphNode;
+  CCNode *m_helpNode;
   CCLabelBMFont *m_currentStageTitleLabel;
   Label *m_totalStatLabel;
   StageListLayer *m_stageList;
@@ -53,15 +55,17 @@ private:
 
   void drawTabs();
   void drawContent();
+
   void drawProfilesList();
   void drawCurrentStage();
-  void drawCurrentStageTitle(std::vector<Stage> &stages, Padding padding);
   void drawStagesGraph();
+  void drawHelpSection();
+
+  void drawCurrentStageTitle(std::vector<Stage> &stages, Padding padding);
 
   bool init(GJGameLevel *);
 
-  void onCurrentStageToggle(CCObject *);
-  void onProfilesListToggle(CCObject *);
+  void onTabButton(CCObject *);
   void onSettingsButton(CCObject *);
   void activateTab(TabButton *btnToActivate);
   void onToggleSort(CCObject *sender);

@@ -24,6 +24,7 @@ class StageRangeCell : public CCLayer
 private:
   CCSize m_size;
   RectNode *m_lineBg;
+  RectNode *m_bestRunLineBg;
   RectNode *m_midBg;
   RectNode *m_mid;
   Label *m_rangeLabel = nullptr;

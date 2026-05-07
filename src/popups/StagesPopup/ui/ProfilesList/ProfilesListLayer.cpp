@@ -300,13 +300,13 @@ void ProfilesListLayer::onCreate(CCObject *sender)
     return;
 
   std::vector<float> percentages = findStartposesFromCurrentLevel().percentages_2_1;
-  bool isSPCountValid = percentages.size() <= 5;
+  bool isSPCountValid = percentages.size() <= 8;
 
   if (isSPCountValid)
   {
     createQuickPopup(
         "Too few startposes",
-        "It is <cg>recommended</c> to use more than <cc>5 startposes</c>. If you still want to <cg>create a profile</c>, click <cy>Continue</c>.",
+        "It is <cg>recommended</c> to use more than <cc>8 startposes</c>. If you still want to <cg>create a profile</c>, click <cy>Continue</c>.",
         "Back", "Continue",
         [this](auto, bool onContinueBtn)
         {
