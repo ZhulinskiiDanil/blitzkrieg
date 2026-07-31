@@ -73,6 +73,12 @@
       "description": "Disable the animation when progress statistics expand.",
       "default": false
     },
+    "show-startpos-button-in-levelinfo": {
+      "type": "bool",
+      "name": "Show StartPos button",
+      "description": "Show dedicated StartPos button on the Level Info screen."
+      "default": true
+    },
     "replace-practice-bar-with-blitzkrieg": {
       "type": "bool",
       "name": "Blitzkrieg instead of practice bar",
