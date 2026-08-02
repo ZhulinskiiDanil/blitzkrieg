@@ -37,6 +37,12 @@ bool RectNode::init(CCSize size,
 void RectNode::setSize(CCSize size)
 {
   m_size = size;
+
+  this->setContentSize(m_size);
+
+  if (m_draw)
+    m_draw->setContentSize(m_size);
+
   redraw();
 }
 
@@ -58,46 +64,119 @@ void RectNode::redraw()
 
   float w = m_size.width;
   float h = m_size.height;
-  float r = std::min(m_radius, std::min(w, h) / 2.f);
+
+  if (w <= 0.f || h <= 0.f)
+    return;
+
+  float r = std::clamp(
+      m_radius,
+      0.f,
+      std::min(w, h) / 2.f);
 
   if (r <= 0.01f)
   {
-    CCPoint verts[] = {
-        {0, 0},
-        {w, 0},
+    CCPoint vertices[] = {
+        {0.f, 0.f},
+        {w, 0.f},
         {w, h},
-        {0, h}};
+        {0.f, h},
+    };
 
-    m_draw->drawPolygon(verts, 4, m_color, 0.f, m_color);
+    m_draw->drawPolygon(
+        vertices,
+        4,
+        m_color,
+        0.f,
+        {0.f, 0.f, 0.f, 0.f});
+
     return;
   }
 
-  std::vector<CCPoint> verts;
+  std::vector<CCPoint> vertices;
 
-  auto addCorner = [&](CCPoint center, float startAngle)
+  auto isSamePoint = [](
+                         CCPoint const &a,
+                         CCPoint const &b)
+  {
+    constexpr float epsilon = 0.0001f;
+
+    return std::abs(a.x - b.x) < epsilon &&
+           std::abs(a.y - b.y) < epsilon;
+  };
+
+  auto pushUnique = [&](
+                        CCPoint const &point)
+  {
+    if (!vertices.empty() &&
+        isSamePoint(vertices.back(), point))
+    {
+      return;
+    }
+
+    vertices.push_back(point);
+  };
+
+  auto addCorner = [&](
+                       CCPoint const &center,
+                       float startAngle)
   {
     int segments = std::clamp(
-        int(r * 4),
-        6,
-        24);
+        static_cast<int>(
+            std::ceil(r * 2.f)),
+        3,
+        16);
 
-    for (int i = 0; i <= segments; i++)
+    for (int i = 0; i <= segments; ++i)
     {
-      float angle = startAngle + (M_PI_2 * i / segments);
-      verts.push_back({center.x + cosf(angle) * r,
-                       center.y + sinf(angle) * r});
+      float progress =
+          static_cast<float>(i) /
+          static_cast<float>(segments);
+
+      float angle =
+          startAngle +
+          M_PI_2 * progress;
+
+      pushUnique({
+          center.x + std::cos(angle) * r,
+          center.y + std::sin(angle) * r,
+      });
     }
   };
 
-  addCorner({w - r, r}, -M_PI_2);
-  addCorner({w - r, h - r}, 0);
-  addCorner({r, h - r}, M_PI_2);
-  addCorner({r, r}, M_PI);
+  // Обход против часовой стрелки.
+  addCorner(
+      {w - r, r},
+      -M_PI_2);
+
+  addCorner(
+      {w - r, h - r},
+      0.f);
+
+  addCorner(
+      {r, h - r},
+      M_PI_2);
+
+  addCorner(
+      {r, r},
+      M_PI);
+
+  // Последняя точка также может совпасть с первой.
+  if (vertices.size() > 1 &&
+      isSamePoint(
+          vertices.front(),
+          vertices.back()))
+  {
+    vertices.pop_back();
+  }
+
+  if (vertices.size() < 3)
+    return;
 
   m_draw->drawPolygon(
-      verts.data(),
-      verts.size(),
+      vertices.data(),
+      static_cast<unsigned int>(
+          vertices.size()),
       m_color,
       0.f,
-      {0, 0, 0, 0});
+      {0.f, 0.f, 0.f, 0.f});
 }

@@ -86,8 +86,8 @@ void StagesPopup::drawContent()
       drawCurrentStage();
     else if (btnId == "tabBtnStageGraph"_spr)
       drawStagesGraph();
-    else if (btnId == "tabBtnHelp"_spr)
-      drawHelpSection();
+    else if (btnId == "tabBtnNews"_spr)
+      drawNewsSection();
   }
 }
 
@@ -215,14 +215,14 @@ void StagesPopup::drawStagesGraph()
   contentContainers.push_back(m_currentStageGraphNode);
 }
 
-void StagesPopup::drawHelpSection()
+void StagesPopup::drawNewsSection()
 {
   m_helpNode = CCNode::create();
   m_helpNode->setID("stages-popup-help"_spr);
   m_helpNode->setTag(4);
 
-  // ! --- HelpLayer --- !
-  auto helpLayer = HelpLayer::create(m_size);
+  // ! --- NewsLayer --- !
+  auto helpLayer = NewsLayer::create(m_size);
   m_helpNode->addChild(helpLayer);
 
   m_mainLayer->addChild(m_helpNode);
@@ -269,13 +269,13 @@ void StagesPopup::drawTabs()
   tabBtnCurrentStageGraph->setTag(3);
   tabBtnCurrentStageGraph->setID("tabBtnStageGraph"_spr);
 
-  // auto tabBtnHelp = TabButton::create(
-  //     "Help",
-  //     this,
-  //     menu_selector(StagesPopup::onTabButton));
-  // tabBtnHelp->setAnchorPoint({0.5f, 0.f});
-  // tabBtnHelp->setTag(4);
-  // tabBtnHelp->setID("tabBtnHelp"_spr);
+  auto tabBtnNews = TabButton::create(
+      "News",
+      this,
+      menu_selector(StagesPopup::onTabButton));
+  tabBtnNews->setAnchorPoint({0.5f, 0.f});
+  tabBtnNews->setTag(4);
+  tabBtnNews->setID("tabBtnNews"_spr);
 
   // ! --- Menu --- !
   auto tabMenu = CCMenu::create();
@@ -294,10 +294,10 @@ void StagesPopup::drawTabs()
   tabMenu->addChild(tabBtnCurrentStageGraph);
   tabButtons.push_back(tabBtnCurrentStageGraph);
 
-  tabMenu->alignItemsHorizontallyWithPadding(TAB_BUTTONS_GAP);
+  tabMenu->addChild(tabBtnNews);
+  tabButtons.push_back(tabBtnNews);
 
-  // tabMenu->addChild(tabBtnHelp);
-  // tabButtons.push_back(tabBtnHelp);
+  tabMenu->alignItemsHorizontallyWithPadding(TAB_BUTTONS_GAP);
 
   // ! --- Tab Buttons Backgrounds --- !
   for (auto *btn : tabButtons)

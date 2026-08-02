@@ -16,7 +16,7 @@
 #include "./ui/StageList/StageListLayer.hpp"
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
 #include "./ui/StagesGraph/StagesGraphLayer.hpp"
-#include "./ui/Help/HelpLayer.hpp"
+#include "./ui/News/NewsLayer.hpp"
 
 #include "../../ui/types/index.hpp"
 #include "../../ui/Include.hpp"
@@ -59,7 +59,7 @@ private:
   void drawProfilesList();
   void drawCurrentStage();
   void drawStagesGraph();
-  void drawHelpSection();
+  void drawNewsSection();
 
   void drawCurrentStageTitle(std::vector<Stage> &stages, UIPadding padding);
 
