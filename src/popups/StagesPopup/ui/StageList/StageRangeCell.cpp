@@ -101,41 +101,113 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
   // ! --- Expand Button --- !
   updateExpandButton();
 
-  // ! --- Meta Info Content --- !
-  bool isFirstRunExists = m_range->firstRunFrom >= 0 && m_range->firstRunTo > 0;
-  bool isBestRunExists = m_range->bestRunFrom >= 0 && m_range->bestRunTo > 0;
+  auto formatCount = [](
+                         int count,
+                         std::string_view singular,
+                         std::string_view plural)
+  {
+    return fmt::format(
+        "{} <small>{}</small>",
+        count,
+        count == 1 ? singular : plural);
+  };
 
-  std::string attempts = fmt::format("{}", m_range->attempts);
-  std::string attemptsToComplete = fmt::format("{} <small>attempt(s)</small>", m_range->attemptsToComplete);
-  std::string completions = fmt::format("{} <small>times</small>", m_range->completionCounter);
+  // ! --- Meta Info Content --- !
+  bool isFirstRunExists =
+      m_range->firstRunFrom >= 0.f &&
+      m_range->firstRunTo > 0.f;
+
+  bool isBestRunExists =
+      m_range->bestRunFrom >= 0.f &&
+      m_range->bestRunTo > 0.f;
+
+  auto formatPercentage = [](float value)
+  {
+    int hundredths = static_cast<int>(
+        std::round(value * 100.f));
+
+    int whole = hundredths / 100;
+    int decimal = std::abs(hundredths % 100);
+
+    return fmt::format(
+        "{}<small>.{:02d}%</small>",
+        whole,
+        decimal);
+  };
+
   std::string firstRun = !isFirstRunExists
                              ? "<small>None</small>"
                              : fmt::format(
-                                   "{}<small>.{:02d}%</small> - {}<small>.{:02d}%</small>",
-                                   static_cast<int>(m_range->firstRunFrom),
-                                   static_cast<int>(std::round((m_range->firstRunFrom - static_cast<int>(m_range->firstRunFrom)) * 100)),
-                                   static_cast<int>(m_range->firstRunTo),
-                                   static_cast<int>(std::round((m_range->firstRunTo - static_cast<int>(m_range->firstRunTo)) * 100)));
+                                   "{} - {}",
+                                   formatPercentage(m_range->firstRunFrom),
+                                   formatPercentage(m_range->firstRunTo));
+
   std::string bestRun = !isBestRunExists
                             ? "<small>None</small>"
                             : fmt::format(
-                                  "{}<small>.{:02d}%</small> - {}<small>.{:02d}%</small>",
-                                  static_cast<int>(m_range->bestRunFrom),
-                                  static_cast<int>(std::round((m_range->bestRunFrom - static_cast<int>(m_range->bestRunFrom)) * 100)),
-                                  static_cast<int>(m_range->bestRunTo),
-                                  static_cast<int>(std::round((m_range->bestRunTo - static_cast<int>(m_range->bestRunTo)) * 100)));
-  std::string timePlayed = formatTimePlayed(m_range->timePlayed);
+                                  "{} - {}",
+                                  formatPercentage(m_range->bestRunFrom),
+                                  formatPercentage(m_range->bestRunTo));
+
+  std::string timePlayed =
+      formatTimePlayed(m_range->timePlayed);
+
+  std::string activity = fmt::format(
+      "{} / {}",
+      formatCount(
+          m_range->attempts,
+          "attempt",
+          "attempts"),
+      timePlayed);
+
+  std::string completedStats = fmt::format(
+      "<small>in</small> {} / {}",
+      formatCount(
+          m_range->attemptsToComplete,
+          "attempt",
+          "attempts"),
+      formatCount(
+          m_range->completionCounter,
+          "pass",
+          "passes"));
+
+  std::string completion;
+
+  if (m_range->automaticallyClosed)
+  {
+    completion = "<small>Auto-closed</small>";
+  }
+  else if (
+      m_range->checked &&
+      m_range->attemptsToComplete > 0)
+  {
+    completion = completedStats;
+  }
+  else if (m_range->checked)
+  {
+    completion = "<small>Manually closed</small>";
+  }
+  else
+  {
+    completion = "<small>Not completed</small>";
+  }
 
   std::vector<MetaData> tableData = {
-      {"Attempts:", attempts},
-      {"Completed in:", attemptsToComplete},
-      {"Completions:", completions},
-      {"Best Run:", bestRun},
-      {"First Run:", firstRun},
-      {"Time Played:", timePlayed},
+      {"Completion:",
+       completion},
+      {"Best Run:",
+       bestRun},
+      {"First Run:",
+       firstRun},
+      {"Activity:",
+       activity},
   };
 
-  m_table = MetaTable::create(tableData, m_head->getContentWidth(), {5, 5, 5, 5});
+  m_table = MetaTable::create(
+      tableData,
+      m_head->getContentWidth(),
+      {5, 5, 5, 5});
+
   m_content->addChild(m_table);
 
   updateMetaContent();
