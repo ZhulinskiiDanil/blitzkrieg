@@ -269,29 +269,42 @@ void ProfilesListLayer::onImport(CCObject *obj)
 
 void ProfilesListLayer::onExport(CCObject *obj)
 {
-  const auto profiles = GlobalStore::get()->getProfiles();
-  auto resourcesDir = geode::Mod::get()->getSaveDir();
+  auto const &profiles = GlobalStore::get()->getProfiles();
 
-  // Create Backup folder
-  auto backupDir = resourcesDir / "backups";
-  auto backupFile = backupDir / backup::generateBackupFilename();
+  auto const backupDir =
+      Mod::get()->getSaveDir() / "backups";
 
-  const auto res = geode::utils::file::createDirectory(backupDir);
+  auto const backupFile =
+      backupDir / backup::generateBackupFilename();
 
-  if (!res)
+  auto directoryResult =
+      geode::utils::file::createDirectory(backupDir);
+
+  if (directoryResult.isErr())
   {
-    geode::log::error("Unable to create backup directory: {}", res.unwrapErr());
+    log::error(
+        "Unable to create backup directory: {}",
+        directoryResult.unwrapErr());
+
     return;
   }
 
-  matjson::Value jProfiles = profiles;
-  auto jsonString = jProfiles.dump(matjson::NO_INDENTATION);
-  auto result = geode::utils::file::writeString(backupFile, jsonString);
+  matjson::Value json = profiles;
 
-  if (result)
-    geode::utils::file::openFolder(backupFile);
-  else
-    geode::log::error("Unable to save JSON: {}", result.unwrapErr());
+  auto writeResult = geode::utils::file::writeStringSafe(
+      backupFile,
+      json.dump(matjson::NO_INDENTATION));
+
+  if (writeResult.isErr())
+  {
+    log::error(
+        "Unable to save backup: {}",
+        writeResult.unwrapErr());
+
+    return;
+  }
+
+  geode::utils::file::openFolder(backupFile);
 }
 
 void ProfilesListLayer::onCreate(CCObject *sender)

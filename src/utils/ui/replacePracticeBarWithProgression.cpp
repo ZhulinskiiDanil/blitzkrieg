@@ -26,12 +26,28 @@ void replacePracticeBarWithProgression(
   if (!practiceModeBar || !practiceModeLabel || !practiceModePercentage)
     return;
 
-  std::string newLabelText = fmt::format(
-      "Stage {}/{} Runs {}/{}",
-      std::max(metaInfo.completed, 1),
-      metaInfo.total,
-      metaInfo.currStageCompletedRanges,
-      metaInfo.currStageTotalRanges);
+  bool allStagesCompleted =
+      metaInfo.total > 0 &&
+      metaInfo.completed >= metaInfo.total;
+
+  std::string newLabelText;
+
+  if (allStagesCompleted)
+  {
+    newLabelText = fmt::format(
+        "Stage {}/{}",
+        metaInfo.total,
+        metaInfo.total);
+  }
+  else
+  {
+    newLabelText = fmt::format(
+        "Stage {}/{} Runs {}/{}",
+        std::max(metaInfo.completed, 1),
+        metaInfo.total,
+        metaInfo.currStageCompletedRanges,
+        metaInfo.currStageTotalRanges);
+  }
 
   practiceModeLabel->setString("Blitzkrieg progression");
   practiceModePercentage->setString(newLabelText.c_str());
