@@ -132,9 +132,9 @@ void NewsCard::onAction(
     auto const &action =
         m_news.actions[actionIndex];
 
-    if (
-        action.type ==
-        NewsActionType::CopyText)
+    switch (action.type)
+    {
+    case NewsActionType::CopyText:
     {
         auto copied =
             geode::utils::clipboard::write(
@@ -149,15 +149,46 @@ void NewsCard::onAction(
                 : NotificationIcon::Error)
             ->show();
 
-        return;
+        break;
     }
 
-    Notification::create(
-        fmt::format(
-            "Action: {}",
-            action.value),
-        NotificationIcon::Info)
-        ->show();
+    case NewsActionType::OpenURL:
+    {
+        geode::utils::web::
+            openLinkInBrowser(
+                action.value);
+
+        break;
+    }
+
+    case NewsActionType::OpenLevel:
+    {
+        auto search =
+            GJSearchObject::create(
+                SearchType::Search,
+                action.value);
+
+        auto scene =
+            LevelBrowserLayer::scene(
+                search);
+
+        CCDirector::sharedDirector()
+            ->pushScene(
+                CCTransitionFade::create(
+                    0.3f,
+                    scene));
+
+        break;
+    }
+
+    default:
+        Notification::create(
+            "Unsupported news action",
+            NotificationIcon::Error)
+            ->show();
+
+        break;
+    }
 }
 
 bool NewsCard::init(
