@@ -1,3 +1,9 @@
+# 2.2.4
+- Fixed invisible StartPos page buttons remaining active after leaving the page
+- Fixed a crash when exiting the game after visiting the High-Quality Start Positions page
+- Fixed potential crashes when search results contain fewer than two levels
+- Fixed a memory leak when reloading the StartPos levels list
+
 # 2.2.3
 - Reduced lag spikes after deaths by saving profiles separately
 - Added automatic migration from the legacy profile storage format
