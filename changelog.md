@@ -1,3 +1,10 @@
+# 2.2.3
+- Reduced lag spikes after deaths by saving profiles separately
+- Added automatic migration from the legacy profile storage format
+- Improved profile loading and data validation
+- Improved profile import and persistence logic
+- Updated Geode to 5.8.2
+
 # 2.2.2
 - Updated StartPos recommendation value to 8
 - Added best run line visualization in StageRangeCell

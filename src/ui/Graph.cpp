@@ -17,7 +17,7 @@ bool Graph::init(const CCSize &size)
   if (!CCLayer::init())
     return false;
 
-  m_uuid = generateUUID();
+  m_uuid = geode::utils::random::generateUUID();
   m_size = size;
   this->setContentSize(m_size);
 
@@ -71,7 +71,7 @@ bool Graph::init(const CCSize &size)
 
 std::string Graph::addLine(const std::vector<GraphDot> &points, const ccColor3B &color, const ccColor3B &dotsColor)
 {
-  auto uuid = generateUUID();
+  auto uuid = geode::utils::random::generateUUID();
   m_lines.push_back({uuid, points, color, dotsColor});
 
   return uuid;

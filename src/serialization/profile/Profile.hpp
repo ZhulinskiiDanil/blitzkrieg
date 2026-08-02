@@ -8,6 +8,8 @@ struct Profile
   std::string id;
   std::string profileName;
   std::string discordWebhookForRunNotifications;
-  bool discordWebhookForRunNotificationsEnabled;
+
+  bool discordWebhookForRunNotificationsEnabled = false;
+
   ProfileData data;
 };

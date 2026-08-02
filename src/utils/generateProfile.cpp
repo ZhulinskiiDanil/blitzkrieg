@@ -4,7 +4,7 @@ matjson::Value generateProfile(const std::string &profileName, const std::vector
 {
   Profile profile;
 
-  profile.id = generateUUID();
+  profile.id = geode::utils::random::generateUUID();
   profile.profileName = profileName;
   profile.discordWebhookForRunNotifications = "";
   profile.discordWebhookForRunNotificationsEnabled = false;

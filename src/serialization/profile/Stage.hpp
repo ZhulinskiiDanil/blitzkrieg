@@ -7,9 +7,13 @@
 struct Stage
 {
   std::string id;
-  int stage;
-  bool checked;
+
+  int stage = 0;
+  bool checked = false;
+
   std::string note;
-  int completionCounter;
+
+  int completionCounter = 0;
+
   std::vector<Range> ranges;
 };

@@ -9,91 +9,301 @@ GlobalStore *GlobalStore::get()
 }
 
 GlobalStore::GlobalStore()
-    : m_profiles(getSavedProfiles()) {}
+{
+  auto indexPath = getProfilesDir() / "index.json";
+
+  if (std::filesystem::exists(indexPath))
+  {
+    m_profiles = loadProfiles();
+    return;
+  }
+
+  // Migration
+  m_profiles = getSavedProfiles();
+
+  for (auto const &profile : m_profiles)
+    saveProfile(profile);
+
+  saveProfileIndex();
+}
 
 // ! --- Profiles API --- !
-std::vector<Profile> &GlobalStore::getProfiles()
+std::filesystem::path GlobalStore::getProfilesDir() const
+{
+  return Mod::get()->getSaveDir() / "profiles";
+}
+
+std::filesystem::path GlobalStore::getProfilePath(
+    std::string const &profileId) const
+{
+  return getProfilesDir() / fmt::format("{}.json", profileId);
+}
+
+void GlobalStore::saveProfile(Profile const &profile) const
+{
+  if (profile.id.empty())
+  {
+    log::error("Cannot save profile with empty ID");
+    return;
+  }
+
+  std::error_code ec;
+  std::filesystem::create_directories(getProfilesDir(), ec);
+
+  if (ec)
+  {
+    log::error("Failed to create profiles directory: {}", ec.message());
+    return;
+  }
+
+  matjson::Value json = profile;
+  auto result = geode::utils::file::writeStringSafe(
+      getProfilePath(profile.id),
+      json.dump(matjson::NO_INDENTATION));
+
+  if (result.isErr())
+    log::error(
+        "Failed to save profile {}: {}",
+        profile.id,
+        result.unwrapErr());
+}
+
+void GlobalStore::saveProfileIndex() const
+{
+  std::error_code ec;
+  std::filesystem::create_directories(getProfilesDir(), ec);
+
+  if (ec)
+  {
+    log::error(
+        "Failed to create profiles directory: {}",
+        ec.message());
+    return;
+  }
+
+  std::vector<std::string> profileIds;
+  profileIds.reserve(m_profiles.size());
+
+  for (auto const &profile : m_profiles)
+    profileIds.push_back(profile.id);
+
+  matjson::Value json = profileIds;
+
+  auto result = geode::utils::file::writeStringSafe(
+      getProfilesDir() / "index.json",
+      json.dump(matjson::NO_INDENTATION));
+
+  if (result.isErr())
+  {
+    log::error(
+        "Failed to save profile index: {}",
+        result.unwrapErr());
+  }
+}
+
+std::vector<Profile> GlobalStore::loadProfiles() const
+{
+  std::vector<Profile> profiles;
+
+  auto indexResult = geode::utils::file::readString(
+      getProfilesDir() / "index.json");
+
+  if (indexResult.isErr())
+  {
+    log::error(
+        "Failed to read profile index: {}",
+        indexResult.unwrapErr());
+
+    return {};
+  }
+
+  auto idsResult =
+      matjson::parseAs<std::vector<std::string>>(indexResult.unwrap());
+
+  if (idsResult.isErr())
+  {
+    log::error(
+        "Failed to parse profile index: {}",
+        idsResult.unwrapErr());
+
+    return {};
+  }
+
+  for (auto const &id : idsResult.unwrap())
+  {
+    auto profileResult = geode::utils::file::readString(
+        getProfilePath(id));
+
+    if (profileResult.isErr())
+    {
+      log::error(
+          "Failed to read profile {}: {}",
+          id,
+          profileResult.unwrapErr());
+
+      continue;
+    }
+
+    auto parsedProfile =
+        matjson::parseAs<Profile>(profileResult.unwrap());
+
+    if (parsedProfile.isErr())
+    {
+      log::error(
+          "Failed to parse profile {}: {}",
+          id,
+          parsedProfile.unwrapErr());
+
+      continue;
+    }
+
+    auto profile = parsedProfile.unwrap();
+
+    if (profile.id.empty())
+    {
+      log::error("Profile file {} has an empty ID", id);
+      continue;
+    }
+
+    if (profile.id != id)
+    {
+      log::error(
+          "Profile ID mismatch: index={}, file={}",
+          id,
+          profile.id);
+
+      continue;
+    }
+
+    profiles.push_back(std::move(profile));
+  }
+
+  return profiles;
+}
+
+std::vector<Profile> const &GlobalStore::getProfiles() const
 {
   return m_profiles;
 }
 
 void GlobalStore::addProfile(Profile const &profile)
 {
-  m_profiles.push_back(profile);
-  saveProfiles();
-}
-
-void GlobalStore::addProfiles(std::vector<Profile> const &newProfiles, bool overwrite)
-{
-  for (auto const &profile : newProfiles)
+  if (getProfileById(profile.id))
   {
-    auto it = std::find_if(m_profiles.begin(), m_profiles.end(),
-                           [&](Profile const &p)
-                           { return p.id == profile.id; });
-
-    if (it != m_profiles.end() && overwrite)
-    {
-      *it = profile;
-    }
-    else if (it == m_profiles.end())
-    {
-      m_profiles.push_back(profile);
-    }
+    log::warn("Profile {} already exists", profile.id);
+    return;
   }
 
-  saveProfiles();
+  m_profiles.push_back(profile);
+
+  saveProfile(m_profiles.back());
+  saveProfileIndex();
 }
 
-void GlobalStore::setProfiles(std::vector<Profile> const &profiles)
+void GlobalStore::addProfiles(
+    std::vector<Profile> const &newProfiles,
+    bool overwrite)
 {
-  m_profiles = profiles;
+  bool indexChanged = false;
+
+  for (auto const &profile : newProfiles)
+  {
+    auto it = std::find_if(
+        m_profiles.begin(),
+        m_profiles.end(),
+        [&](Profile const &existingProfile)
+        {
+          return existingProfile.id == profile.id;
+        });
+
+    if (it != m_profiles.end())
+    {
+      if (!overwrite)
+        continue;
+
+      *it = profile;
+      saveProfile(*it);
+      continue;
+    }
+
+    m_profiles.push_back(profile);
+    saveProfile(m_profiles.back());
+    indexChanged = true;
+  }
+
+  if (indexChanged)
+    saveProfileIndex();
 }
 
 void GlobalStore::updateProfile(Profile const &profile)
 {
-  auto it = std::find_if(m_profiles.begin(), m_profiles.end(),
-                         [&](Profile const &p)
-                         { return p.id == profile.id; });
+  auto it = std::find_if(
+      m_profiles.begin(),
+      m_profiles.end(),
+      [&](Profile const &existingProfile)
+      {
+        return existingProfile.id == profile.id;
+      });
 
   if (it != m_profiles.end())
-    *it = profile;
-  else
-    m_profiles.insert(m_profiles.begin(), profile);
+  {
+    if (&(*it) != &profile)
+      *it = profile;
 
-  saveProfiles();
+    saveProfile(*it);
+    return;
+  }
+
+  m_profiles.insert(m_profiles.begin(), profile);
+
+  saveProfile(m_profiles.front());
+  saveProfileIndex();
 }
 
 void GlobalStore::removeProfileById(std::string const &id)
 {
   m_profiles.erase(
-      std::remove_if(m_profiles.begin(), m_profiles.end(),
-                     [&](Profile const &p)
-                     { return p.id == id; }),
+      std::remove_if(
+          m_profiles.begin(),
+          m_profiles.end(),
+          [&](Profile const &profile)
+          {
+            return profile.id == id;
+          }),
       m_profiles.end());
 
-  saveProfiles();
+  std::error_code ec;
+  std::filesystem::remove(getProfilePath(id), ec);
+
+  if (ec)
+    log::error("Failed to remove profile {}: {}", id, ec.message());
+
+  saveProfileIndex();
 }
 
-void GlobalStore::upProfileById(const std::string &profileId)
+void GlobalStore::upProfileById(std::string const &profileId)
 {
-  auto it = std::find_if(m_profiles.begin(), m_profiles.end(),
-                         [&](const Profile &p)
-                         {
-                           return p.id == profileId;
-                         });
+  auto it = std::find_if(
+      m_profiles.begin(),
+      m_profiles.end(),
+      [&](Profile const &profile)
+      {
+        return profile.id == profileId;
+      });
 
   if (it != m_profiles.end() && it != m_profiles.begin())
+  {
     std::rotate(m_profiles.begin(), it, it + 1);
-
-  saveProfiles();
+    saveProfileIndex();
+  }
 }
 
-void GlobalStore::pinProfileById(std::string profileId, bool isPinned)
+void GlobalStore::pinProfileById(std::string const &profileId, bool isPinned)
 {
   Mod::get()->setSavedValue<bool>(fmt::format("{}-pinned", profileId), isPinned);
 }
 
-bool GlobalStore::isProfilePinned(std::string profileId)
+bool GlobalStore::isProfilePinned(std::string const &profileId)
 {
   return Mod::get()->getSavedValue<bool>(fmt::format("{}-pinned", profileId));
 }
@@ -117,7 +327,7 @@ void GlobalStore::resetRun()
   runEnd = 0.f;
 }
 
-int GlobalStore::checkRun(std::string profileId, float timePlayed)
+int GlobalStore::checkRun(std::string const &profileId, float timePlayed)
 {
   const float eps = 0.01f;
   const float runDiff = std::abs(runEnd - runStart);
@@ -254,12 +464,12 @@ int GlobalStore::checkRun(std::string profileId, float timePlayed)
   if (targetRange)
     RunClosedEvent().send(runStart, runEnd, currentProfile, targetRange, isStageClosed ? targetStage : nullptr);
 
-  updateProfile(*currentProfile);
+  saveProfile(*currentProfile);
 
   if (progressHasChecked)
     return isStageClosed ? 1 : 0;
-  else
-    return -1;
+
+  return -1;
 }
 
 // ! --- Search API --- !
@@ -302,7 +512,7 @@ Profile *GlobalStore::getProfileByLevel(std::string const &levelId)
   return nullptr;
 }
 
-Range GlobalStore::getCurrentRange(std::string &profileId)
+Range GlobalStore::getCurrentRange(std::string const &profileId)
 {
   const float eps = 0.01f;
   Range *maxRange = nullptr;
@@ -340,17 +550,4 @@ Range GlobalStore::getCurrentRange(std::string &profileId)
     return *maxRange;
 
   return {};
-}
-
-// ! --- Persistence --- !
-void GlobalStore::saveProfiles() const
-{
-  matjson::Value j = m_profiles;
-
-  if (j.isArray())
-  {
-    std::string jsonString = j.dump(matjson::NO_INDENTATION);
-    Mod::get()->setSavedValue("profiles", jsonString);
-    (void)Mod::get()->saveData();
-  }
 }

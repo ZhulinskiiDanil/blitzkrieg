@@ -18,7 +18,7 @@ bool GraphPoint::init(std::string graphUUID, std::string lineUUID, float val, cc
     return false;
 
   m_val = val;
-  m_uuid = generateUUID();
+  m_uuid = geode::utils::random::generateUUID();
   m_graphUUID = graphUUID;
   m_lineUUID = lineUUID;
 

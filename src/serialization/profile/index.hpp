@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "./Range.hpp"
 #include "./Stage.hpp"
@@ -230,22 +231,54 @@ struct matjson::Serialize<Profile>
 template <>
 struct matjson::Serialize<std::vector<Profile>>
 {
-  static geode::Result<std::vector<Profile>> fromJson(matjson::Value const &value)
+  static geode::Result<std::vector<Profile>> fromJson(
+      matjson::Value const &value)
   {
     std::vector<Profile> result;
-    if (value.isArray())
+
+    if (!value.isArray())
     {
-      for (auto const &item : value)
-        result.push_back(item.as<Profile>().unwrap());
+      geode::log::error("Profiles JSON is not an array");
+      return geode::Ok(result);
     }
-    return geode::Ok(result);
+
+    for (auto const &item : value)
+    {
+      auto profileResult = item.as<Profile>();
+
+      if (profileResult.isErr())
+      {
+        geode::log::error(
+            "Failed to parse profile: {}",
+            profileResult.unwrapErr());
+
+        continue;
+      }
+
+      auto profile = profileResult.unwrap();
+
+      if (profile.id.empty())
+      {
+        geode::log::error(
+            "Skipped profile with empty ID");
+
+        continue;
+      }
+
+      result.push_back(std::move(profile));
+    }
+
+    return geode::Ok(std::move(result));
   }
 
-  static matjson::Value toJson(std::vector<Profile> const &profiles)
+  static matjson::Value toJson(
+      std::vector<Profile> const &profiles)
   {
-    auto arr = matjson::Value::array();
-    for (auto const &p : profiles)
-      arr.push(p);
-    return arr;
+    auto array = matjson::Value::array();
+
+    for (auto const &profile : profiles)
+      array.push(profile);
+
+    return array;
   }
 };

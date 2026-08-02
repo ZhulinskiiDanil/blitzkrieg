@@ -2,7 +2,6 @@
 
 #include <Geode/Geode.hpp>
 
-#include "../utils/generateUUID.hpp"
 #include "../events/GraphPointHoverEvent.hpp"
 
 using namespace geode::prelude;

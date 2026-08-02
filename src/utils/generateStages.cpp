@@ -35,7 +35,7 @@ matjson::Value generateStages(std::vector<float> sps)
     {
       seen.insert(key1);
       stageRanges.push_back(Range{
-          .id = generateUUID(),
+          .id = geode::utils::random::generateUUID(),
           .from = from1,
           .to = to1,
           .checked = false,
@@ -56,7 +56,7 @@ matjson::Value generateStages(std::vector<float> sps)
       {
         seen.insert(key2);
         stageRanges.push_back(Range{
-            .id = generateUUID(),
+            .id = geode::utils::random::generateUUID(),
             .from = from2,
             .to = to2,
             .checked = false,
@@ -73,7 +73,7 @@ matjson::Value generateStages(std::vector<float> sps)
                 { return a.from < b.from; });
 
       stages.push_back(Stage{
-          .id = generateUUID(),
+          .id = geode::utils::random::generateUUID(),
           .stage = static_cast<int>(i + 1),
           .checked = false,
           .note = "",
