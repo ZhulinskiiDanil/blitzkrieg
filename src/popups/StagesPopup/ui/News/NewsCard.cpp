@@ -110,20 +110,52 @@ void NewsCard::onAction(
     CCObject *sender)
 {
     auto button =
-        static_cast<CCMenuItemSpriteExtra *>(
+        static_cast<
+            CCMenuItemSpriteExtra *>(
             sender);
 
-    auto value =
-        static_cast<CCString *>(
-            button->getUserObject());
-
-    if (!value)
+    if (!button)
         return;
+
+    auto actionIndex =
+        button->getTag();
+
+    if (
+        actionIndex < 0 ||
+        actionIndex >=
+            static_cast<int>(
+                m_news.actions.size()))
+    {
+        return;
+    }
+
+    auto const &action =
+        m_news.actions[actionIndex];
+
+    if (
+        action.type ==
+        NewsActionType::CopyText)
+    {
+        auto copied =
+            geode::utils::clipboard::write(
+                action.value);
+
+        Notification::create(
+            copied
+                ? "Copied to clipboard"
+                : "Failed to copy text",
+            copied
+                ? NotificationIcon::Success
+                : NotificationIcon::Error)
+            ->show();
+
+        return;
+    }
 
     Notification::create(
         fmt::format(
             "Action: {}",
-            value->getCString()),
+            action.value),
         NotificationIcon::Info)
         ->show();
 }
@@ -371,11 +403,17 @@ bool NewsCard::init(
         auto buttonX =
             size.width - rightPadding;
 
-        for (auto it = news.actions.rbegin();
-             it != news.actions.rend();
-             ++it)
+        for (
+            auto actionIndex =
+                static_cast<int>(
+                    news.actions.size()) -
+                1;
+
+            actionIndex >= 0;
+            --actionIndex)
         {
-            auto const &action = *it;
+            auto const &action =
+                news.actions[actionIndex];
 
             auto buttonWidth = std::max(
                 58.f,
@@ -418,9 +456,7 @@ bool NewsCard::init(
                     menu_selector(
                         NewsCard::onAction));
 
-            button->setUserObject(
-                CCString::create(
-                    action.value));
+            button->setTag(actionIndex);
 
             button->setPosition({
                 buttonX - buttonWidth / 2.f,

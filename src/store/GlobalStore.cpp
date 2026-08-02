@@ -101,12 +101,15 @@ void GlobalStore::saveProfileIndex() const
   }
 }
 
-std::vector<Profile> GlobalStore::loadProfiles() const
+std::vector<Profile>
+GlobalStore::loadProfiles() const
 {
   std::vector<Profile> profiles;
 
-  auto indexResult = geode::utils::file::readString(
-      getProfilesDir() / "index.json");
+  auto indexResult =
+      geode::utils::file::readJson(
+          getProfilesDir() /
+          "index.json");
 
   if (indexResult.isErr())
   {
@@ -118,7 +121,9 @@ std::vector<Profile> GlobalStore::loadProfiles() const
   }
 
   auto idsResult =
-      matjson::parseAs<std::vector<std::string>>(indexResult.unwrap());
+      indexResult
+          .unwrap()
+          .as<std::vector<std::string>>();
 
   if (idsResult.isErr())
   {
@@ -129,23 +134,30 @@ std::vector<Profile> GlobalStore::loadProfiles() const
     return {};
   }
 
-  for (auto const &id : idsResult.unwrap())
-  {
-    auto profileResult = geode::utils::file::readString(
-        getProfilePath(id));
+  auto ids = idsResult.unwrap();
 
-    if (profileResult.isErr())
+  profiles.reserve(ids.size());
+
+  for (auto const &id : ids)
+  {
+    auto profileJsonResult =
+        geode::utils::file::readJson(
+            getProfilePath(id));
+
+    if (profileJsonResult.isErr())
     {
       log::error(
           "Failed to read profile {}: {}",
           id,
-          profileResult.unwrapErr());
+          profileJsonResult.unwrapErr());
 
       continue;
     }
 
     auto parsedProfile =
-        matjson::parseAs<Profile>(profileResult.unwrap());
+        profileJsonResult
+            .unwrap()
+            .as<Profile>();
 
     if (parsedProfile.isErr())
     {
@@ -157,11 +169,15 @@ std::vector<Profile> GlobalStore::loadProfiles() const
       continue;
     }
 
-    auto profile = parsedProfile.unwrap();
+    auto profile =
+        parsedProfile.unwrap();
 
     if (profile.id.empty())
     {
-      log::error("Profile file {} has an empty ID", id);
+      log::error(
+          "Profile file {} has an empty ID",
+          id);
+
       continue;
     }
 
@@ -175,7 +191,8 @@ std::vector<Profile> GlobalStore::loadProfiles() const
       continue;
     }
 
-    profiles.push_back(std::move(profile));
+    profiles.push_back(
+        std::move(profile));
   }
 
   return profiles;
