@@ -14,10 +14,9 @@ StartPosLayer *StartPosLayer::create()
 
 CCScene *StartPosLayer::scene()
 {
-  auto ret = CCScene::create();
-  AppDelegate::get()->m_runningScene = ret;
-  ret->addChild(StartPosLayer::create());
-  return ret;
+  auto scene = CCScene::create();
+  scene->addChild(StartPosLayer::create());
+  return scene;
 }
 
 bool StartPosLayer::init()
@@ -220,7 +219,7 @@ void StartPosLayer::reload()
   }
 
   auto listView = CustomListView::create(CCArray::create(), BoomListType::Level, 190.0f, m_levelList->getContentWidth());
-  listView->retain();
+  // listView->retain();
   m_levelList->addChild(listView, 6, 9);
   m_levelList->m_listView = listView;
 
@@ -304,8 +303,12 @@ int StartPosLayer::numberOfRowsInSection(unsigned int section, TableView *table)
 
 TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, TableView *table)
 {
-  int index = indexPath.m_row;
-  auto startposLevel = m_searchResults[index];
+  auto index = static_cast<std::size_t>(indexPath.m_row);
+
+  if (index >= m_searchResults.size())
+    return nullptr;
+
+  auto const &startposLevel = m_searchResults[index];
 
   if (startposLevel.levelId > 0)
   {
@@ -507,6 +510,13 @@ void StartPosLayer::onExit()
 {
   if (m_searchBar)
     m_searchBar->defocus();
+
+  auto glm = GameLevelManager::get();
+
+  if (glm->m_levelManagerDelegate == this)
+    glm->m_levelManagerDelegate = nullptr;
+
+  CCLayer::onExit();
 }
 
 StartPosLayer::~StartPosLayer()
