@@ -16,7 +16,7 @@ class NewsLayer : public CCLayer
 {
 private:
     static constexpr std::int64_t CACHE_TTL_SECONDS =
-        5 * 60;
+        1 * 60;
 
     CCSize m_size;
     ScrollLayer *m_scroll = nullptr;
