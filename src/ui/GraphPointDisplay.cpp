@@ -19,7 +19,7 @@ bool GraphPointDisplay::init(std::string text)
 
   this->setContentSize({60, 20});
 
-  m_label = Label::create(text);
+  m_label = UILabel::create(text);
   m_label->setPosition(this->getContentSize() / 2);
   m_label->setScale(.3f);
   m_label->setZOrder(1);

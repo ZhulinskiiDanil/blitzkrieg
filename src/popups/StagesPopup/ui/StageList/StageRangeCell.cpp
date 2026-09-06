@@ -75,7 +75,7 @@ bool StageRangeCell::init(Range *range, GJGameLevel *level, const CCSize &cellSi
       std::round((m_range->from - std::floor(m_range->from)) * 100),
       std::floor(m_range->to),
       std::round((m_range->to - std::floor(m_range->to)) * 100));
-  m_rangeLabel = Label::create(rangeText, "gjFont17.fnt", .4f);
+  m_rangeLabel = UILabel::create(rangeText, "gjFont17.fnt", .4f);
   m_rangeLabel->setPosition({25.f, cellSize.height / 2});
   m_rangeLabel->setAnchorPoint({0.f, .5f});
   m_head->addChild(m_rangeLabel);
@@ -413,11 +413,11 @@ void StageRangeCell::updateTextColors()
   if (m_rangeLabel)
   {
     if (m_checked)
-      m_rangeLabel->setVariant(Label::Variant::Green);
+      m_rangeLabel->setVariant(UILabel::Variant::Green);
     else if (m_disabled)
-      m_rangeLabel->setVariant(Label::Variant::Red);
+      m_rangeLabel->setVariant(UILabel::Variant::Red);
     else
-      m_rangeLabel->setVariant(Label::Variant::Orange);
+      m_rangeLabel->setVariant(UILabel::Variant::Orange);
   }
 }
 

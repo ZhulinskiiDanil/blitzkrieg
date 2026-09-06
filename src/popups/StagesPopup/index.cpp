@@ -411,7 +411,7 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, UIPadding pa
   statLabel += fmt::format("{} <small>Attempts</small> ", totalAttempts);
   statLabel += formatTimePlayed(totalTimePlayed);
 
-  m_totalStatLabel = Label::create(statLabel, "bigFont.fnt", .4f);
+  m_totalStatLabel = UILabel::create(statLabel, "bigFont.fnt", .4f);
   m_totalStatLabel->setPosition({padding.left + 6, m_size.height - padding.top / 2 - 15});
   m_totalStatLabel->setAnchorPoint({0, 0.5});
   m_currentStageNode->addChild(m_totalStatLabel);

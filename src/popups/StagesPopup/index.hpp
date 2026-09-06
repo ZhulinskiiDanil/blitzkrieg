@@ -47,7 +47,7 @@ private:
   CCNode *m_currentStageGraphNode;
   CCNode *m_helpNode;
   CCLabelBMFont *m_currentStageTitleLabel;
-  Label *m_totalStatLabel;
+  UILabel *m_totalStatLabel;
   StageListLayer *m_stageList;
 
   geode::comm::ListenerHandle m_stageChangedListener;

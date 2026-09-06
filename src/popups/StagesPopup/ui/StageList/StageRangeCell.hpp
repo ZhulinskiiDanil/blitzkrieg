@@ -27,7 +27,7 @@ private:
   RectNode *m_bestRunLineBg;
   RectNode *m_midBg;
   RectNode *m_mid;
-  Label *m_rangeLabel = nullptr;
+  UILabel *m_rangeLabel = nullptr;
   CCLayer *m_content = nullptr;
   CCLayer *m_metaContent = nullptr;
   CCLayer *m_head = nullptr;
@@ -41,7 +41,7 @@ private:
   std::string m_id;
   float m_from;
   float m_to;
-  
+
   bool m_checked = false;
   bool m_disabled = false;
   bool m_isCurrent = false;

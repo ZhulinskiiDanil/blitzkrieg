@@ -346,7 +346,8 @@ void GlobalStore::resetRun()
 
 int GlobalStore::checkRun(std::string const &profileId, float timePlayed)
 {
-  const float eps = 0.01f;
+  constexpr float eps = 0.01f;
+
   const float runDiff = std::abs(runEnd - runStart);
 
   auto *currentProfile = getProfileById(profileId);
@@ -359,8 +360,19 @@ int GlobalStore::checkRun(std::string const &profileId, float timePlayed)
 
   Stage *targetStage = nullptr;
   Range *targetRange = nullptr;
+
   bool progressHasChecked = false;
   bool isStageClosed = false;
+
+  auto lessOrEqual = [eps](float a, float b)
+  {
+    return a <= b + eps;
+  };
+
+  auto greaterOrEqual = [eps](float a, float b)
+  {
+    return a + eps >= b;
+  };
 
   for (auto &stage : currentProfile->data.stages)
   {
@@ -368,108 +380,139 @@ int GlobalStore::checkRun(std::string const &profileId, float timePlayed)
       continue;
 
     targetStage = &stage;
+
     std::vector<Range *> candidates;
 
     for (auto &range : stage.ranges)
     {
-      if (runStart <= range.from && range.consider)
+      if (range.consider && lessOrEqual(runStart, range.from))
         candidates.push_back(&range);
     }
 
-    if (!candidates.empty())
+    if (candidates.empty())
+      break;
+
+    std::sort(
+        candidates.begin(),
+        candidates.end(),
+        [eps](Range *a, Range *b)
+        {
+          if (std::fabs(a->from - b->from) <= eps)
+            return a->to < b->to;
+
+          return a->from < b->from;
+        });
+
+    Range *statsRange = nullptr;
+
+    for (auto *range : candidates)
     {
-      auto *toCheck = *std::min_element(candidates.begin(), candidates.end(),
-                                        [eps](Range *a, Range *b)
-                                        {
-                                          if (std::fabs(a->from - b->from) <= eps)
-                                            return a->to < b->to;
-
-                                          return a->from < b->from;
-                                        });
-
-      Range *toCheckActualRange = nullptr;
-
-      for (auto *r : candidates)
+      if (!range->checked)
       {
-        if (r->consider && !r->checked && runEnd >= r->to)
-        {
-          toCheckActualRange = r;
-          break;
-        }
-      }
-
-      if (!toCheckActualRange)
-      {
-        toCheck->attempts++;
-        toCheck->timePlayed += timePlayed;
-
-        auto bestRunDiff = std::abs(toCheck->bestRunFrom - toCheck->bestRunTo);
-
-        if (bestRunDiff < runDiff)
-        {
-          toCheck->bestRunFrom = runStart;
-          toCheck->bestRunTo = runEnd;
-        }
-
-        if (toCheck->firstRunTo <= 0 && runEnd >= toCheck->to)
-        {
-          toCheck->firstRunFrom = runStart;
-          toCheck->firstRunTo = runEnd;
-        }
-
-        if (toCheck->checked && runEnd >= toCheck->to)
-          toCheck->completionCounter++;
-
+        statsRange = range;
         break;
       }
+    }
 
-      toCheckActualRange->timePlayed += timePlayed;
-      toCheckActualRange->attempts++;
+    if (!statsRange)
+      statsRange = candidates.front();
 
-      if (toCheckActualRange->checked)
+    Range *completedRange = nullptr;
+
+    for (auto *range : candidates)
+    {
+      if (
+          !range->checked &&
+          greaterOrEqual(runEnd, range->to))
+      {
+        completedRange = range;
         break;
+      }
+    }
 
-      auto bestRunDiff = std::abs(toCheckActualRange->bestRunFrom - toCheckActualRange->bestRunTo);
+    if (!completedRange)
+    {
+      statsRange->attempts++;
+      statsRange->timePlayed += timePlayed;
+
+      const float bestRunDiff =
+          std::abs(statsRange->bestRunFrom - statsRange->bestRunTo);
 
       if (bestRunDiff < runDiff)
       {
-        toCheckActualRange->bestRunFrom = runStart;
-        toCheckActualRange->bestRunTo = runEnd;
+        statsRange->bestRunFrom = runStart;
+        statsRange->bestRunTo = runEnd;
       }
 
-      if (runEnd < toCheckActualRange->to)
-        break;
-
-      if (!Mod::get()->getSettingValue<bool>("disable-run-notifications"))
+      if (
+          statsRange->firstRunTo <= 0 &&
+          greaterOrEqual(runEnd, statsRange->to))
       {
-        geode::Notification::create(
-            fmt::format("Passed {:.2f}-{:.2f} run", toCheckActualRange->from, toCheckActualRange->to),
-            geode::NotificationIcon::Success,
-            geode::NOTIFICATION_DEFAULT_TIME)
-            ->show();
+        statsRange->firstRunFrom = runStart;
+        statsRange->firstRunTo = runEnd;
       }
 
-      targetRange = toCheckActualRange;
-      toCheckActualRange->checked = true;
-      toCheckActualRange->firstRunFrom = runStart;
-      toCheckActualRange->firstRunTo = runEnd;
-      toCheckActualRange->completedAt = std::time(nullptr);
-      toCheckActualRange->attemptsToComplete = toCheckActualRange->attempts;
-      toCheckActualRange->completionCounter++;
-      progressHasChecked = true;
+      if (
+          statsRange->checked &&
+          greaterOrEqual(runEnd, statsRange->to))
+      {
+        statsRange->completionCounter++;
+      }
+
       break;
     }
+
+    completedRange->attempts++;
+    completedRange->timePlayed += timePlayed;
+
+    const float bestRunDiff =
+        std::abs(
+            completedRange->bestRunFrom -
+            completedRange->bestRunTo);
+
+    if (bestRunDiff < runDiff)
+    {
+      completedRange->bestRunFrom = runStart;
+      completedRange->bestRunTo = runEnd;
+    }
+
+    if (!Mod::get()->getSettingValue<bool>("disable-run-notifications"))
+    {
+      geode::Notification::create(
+          fmt::format(
+              "Passed {:.2f}-{:.2f} run",
+              completedRange->from,
+              completedRange->to),
+          geode::NotificationIcon::Success,
+          geode::NOTIFICATION_DEFAULT_TIME)
+          ->show();
+    }
+
+    completedRange->checked = true;
+
+    completedRange->firstRunFrom = runStart;
+    completedRange->firstRunTo = runEnd;
+
+    completedRange->completedAt = std::time(nullptr);
+    completedRange->attemptsToComplete = completedRange->attempts;
+    completedRange->completionCounter++;
+
+    targetRange = completedRange;
+    progressHasChecked = true;
 
     break;
   }
 
   if (targetStage)
   {
-    bool allChecked = std::all_of(targetStage->ranges.begin(), targetStage->ranges.end(),
-                                  [](const Range &r)
-                                  {
-                                    return r.checked || !r.consider;
-                                  });
+    const bool allChecked =
+        std::all_of(
+            targetStage->ranges.begin(),
+            targetStage->ranges.end(),
+            [](const Range &range)
+            {
+              return range.checked || !range.consider;
+            });
 
     if (allChecked)
     {
@@ -479,7 +522,14 @@ int GlobalStore::checkRun(std::string const &profileId, float timePlayed)
   }
 
   if (targetRange)
-    RunClosedEvent().send(runStart, runEnd, currentProfile, targetRange, isStageClosed ? targetStage : nullptr);
+  {
+    RunClosedEvent().send(
+        runStart,
+        runEnd,
+        currentProfile,
+        targetRange,
+        isStageClosed ? targetStage : nullptr);
+  }
 
   saveProfile(*currentProfile);
 

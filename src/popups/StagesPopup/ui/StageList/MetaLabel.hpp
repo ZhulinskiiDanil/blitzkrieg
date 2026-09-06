@@ -8,8 +8,8 @@ using namespace geode::prelude;
 class MetaLabel : public CCLayer
 {
 private:
-  Label *m_label = nullptr;
-  Label *m_value = nullptr;
+  UILabel *m_label = nullptr;
+  UILabel *m_value = nullptr;
   CCDrawNode *m_line = nullptr;
   float m_gap = 5.f;
 

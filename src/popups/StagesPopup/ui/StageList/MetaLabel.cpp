@@ -25,13 +25,13 @@ bool MetaLabel::init(float width, const std::string &label, const std::string &v
           ->setAxisAlignment(AxisAlignment::Center)
           ->setCrossAxisLineAlignment(AxisAlignment::Start));
 
-  m_label = Label::create(label.c_str(), "gjFont17.fnt", .25f);
+  m_label = UILabel::create(label.c_str(), "gjFont17.fnt", .25f);
   m_label->setAnchorPoint({0.f, 1.f});
   m_label->setPosition({0.f, 0.f});
   this->addChild(m_label, 1);
   this->updateLayout();
 
-  m_value = Label::create(value, "gjFont17.fnt", .25f);
+  m_value = UILabel::create(value, "gjFont17.fnt", .25f);
   m_value->setAnchorPoint({0.f, 1.f});
   m_value->setPosition({m_label->getContentSize().width + 10.f, 0.f});
   this->addChild(m_value, 3);

@@ -126,8 +126,8 @@ void ToggablePercentagesList::reload()
 			cell->addChild(checkboxMenu);
 
 			// ! --- Percentage Label --- !
-			auto percentLabel = Label::create(fmt::format("{:.2f}%", m_startposes[j]).c_str(), "gjFont17.fnt");
-			percentLabel->setVariant(isStartposEnabled ? Label::Variant::Green : Label::Variant::Red);
+			auto percentLabel = UILabel::create(fmt::format("{:.2f}%", m_startposes[j]).c_str(), "gjFont17.fnt");
+			percentLabel->setVariant(isStartposEnabled ? UILabel::Variant::Green : UILabel::Variant::Red);
 			percentLabel->setPosition({checkboxMenu->getPositionX() + checkboxMenu->getContentWidth() + 4.0f, cell->getContentHeight() / 2.0f});
 			percentLabel->setAnchorPoint({0.0f, 0.5f});
 			percentLabel->setScale(0.3f);
@@ -158,7 +158,7 @@ void ToggablePercentagesList::reload()
 			buttonMenu->updateLayout();
 
 			// ! --- Range Labels --- !
-			auto runFromLabel = Label::create(
+			auto runFromLabel = UILabel::create(
 					j == m_startposes.size() - 1 ? fmt::format("<small>{:.2f}% - 100.00%</small>", m_startposes[j]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", m_startposes[j], m_startposes[j + 1]).c_str(), "gjFont17.fnt");
 			runFromLabel->setScale(0.25f);
 			runFromLabel->setAnchorPoint({1.0f, 0.0f});
@@ -166,7 +166,7 @@ void ToggablePercentagesList::reload()
 			cell->addChild(runFromLabel);
 
 			// ! --- Run To Label --- !
-			auto runToLabel = Label::create(j == 0 ? fmt::format("<small>0.00% - {:.2f}%</small>", m_startposes[0]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", m_startposes[j - 1], m_startposes[j]).c_str(), "gjFont17.fnt");
+			auto runToLabel = UILabel::create(j == 0 ? fmt::format("<small>0.00% - {:.2f}%</small>", m_startposes[0]).c_str() : fmt::format("<small>{:.2f}% - {:.2f}%</small>", m_startposes[j - 1], m_startposes[j]).c_str(), "gjFont17.fnt");
 			runToLabel->setScale(0.25f);
 			runToLabel->setAnchorPoint({1.0f, 1.0f});
 			runToLabel->setPosition({cell->getContentWidth() - buttonMenu->getContentWidth() - 6 - 4, cell->getContentHeight() - 4.0f});
@@ -220,7 +220,7 @@ void ToggablePercentagesList::onToggleStartpos(CCObject *sender)
 {
 	auto checkbox = static_cast<CCMenuItemToggler *>(sender);
 	auto cell = static_cast<CCLayer *>(static_cast<CCMenu *>(checkbox->getParent())->getParent());
-	auto percentLabel = static_cast<Label *>(cell->getChildByID("percent-label"));
+	auto percentLabel = static_cast<UILabel *>(cell->getChildByID("percent-label"));
 	auto EnabledCellBG = cell->getChildByID("enabled-cell-bg");
 	auto DisabledCellBG = cell->getChildByID("disabled-cell-bg");
 
@@ -228,7 +228,7 @@ void ToggablePercentagesList::onToggleStartpos(CCObject *sender)
 	{
 		EnabledCellBG->setVisible(true);
 		DisabledCellBG->setVisible(false);
-		percentLabel->setVariant(Label::Variant::Green);
+		percentLabel->setVariant(UILabel::Variant::Green);
 
 		m_enabledStartposes.push_back(m_startposes[checkbox->getTag()]);
 		std::sort(m_enabledStartposes.begin(), m_enabledStartposes.end());
@@ -237,7 +237,7 @@ void ToggablePercentagesList::onToggleStartpos(CCObject *sender)
 	{
 		EnabledCellBG->setVisible(false);
 		DisabledCellBG->setVisible(true);
-		percentLabel->setVariant(Label::Variant::Red);
+		percentLabel->setVariant(UILabel::Variant::Red);
 
 		m_enabledStartposes.erase(std::remove(m_enabledStartposes.begin(), m_enabledStartposes.end(), m_startposes[checkbox->getTag()]), m_enabledStartposes.end());
 		std::sort(m_enabledStartposes.begin(), m_enabledStartposes.end());

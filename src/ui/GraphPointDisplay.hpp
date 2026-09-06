@@ -10,7 +10,7 @@ using namespace geode::prelude;
 class GraphPointDisplay : public CCLayer
 {
 private:
-  Label *m_label = nullptr;
+  UILabel *m_label = nullptr;
 
 public:
   static GraphPointDisplay *create(std::string text);

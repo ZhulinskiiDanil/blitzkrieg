@@ -3,7 +3,7 @@
 #include <Geode/Geode.hpp>
 using namespace geode::prelude;
 
-class Label : public CCLayer
+class UILabel : public CCLayer
 {
 public:
   enum class Variant
@@ -32,9 +32,9 @@ private:
   void parseAndBuild();
 
 public:
-  static Label *create(const std::string &text,
-                       const std::string &font = "gjFont17.fnt",
-                       float fontSize = 1.f);
+  static UILabel *create(const std::string &text,
+                         const std::string &font = "gjFont17.fnt",
+                         float fontSize = 1.f);
   bool init(const std::string &text,
             const std::string &font = "gjFont17.fnt",
             float fontSize = 1.f);
