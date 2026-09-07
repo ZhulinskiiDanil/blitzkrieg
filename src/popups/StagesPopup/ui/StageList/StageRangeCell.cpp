@@ -44,33 +44,17 @@ namespace
         return std::abs(to - from);
     }
 
+    // I'm so sorry
     std::string formatCompletedAt(std::time_t timestamp)
     {
         if (timestamp <= 0)
             return {};
 
-        std::tm timeInfo{};
+        auto timeInfo = geode::localtime(timestamp);
 
-#if defined(_WIN32)
-        if (localtime_s(&timeInfo, &timestamp) != 0)
-            return {};
-#else
-        if (!localtime_r(&timestamp, &timeInfo))
-            return {};
-#endif
-
-        char buffer[32]{};
-
-        if (std::strftime(
-                buffer,
-                sizeof(buffer),
-                "%Y-%m-%d %H:%M",
-                &timeInfo) == 0)
-        {
-            return {};
-        }
-
-        return buffer;
+        return fmt::format(
+            "{:%Y-%m-%d %H:%M}",
+            timeInfo);
     }
 
     std::string compactNote(std::string note)
