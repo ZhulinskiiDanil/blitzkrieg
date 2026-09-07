@@ -1,3 +1,13 @@
+# 2.3.0
+- Reworked run assignment so each attempt is tracked by exactly one target range
+- Improved run completion checks and floating-point comparison handling
+- Improved attempts, playtime, best run, and completion tracking
+- Reworked range statistics and status display in the Stage Browser
+- Added movement-aware speedhack detection to prevent manipulated runs from being counted
+- Added an option to disable speedhack detection
+- Reduced News refresh cache from 5 minutes to 1 minute
+- Updated Geode compatibility to 5.10.1
+
 # 2.2.5
 - Added a News tab for StartPos publications, mod updates, announcements, and warnings
 - Added news action buttons for opening levels, opening links, and copying text

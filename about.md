@@ -36,7 +36,7 @@ a startpos copy and the original level.
 - **<cg>Stage Browser</c>** — inspect completed and upcoming stages
 - **<cg>Stage Graph</c>** — visualize attempts and playtime
 - **<cg>Multi-Level Profiles</c>** — track several level copies together
-- **<cg>Noclip Detection</c>** — invalid runs can be ignored automatically
+- **<cg>Noclip & Speedhack Detection</c>** — automatically ignore invalid runs
 - **<cg>Custom Notifications</c>** — feedback for completed runs and stages
 - **<cg>Startpos Copies</c>** — use curated practice copies directly from the mod
 

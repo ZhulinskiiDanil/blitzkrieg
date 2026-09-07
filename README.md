@@ -22,7 +22,7 @@ Create a profile, play the level, and let the mod track your **runs, stages, att
 - **Stage Browser** for completed and upcoming stages
 - **Stage Graph** for attempts and playtime
 - **Multi-Level Profiles** for sharing progress between level copies
-- **Noclip detection** so invalid runs can be ignored
+- **Noclip and speedhack detection** so invalid runs can be ignored
 - **Custom notifications and SFX**
 - **Streamer Mode**
 - **Curated startpos copies**
