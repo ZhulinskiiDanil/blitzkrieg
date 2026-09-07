@@ -143,7 +143,7 @@ Blitzkrieg automates the tracking workflow around that training method.
 Found a bug or need help?
 
 - **Discord:** https://discord.gg/duuG4RqJKh
-- **Homepage:** https://dgkr-community.vercel.app/blitzkrieg
+- **Homepage:** https://www.blitzkrieg-mod.com
 - **Source:** https://github.com/ZhulinskiiDanil/blitzkrieg
 
 Bug reports and feature requests can also be submitted through GitHub Issues.

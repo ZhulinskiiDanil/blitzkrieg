@@ -8,22 +8,24 @@
   },
   "id": "zhulis.blitzkrieg",
   "name": "Blitzkrieg",
-  "version": "v2.3.2",
+  "version": "v2.3.3",
   "developer": "Zhulis",
-  "description": "Blitzkrieg progression",
+  "description": "Automatic practice progression tracker for GD",
   "tags": [
     "gameplay",
     "interface",
     "performance",
     "enhancement",
-    "offline"
+    "offline",
+    "utility",
+    "customization"
   ],
   "dependencies": {
     "cvolton.level-id-api": "v2.0.0",
     "geode.node-ids": ">=v1.23.0"
   },
   "links": {
-    "homepage": "https://dgkr-community.vercel.app/blitzkrieg",
+    "homepage": "https://www.blitzkrieg-mod.com",
     "community": "https://discord.gg/duuG4RqJKh",
     "source": "https://github.com/ZhulinskiiDanil/blitzkrieg"
   },
@@ -55,6 +57,7 @@
     "ignore-practice-mode": {
       "type": "bool",
       "name": "Ignore Practice Mode",
+      "description": "Do not track runs or update progression while practicing in Practice Mode.",
       "default": false
     },
     "enable-speedhack-detection": {
@@ -76,13 +79,13 @@
     "disable-progress-expansion-animation": {
       "type": "bool",
       "name": "Disable expansion animation",
-      "description": "Disable the animation when progress statistics expand.",
+      "description": "Disable the animation used when progress statistics expand.",
       "default": false
     },
     "replace-practice-bar-with-blitzkrieg": {
       "type": "bool",
       "name": "Blitzkrieg instead of practice bar",
-      "description": "Display Blitzkrieg statistics instead of the practice progress bar.",
+      "description": "Replace Geometry Dash's practice bar with the Blitzkrieg progression bar.",
       "default": true
     },
     "practice-bar-divisions-color": {
@@ -107,7 +110,7 @@
     "practice-bar-divisions-transparency": {
       "type": "float",
       "name": "Stage divider opacity",
-      "description": "Transparency of stage divisions in the progression bar.",
+      "description": "Opacity of stage division markers in the Blitzkrieg progression bar.",
       "default": 0.4,
       "min": 0.1,
       "max": 1,
@@ -125,7 +128,7 @@
     "enable-streamer-mode": {
       "type": "bool",
       "name": "Enable streamer mode",
-      "description": "Streamer mode hides profile names, leaving only the first letter. You can hide more information in the settings",
+      "description": "Hide profile names by showing only their first letter in the interface.",
       "default": false
     },
     "notifications-settings": {
@@ -135,11 +138,13 @@
     "disable-run-notifications": {
       "type": "bool",
       "name": "Disable run notifications",
+      "description": "Do not show notifications when a run is recorded.",
       "default": false
     },
     "disable-run-notification-sound": {
       "type": "bool",
       "name": "Disable run notification sound",
+      "description": "Keep run notifications visible but mute their sound.",
       "default": false
     },
     "sfx-settings": {
@@ -147,12 +152,14 @@
       "name": "SFX"
     },
     "ignore-built-in-game-sfx": {
-      "name": "Ignore the game's built-in sfx",
+      "name": "Ignore the game's built-in SFX",
+      "description": "Mute Geometry Dash's built-in sound effects while Blitzkrieg SFX are active.",
       "type": "bool",
       "default": false
     },
     "sfx-volume": {
       "name": "SFX volume",
+      "description": "Set the volume of Blitzkrieg progress and stage sounds.",
       "type": "float",
       "default": 1,
       "min": 0,
@@ -164,15 +171,15 @@
       }
     },
     "sfx-use-custom-sounds": {
-      "name": "Use Custom SFX's",
+      "name": "Use custom SFX",
       "type": "bool",
       "default": false,
-      "description": "Use custom sounds for the SFX's!"
+      "description": "Use custom sounds selected below for progress and stage completions."
     },
     "sfx-progress-path": {
-      "name": "Progress-Pass SFX",
+      "name": "Progress pass SFX",
       "type": "file",
-      "description": "Path for the Progress-Pass sound effect.",
+      "description": "Custom sound played when a run completes a progression range.",
       "enable-if": "sfx-use-custom-sounds",
       "default": {
         "android": "",
@@ -194,9 +201,9 @@
       }
     },
     "sfx-stage-path": {
-      "name": "Stage-Pass SFX",
+      "name": "Stage pass SFX",
       "type": "file",
-      "description": "Path for the Stage-Pass sound effect.",
+      "description": "Custom sound played when a training stage is completed.",
       "enable-if": "sfx-use-custom-sounds",
       "default": {
         "android": "",
