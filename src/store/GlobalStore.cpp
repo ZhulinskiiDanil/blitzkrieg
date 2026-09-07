@@ -344,7 +344,9 @@ void GlobalStore::resetRun()
   runEnd = 0.f;
 }
 
-int GlobalStore::checkRun(std::string const &profileId, float timePlayed)
+int GlobalStore::checkRun(
+    std::string const &profileId,
+    float timePlayed)
 {
   constexpr float eps = 0.01f;
 
@@ -385,7 +387,19 @@ int GlobalStore::checkRun(std::string const &profileId, float timePlayed)
 
     for (auto &range : stage.ranges)
     {
-      if (range.consider && lessOrEqual(runStart, range.from))
+      if (!range.consider)
+        continue;
+
+      const float overlapStart =
+          std::max(runStart, range.from);
+
+      const float overlapEnd =
+          std::min(runEnd, range.to);
+
+      const float overlap =
+          overlapEnd - overlapStart;
+
+      if (overlap > eps)
         candidates.push_back(&range);
     }
 
@@ -397,8 +411,12 @@ int GlobalStore::checkRun(std::string const &profileId, float timePlayed)
         candidates.end(),
         [eps](Range *a, Range *b)
         {
-          if (std::fabs(a->from - b->from) <= eps)
+          if (
+              std::fabs(a->from - b->from) <=
+              eps)
+          {
             return a->to < b->to;
+          }
 
           return a->from < b->from;
         });
@@ -417,87 +435,65 @@ int GlobalStore::checkRun(std::string const &profileId, float timePlayed)
     if (!statsRange)
       statsRange = candidates.front();
 
-    Range *completedRange = nullptr;
+    statsRange->attempts++;
+    statsRange->timePlayed += timePlayed;
 
-    for (auto *range : candidates)
+    const float bestRunDiff =
+        std::abs(
+            statsRange->bestRunFrom -
+            statsRange->bestRunTo);
+
+    if (bestRunDiff < runDiff)
     {
-      if (
-          !range->checked &&
-          greaterOrEqual(runEnd, range->to))
-      {
-        completedRange = range;
-        break;
-      }
+      statsRange->bestRunFrom = runStart;
+      statsRange->bestRunTo = runEnd;
     }
 
-    if (!completedRange)
+    const bool passed =
+        lessOrEqual(
+            runStart,
+            statsRange->from) &&
+        greaterOrEqual(
+            runEnd,
+            statsRange->to);
+
+    if (statsRange->checked)
     {
-      statsRange->attempts++;
-      statsRange->timePlayed += timePlayed;
-
-      const float bestRunDiff =
-          std::abs(statsRange->bestRunFrom - statsRange->bestRunTo);
-
-      if (bestRunDiff < runDiff)
-      {
-        statsRange->bestRunFrom = runStart;
-        statsRange->bestRunTo = runEnd;
-      }
-
-      if (
-          statsRange->firstRunTo <= 0 &&
-          greaterOrEqual(runEnd, statsRange->to))
-      {
-        statsRange->firstRunFrom = runStart;
-        statsRange->firstRunTo = runEnd;
-      }
-
-      if (
-          statsRange->checked &&
-          greaterOrEqual(runEnd, statsRange->to))
-      {
+      if (passed)
         statsRange->completionCounter++;
-      }
 
       break;
     }
 
-    completedRange->attempts++;
-    completedRange->timePlayed += timePlayed;
+    if (!passed)
+      break;
 
-    const float bestRunDiff =
-        std::abs(
-            completedRange->bestRunFrom -
-            completedRange->bestRunTo);
-
-    if (bestRunDiff < runDiff)
-    {
-      completedRange->bestRunFrom = runStart;
-      completedRange->bestRunTo = runEnd;
-    }
-
-    if (!Mod::get()->getSettingValue<bool>("disable-run-notifications"))
+    if (
+        !Mod::get()->getSettingValue<bool>(
+            "disable-run-notifications"))
     {
       geode::Notification::create(
           fmt::format(
               "Passed {:.2f}-{:.2f} run",
-              completedRange->from,
-              completedRange->to),
+              statsRange->from,
+              statsRange->to),
           geode::NotificationIcon::Success,
           geode::NOTIFICATION_DEFAULT_TIME)
           ->show();
     }
 
-    completedRange->checked = true;
+    statsRange->checked = true;
 
-    completedRange->firstRunFrom = runStart;
-    completedRange->firstRunTo = runEnd;
+    statsRange->firstRunFrom = runStart;
+    statsRange->firstRunTo = runEnd;
 
-    completedRange->completedAt = std::time(nullptr);
-    completedRange->attemptsToComplete = completedRange->attempts;
-    completedRange->completionCounter++;
+    statsRange->completedAt = std::time(nullptr);
 
-    targetRange = completedRange;
+    statsRange->attemptsToComplete = statsRange->attempts;
+
+    statsRange->completionCounter++;
+
+    targetRange = statsRange;
     progressHasChecked = true;
 
     break;

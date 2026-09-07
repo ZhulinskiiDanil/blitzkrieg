@@ -288,6 +288,7 @@ void NewsLayer::setNews(
     }
 
     contentLayer->updateLayout();
+    m_scroll->scrollToTop();
 }
 
 std::optional<GetNewsResponse>
