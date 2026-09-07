@@ -1,3 +1,7 @@
+# 2.3.1
+- Replaced platform-specific time formatting with Geode time utilities and `fmt::format`
+- Cleaned up backup filename time formatting
+
 # 2.3.0
 - Reworked run assignment so each attempt is tracked by exactly one target range
 - Improved run completion checks and floating-point comparison handling
