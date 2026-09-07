@@ -1,3 +1,7 @@
+# 2.3.2
+- Fixed an edge case where valid runs could be assigned to an earlier overlapping range that the run could not complete
+- Run assignment now prioritizes an unchecked overlapping range that the current attempt can actually pass
+
 # 2.3.1
 - Replaced platform-specific time formatting with Geode time utilities and `fmt::format`
 - Cleaned up backup filename time formatting

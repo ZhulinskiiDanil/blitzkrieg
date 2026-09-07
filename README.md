@@ -34,7 +34,13 @@ The same profile can be connected to multiple levels, for example a startpos cop
 
 Each gameplay attempt is assigned to exactly one range.
 
-First, all ranges actually overlapped by the run are collected. If any overlapping range is unchecked, the first unchecked range is selected. If all overlapping ranges have the same state, the first range by `from` is selected.
+First, all ranges actually overlapped by the run are collected.
+
+Among overlapping unchecked ranges, the system first looks for the first range that the run can fully complete. If such a range exists, it is selected.
+
+If no unchecked overlapping range can be completed, the first unchecked overlapping range is selected.
+
+If every overlapping range is already checked, the first overlapping range by `from` is selected.
 
 Only the selected range receives `attempts`, `timePlayed`, `bestRun`, and a possible `PASS`.
 
@@ -46,14 +52,18 @@ A `PASS` is counted only when the run fully covers the selected range: the run s
 Touched(range) =
     min(runEnd, to) - max(runStart, from) > eps
 
+Passable(range) =
+    runStart <= range.from + eps
+    &&
+    runEnd + eps >= range.to
+
 target =
-    first unchecked from touched
-    else first touched
+    first unchecked + passable range from touched
+    else first unchecked range from touched
+    else first touched range
 
 PASS =
-    runStart <= target.from + eps
-    &&
-    runEnd + eps >= target.to
+    Passable(target)
 
 1 attempt -> 1 target range
 ```
@@ -77,6 +87,14 @@ PASS =
 ```
 
 ```text
+65->100 | 50->70 unchecked, 70->85 unchecked, 85->100 unchecked
+-> 70->85 stats + PASS
+
+65->100 | 50->70 checked, 70->85 unchecked, 85->100 unchecked
+-> 70->85 stats + PASS
+```
+
+```text
 0->28 | 0->14.59 checked, 14.59->30.81 checked, 30.81->47.03 unchecked
 -> 0->14.59 stats + PASS
 
@@ -89,6 +107,18 @@ PASS =
           60->80 unchecked, 80->100 unchecked
 -> 40->60 stats + PASS
 ```
+
+The important priority rule is:
+
+```text
+passable unchecked
+    >
+first unchecked touched
+    >
+first touched when all are checked
+```
+
+Checked ranges do not participate in the "prefer a passable range" rule.
 
 ## Recommended Setup
 

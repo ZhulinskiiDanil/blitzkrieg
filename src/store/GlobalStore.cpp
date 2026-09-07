@@ -366,14 +366,11 @@ int GlobalStore::checkRun(
   bool progressHasChecked = false;
   bool isStageClosed = false;
 
-  auto lessOrEqual = [eps](float a, float b)
+  auto canPassRange =
+      [this, eps](Range const *range)
   {
-    return a <= b + eps;
-  };
-
-  auto greaterOrEqual = [eps](float a, float b)
-  {
-    return a + eps >= b;
+    return runStart <= range->from + eps &&
+           runEnd + eps >= range->to;
   };
 
   for (auto &stage : currentProfile->data.stages)
@@ -422,10 +419,17 @@ int GlobalStore::checkRun(
         });
 
     Range *statsRange = nullptr;
+    Range *firstUnchecked = nullptr;
 
     for (auto *range : candidates)
     {
-      if (!range->checked)
+      if (range->checked)
+        continue;
+
+      if (!firstUnchecked)
+        firstUnchecked = range;
+
+      if (canPassRange(range))
       {
         statsRange = range;
         break;
@@ -433,7 +437,12 @@ int GlobalStore::checkRun(
     }
 
     if (!statsRange)
-      statsRange = candidates.front();
+    {
+      if (firstUnchecked)
+        statsRange = firstUnchecked;
+      else
+        statsRange = candidates.front();
+    }
 
     statsRange->attempts++;
     statsRange->timePlayed += timePlayed;
@@ -450,12 +459,7 @@ int GlobalStore::checkRun(
     }
 
     const bool passed =
-        lessOrEqual(
-            runStart,
-            statsRange->from) &&
-        greaterOrEqual(
-            runEnd,
-            statsRange->to);
+        canPassRange(statsRange);
 
     if (statsRange->checked)
     {
@@ -489,7 +493,8 @@ int GlobalStore::checkRun(
 
     statsRange->completedAt = std::time(nullptr);
 
-    statsRange->attemptsToComplete = statsRange->attempts;
+    statsRange->attemptsToComplete =
+        statsRange->attempts;
 
     statsRange->completionCounter++;
 
@@ -507,7 +512,8 @@ int GlobalStore::checkRun(
             targetStage->ranges.end(),
             [](const Range &range)
             {
-              return range.checked || !range.consider;
+              return range.checked ||
+                     !range.consider;
             });
 
     if (allChecked)
@@ -524,7 +530,9 @@ int GlobalStore::checkRun(
         runEnd,
         currentProfile,
         targetRange,
-        isStageClosed ? targetStage : nullptr);
+        isStageClosed
+            ? targetStage
+            : nullptr);
   }
 
   saveProfile(*currentProfile);
