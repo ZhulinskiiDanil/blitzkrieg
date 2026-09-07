@@ -6,12 +6,6 @@ No spreadsheets. No manual run tracking.
 
 Create a profile, play the level, and let the mod track your **runs, stages, attempts, playtime, and progress** automatically.
 
-- **Mod ID:** `zhulis.blitzkrieg`
-- **Version:** `v2.2.5`
-- **Geode:** `5.10.1`
-- **Geometry Dash:** `2.2081`
-- **Platforms:** Windows, Android, macOS, iOS
-
 ## Features
 
 - **Automatic run tracking** during gameplay
