@@ -1,3 +1,7 @@
+# 2.3.3
+- Fixed a memory lifetime issue in StageRangeCell that could cause crashes when toggling ranges
+- Improved cleanup and recreation of Stage Browser UI elements
+
 # 2.3.2
 - Fixed an edge case where valid runs could be assigned to an earlier overlapping range that the run could not complete
 - Run assignment now prioritizes an unchecked overlapping range that the current attempt can actually pass
