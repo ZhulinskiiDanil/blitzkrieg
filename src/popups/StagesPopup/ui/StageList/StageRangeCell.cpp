@@ -549,19 +549,34 @@ void StageRangeCell::updateTexture()
         return;
 
     if (m_background)
+    {
         m_background->removeFromParentAndCleanup(true);
+        m_background = nullptr;
+    }
 
     if (m_lineBg)
+    {
         m_lineBg->removeFromParentAndCleanup(true);
+        m_lineBg = nullptr;
+    }
 
     if (m_bestRunLineBg)
+    {
         m_bestRunLineBg->removeFromParentAndCleanup(true);
+        m_bestRunLineBg = nullptr;
+    }
 
     if (m_midBg)
+    {
         m_midBg->removeFromParentAndCleanup(true);
+        m_midBg = nullptr;
+    }
 
     if (m_mid)
+    {
         m_mid->removeFromParentAndCleanup(true);
+        m_mid = nullptr;
+    }
 
     constexpr float lineBgPaddingX = 5.f;
     constexpr float lineBgH = 2.f;
@@ -578,11 +593,13 @@ void StageRangeCell::updateTexture()
 
     const float bestFrom =
         clampPercent(m_range->bestRunFrom);
+
     const float bestTo =
         clampPercent(m_range->bestRunTo);
 
     const float targetFrom =
         clampPercent(m_from);
+
     const float targetTo =
         clampPercent(m_to);
 
@@ -637,26 +654,23 @@ void StageRangeCell::updateTexture()
         lineBgColor,
         1);
 
-    m_bestRunLineBg = RectNode::create(
-        {bestRunLineW, lineBgH},
-        bestRunColor,
-        1);
-
     m_midBg = RectNode::create(
         {targetLineW, lineBgH + 2},
         targetBgColor,
         lineBgH / 2 + 2);
 
     m_mid = RectNode::create(
-        {std::max(0.f, targetLineW - 2.f), lineBgH},
+        {
+            std::max(
+                0.f,
+                targetLineW - 2.f),
+            lineBgH,
+        },
         targetColor,
         lineBgH / 2);
 
     m_lineBg->setPosition(
         {lineBgPaddingX, lineBgH - 2});
-
-    m_bestRunLineBg->setPosition(
-        {bestRunLineX, lineBgH - 2});
 
     m_midBg->setPosition(
         {targetLineX, lineBgH - 3});
@@ -666,12 +680,25 @@ void StageRangeCell::updateTexture()
 
     m_head->addChild(m_lineBg, 1);
 
-    if (
-        m_range->bestRunFrom >= 0 &&
-        m_range->bestRunTo > 0 &&
-        bestRunLineW > 0)
+    const bool hasBestRunLine =
+        m_range->bestRunFrom >= 0.f &&
+        m_range->bestRunTo > 0.f &&
+        bestRunLineW > 0.f;
+
+    if (hasBestRunLine)
     {
-        m_head->addChild(m_bestRunLineBg, 2);
+        m_bestRunLineBg =
+            RectNode::create(
+                {bestRunLineW, lineBgH},
+                bestRunColor,
+                1);
+
+        m_bestRunLineBg->setPosition(
+            {bestRunLineX, lineBgH - 2});
+
+        m_head->addChild(
+            m_bestRunLineBg,
+            2);
     }
 
     m_head->addChild(m_midBg, 3);
@@ -692,10 +719,15 @@ void StageRangeCell::updateTexture()
     m_background =
         CCScale9Sprite::create(bgSpr);
 
-    m_background->setContentSize(contentSize);
+    m_background->setContentSize(
+        contentSize);
+
     m_background->setPosition(
-        {contentSize.width / 2,
-         contentSize.height / 2});
+        {
+            contentSize.width / 2,
+            contentSize.height / 2,
+        });
+
     m_background->setZOrder(0);
 
     this->addChild(m_background);
