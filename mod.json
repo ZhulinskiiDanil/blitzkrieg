@@ -57,6 +57,12 @@
       "name": "Ignore Practice Mode",
       "default": false
     },
+    "enable-speedhack-detection": {
+      "name": "Enable Speedhack Detection",
+      "description": "Detects speed manipulation and prevents affected runs from being counted.",
+      "type": "bool",
+      "default": true
+    },
     "ui-settings": {
       "type": "title",
       "name": "Interface"
