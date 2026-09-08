@@ -366,6 +366,26 @@ int GlobalStore::checkRun(
   bool progressHasChecked = false;
   bool isStageClosed = false;
 
+  auto getOverlap =
+      [this](Range const *range) -> float
+  {
+    const float overlapStart =
+        std::max(runStart, range->from);
+
+    const float overlapEnd =
+        std::min(runEnd, range->to);
+
+    return std::max(
+        0.0f,
+        overlapEnd - overlapStart);
+  };
+
+  auto isTouched =
+      [&getOverlap, eps](Range const *range)
+  {
+    return getOverlap(range) > eps;
+  };
+
   auto canPassRange =
       [this, eps](Range const *range)
   {
@@ -373,76 +393,231 @@ int GlobalStore::checkRun(
            runEnd + eps >= range->to;
   };
 
-  for (auto &stage : currentProfile->data.stages)
+  auto getCoverage =
+      [&getOverlap, eps](Range const *range)
+      -> float
+  {
+    const float rangeLength =
+        range->to - range->from;
+
+    if (rangeLength <= eps)
+      return 0.0f;
+
+    return getOverlap(range) /
+           rangeLength;
+  };
+
+  auto isBetterPassable =
+      [this, eps](
+          Range const *candidate,
+          Range const *current,
+          bool checked)
+  {
+    if (!current)
+      return true;
+
+    const float candidateFromDistance =
+        std::abs(
+            candidate->from -
+            runStart);
+
+    const float currentFromDistance =
+        std::abs(
+            current->from -
+            runStart);
+
+    if (
+        std::fabs(
+            candidateFromDistance -
+            currentFromDistance) > eps)
+    {
+      return candidateFromDistance <
+             currentFromDistance;
+    }
+
+    if (
+        std::fabs(
+            candidate->from -
+            current->from) > eps)
+    {
+      return candidate->from <
+             current->from;
+    }
+
+    if (checked)
+    {
+      return candidate->to >
+             current->to + eps;
+    }
+
+    return candidate->to <
+           current->to - eps;
+  };
+
+  auto isBetterCoverage =
+      [this, &getCoverage, eps](
+          Range const *candidate,
+          Range const *current,
+          bool checked)
+  {
+    if (!current)
+      return true;
+
+    const float candidateCoverage =
+        getCoverage(candidate);
+
+    const float currentCoverage =
+        getCoverage(current);
+
+    if (
+        std::fabs(
+            candidateCoverage -
+            currentCoverage) > eps)
+    {
+      return candidateCoverage >
+             currentCoverage;
+    }
+
+    const float candidateFromDistance =
+        std::abs(
+            candidate->from -
+            runStart);
+
+    const float currentFromDistance =
+        std::abs(
+            current->from -
+            runStart);
+
+    if (
+        std::fabs(
+            candidateFromDistance -
+            currentFromDistance) > eps)
+    {
+      return candidateFromDistance <
+             currentFromDistance;
+    }
+
+    if (
+        std::fabs(
+            candidate->from -
+            current->from) > eps)
+    {
+      return candidate->from >
+             current->from;
+    }
+
+    if (checked)
+    {
+      return candidate->to >
+             current->to + eps;
+    }
+
+    return candidate->to <
+           current->to - eps;
+  };
+
+  for (auto &stage :
+       currentProfile->data.stages)
   {
     if (isStageDeepChecked(stage))
       continue;
 
     targetStage = &stage;
 
-    std::vector<Range *> candidates;
+    std::vector<Range *> touchedRanges;
+    std::vector<Range *> uncheckedRanges;
 
     for (auto &range : stage.ranges)
     {
       if (!range.consider)
         continue;
 
-      const float overlapStart =
-          std::max(runStart, range.from);
-
-      const float overlapEnd =
-          std::min(runEnd, range.to);
-
-      const float overlap =
-          overlapEnd - overlapStart;
-
-      if (overlap > eps)
-        candidates.push_back(&range);
-    }
-
-    if (candidates.empty())
-      break;
-
-    std::sort(
-        candidates.begin(),
-        candidates.end(),
-        [eps](Range *a, Range *b)
-        {
-          if (
-              std::fabs(a->from - b->from) <=
-              eps)
-          {
-            return a->to < b->to;
-          }
-
-          return a->from < b->from;
-        });
-
-    Range *statsRange = nullptr;
-    Range *firstUnchecked = nullptr;
-
-    for (auto *range : candidates)
-    {
-      if (range->checked)
+      if (!isTouched(&range))
         continue;
 
-      if (!firstUnchecked)
-        firstUnchecked = range;
+      touchedRanges.push_back(&range);
 
-      if (canPassRange(range))
+      if (!range.checked)
       {
-        statsRange = range;
-        break;
+        uncheckedRanges.push_back(
+            &range);
+      }
+    }
+
+    if (touchedRanges.empty())
+      break;
+
+    Range *statsRange = nullptr;
+
+    if (!uncheckedRanges.empty())
+    {
+      for (auto *range : uncheckedRanges)
+      {
+        if (!canPassRange(range))
+          continue;
+
+        if (
+            isBetterPassable(
+                range,
+                statsRange,
+                false))
+        {
+          statsRange = range;
+        }
+      }
+
+      if (!statsRange)
+      {
+        for (auto *range :
+             uncheckedRanges)
+        {
+          if (
+              isBetterCoverage(
+                  range,
+                  statsRange,
+                  false))
+          {
+            statsRange = range;
+          }
+        }
+      }
+    }
+    else
+    {
+      for (auto *range : touchedRanges)
+      {
+        if (!canPassRange(range))
+          continue;
+
+        if (
+            isBetterPassable(
+                range,
+                statsRange,
+                true))
+        {
+          statsRange = range;
+        }
+      }
+
+      if (!statsRange)
+      {
+        for (auto *range :
+             touchedRanges)
+        {
+          if (
+              isBetterCoverage(
+                  range,
+                  statsRange,
+                  true))
+          {
+            statsRange = range;
+          }
+        }
       }
     }
 
     if (!statsRange)
-    {
-      if (firstUnchecked)
-        statsRange = firstUnchecked;
-      else
-        statsRange = candidates.front();
-    }
+      break;
 
     statsRange->attempts++;
     statsRange->timePlayed += timePlayed;

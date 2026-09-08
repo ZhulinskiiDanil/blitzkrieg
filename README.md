@@ -32,21 +32,15 @@ The same profile can be connected to multiple levels, for example a startpos cop
 
 ## How Runs Are Assigned
 
-Each gameplay attempt is assigned to exactly one range.
+Each gameplay attempt is assigned to exactly one range. Only that range receives `attempts`, `timePlayed`, `bestRun`, and a possible `PASS`.
 
-First, all ranges actually overlapped by the run are collected.
+Blitzkrieg first collects all ranges actually touched by the run. If at least one touched range is unchecked, checked ranges are ignored for target selection.
 
-Among overlapping unchecked ranges, the system first looks for the first range that the run can fully complete. If such a range exists, it is selected.
+Among touched unchecked ranges, the mod first prefers a range the run can fully complete. If several are passable, the range with the smallest `from` is selected; if `from` is equal, the smaller range is preferred.
 
-If no unchecked overlapping range can be completed, the first unchecked overlapping range is selected.
+If no unchecked range can be completed, the attempt is assigned to the unchecked range that was covered the most proportionally by the run.
 
-If every overlapping range is already checked, the first overlapping range by `from` is selected.
-
-Only the selected range receives `attempts`, `timePlayed`, `bestRun`, and a possible `PASS`.
-
-A `PASS` is counted only when the run fully covers the selected range: the run starts no later than `from` and ends no earlier than `to`.
-
-### Formal Rules
+If all touched ranges are already checked, the same idea is applied to checked ranges. A fully covered checked range still counts as another pass.
 
 ```text
 Touched(range) =
@@ -57,13 +51,8 @@ Passable(range) =
     &&
     runEnd + eps >= range.to
 
-target =
-    first unchecked + passable range from touched
-    else first unchecked range from touched
-    else first touched range
-
-PASS =
-    Passable(target)
+Coverage(range) =
+    overlap / (range.to - range.from)
 
 1 attempt -> 1 target range
 ```
@@ -71,54 +60,24 @@ PASS =
 ### Examples
 
 ```text
-0->15 | 0->10 unchecked, 10->20 unchecked
--> 0->10 stats + PASS
+20->40 | 10->30 unchecked, 20->30 unchecked, 30->40 unchecked
+-> 20->30 stats + PASS
 
-0->15 | 0->10 checked, 10->20 unchecked
--> 10->20 stats
-```
+25->28 | 10->30 unchecked, 20->35 unchecked, 25->40 unchecked
+-> 25->40 stats
 
-```text
 40->60 | 30->50 unchecked, 50->70 unchecked
 -> 30->50 stats
 
-40->60 | 30->50 checked, 50->70 unchecked
--> 50->70 stats
-```
-
-```text
-65->100 | 50->70 unchecked, 70->85 unchecked, 85->100 unchecked
--> 70->85 stats + PASS
-
 65->100 | 50->70 checked, 70->85 unchecked, 85->100 unchecked
 -> 70->85 stats + PASS
-```
 
-```text
-0->28 | 0->14.59 checked, 14.59->30.81 checked, 30.81->47.03 unchecked
--> 0->14.59 stats + PASS
-
-0->35 | 0->14.59 checked, 14.59->30.81 checked, 30.81->47.03 unchecked
--> 30.81->47.03 stats
-```
-
-```text
 0->100 | 0->20 checked, 20->40 checked, 40->60 unchecked,
           60->80 unchecked, 80->100 unchecked
 -> 40->60 stats + PASS
 ```
 
-The important priority rule is:
-
-```text
-passable unchecked
-    >
-first unchecked touched
-    >
-first touched when all are checked
-```
-
-Checked ranges do not participate in the "prefer a passable range" rule.
+The important rule is simple: one attempt always belongs to one target range. Stats and `PASS` are never split between different ranges.
 
 ## Recommended Setup
 

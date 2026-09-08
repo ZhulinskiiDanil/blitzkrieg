@@ -1,3 +1,9 @@
+# v2.3.4
+- Fixed incorrect run assignment when multiple ranges overlap.
+- Runs now always assign stats and PASS to the same target range.
+- Improved fallback selection when no unchecked range can be completed.
+- Fixed repeated PASS counting for already completed ranges.
+
 # 2.3.3
 - Fixed a memory lifetime issue in StageRangeCell that could cause crashes when toggling ranges
 - Improved cleanup and recreation of Stage Browser UI elements
