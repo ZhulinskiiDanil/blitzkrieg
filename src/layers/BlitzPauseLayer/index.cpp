@@ -33,5 +33,5 @@ void BlitzPauseLayer::onQuit(CCObject *sender)
 void BlitzPauseLayer::onPopup()
 {
     const auto level = PlayLayer::get()->m_level;
-    StagesPopup::create(level)->show();
+    BlitzkriegPopup::create(level)->show();
 }

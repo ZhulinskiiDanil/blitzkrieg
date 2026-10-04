@@ -34,7 +34,8 @@
       "resources/logo-circle.png",
       "resources/startpos-button.png",
       "resources/sprites/*.png",
-      "resources/sprites/range/*.png"
+      "resources/sprites/range/*.png",
+      "resources/sprites/tabs/*.png"
     ],
     "spritesheets": {
       "Borders": [

@@ -21,5 +21,5 @@ void BlitzEndLevelLayer::onPopup()
     auto level = PlayLayer::get()->m_level;
     std::string levelId = level->m_levelID ? utils::numToString(level->m_levelID.value()) : utils::numToString(EditorIDs::getID(level));
 
-    StagesPopup::create(level)->show();
+    BlitzkriegPopup::create(level)->show();
 }

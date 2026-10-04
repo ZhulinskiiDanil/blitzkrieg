@@ -5,9 +5,9 @@
 
 #include "../../events/StageSwitchedEvent.hpp"
 
-StagesPopup *StagesPopup::create(GJGameLevel *level)
+BlitzkriegPopup *BlitzkriegPopup::create(GJGameLevel *level)
 {
-  StagesPopup *ret = new StagesPopup();
+  BlitzkriegPopup *ret = new BlitzkriegPopup();
 
   if (ret->init(level))
   {
@@ -19,7 +19,7 @@ StagesPopup *StagesPopup::create(GJGameLevel *level)
   return nullptr;
 }
 
-bool StagesPopup::init(GJGameLevel *level)
+bool BlitzkriegPopup::init(GJGameLevel *level)
 {
   if (!Popup::init(420, 250, "GJ_square01_custom.png"_spr))
     return false;
@@ -40,10 +40,10 @@ bool StagesPopup::init(GJGameLevel *level)
   return true;
 }
 
-void StagesPopup::drawContent()
+void BlitzkriegPopup::drawContent()
 {
   auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
-  geode::TabButton *activeButton = tabButtons[0];
+  NavTabButton *activeButton = tabButtons[0];
 
   if (m_isFirstLaunch)
   {
@@ -52,7 +52,7 @@ void StagesPopup::drawContent()
     if (profile)
     {
       activeButton = tabButtons[1];
-      activateTab(activeButton);
+      activateTab(activeButton, false);
 
       return;
     }
@@ -60,7 +60,7 @@ void StagesPopup::drawContent()
 
   for (auto *btn : tabButtons)
   {
-    if (btn->isToggled())
+    if (btn->isActive())
     {
       activeButton = btn;
       break;
@@ -80,18 +80,18 @@ void StagesPopup::drawContent()
     m_stageChangedListener.destroy();
     contentContainers.clear();
 
-    if (btnId == "tabBtnProfilesList"_spr)
+    if (btnId == "profiles-tab"_spr)
       drawProfilesList();
-    else if (btnId == "tabBtnCurrentStage"_spr)
+    else if (btnId == "stage-browser-tab"_spr)
       drawCurrentStage();
-    else if (btnId == "tabBtnStageGraph"_spr)
+    else if (btnId == "stage-graph-tab"_spr)
       drawStagesGraph();
-    else if (btnId == "tabBtnNews"_spr)
+    else if (btnId == "news-tab"_spr)
       drawNewsSection();
   }
 }
 
-void StagesPopup::drawProfilesList()
+void BlitzkriegPopup::drawProfilesList()
 {
   UIPadding padding{12.f, 45.f, 10.f, 10.f}; // top, bottom, left, right
 
@@ -99,7 +99,7 @@ void StagesPopup::drawProfilesList()
   auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
 
   m_profilesListNode = CCNode::create();
-  m_profilesListNode->setID("stages-popup-profiles-list"_spr);
+  m_profilesListNode->setID("blitzkrieg-popup-profiles-list"_spr);
   m_profilesListNode->setTag(1);
 
   const auto contentSize = CCSize(
@@ -115,7 +115,7 @@ void StagesPopup::drawProfilesList()
   contentContainers.push_back(m_profilesListNode);
 }
 
-void StagesPopup::drawCurrentStage()
+void BlitzkriegPopup::drawCurrentStage()
 {
   UIPadding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
 
@@ -136,7 +136,7 @@ void StagesPopup::drawCurrentStage()
       m_size.height - padding.top - padding.bottom);
 
   m_currentStageNode = CCNode::create();
-  m_currentStageNode->setID("stages-popup-current-stage"_spr);
+  m_currentStageNode->setID("blitzkrieg-popup-current-stage"_spr);
   m_currentStageNode->setTag(2);
 
   m_mainLayer->addChild(m_currentStageNode);
@@ -171,7 +171,7 @@ void StagesPopup::drawCurrentStage()
   // ! --- Sort Toggle Button --- !
   auto sortBtnSpriteUp = CCSprite::createWithSpriteFrameName("sort-up-square-btn.png"_spr);
   auto sortBtnSpriteDown = CCSprite::createWithSpriteFrameName("sort-down-square-btn.png"_spr);
-  auto sortBtnCheckbox = CCMenuItemToggler::create(sortBtnSpriteDown, sortBtnSpriteUp, this, menu_selector(StagesPopup::onToggleSort));
+  auto sortBtnCheckbox = CCMenuItemToggler::create(sortBtnSpriteDown, sortBtnSpriteUp, this, menu_selector(BlitzkriegPopup::onToggleSort));
   sortBtnCheckbox->toggle(!Mod::get()->getSavedValue<bool>("sort-stage-runs-asc-enabled"));
   sortBtnCheckbox->setAnchorPoint({0, 0});
   sortBtnCheckbox->setScale(.75f);
@@ -180,7 +180,7 @@ void StagesPopup::drawCurrentStage()
   // ! --- Visability Toggle Button --- !
   auto visabilityBtnSpriteOn = CCSprite::createWithSpriteFrameName("check-mark-square-btn.png"_spr);
   auto visabilityBtnSpriteOff = CCSprite::createWithSpriteFrameName("check-mark-gray-square-btn.png"_spr);
-  auto visabilityBtnCheckbox = CCMenuItemToggler::create(visabilityBtnSpriteOff, visabilityBtnSpriteOn, this, menu_selector(StagesPopup::onToggleVisability));
+  auto visabilityBtnCheckbox = CCMenuItemToggler::create(visabilityBtnSpriteOff, visabilityBtnSpriteOn, this, menu_selector(BlitzkriegPopup::onToggleVisability));
   visabilityBtnCheckbox->toggle(!Mod::get()->getSavedValue<bool>("hide-stage-completed-runs-enabled"));
   visabilityBtnCheckbox->setAnchorPoint({0, 0});
   visabilityBtnCheckbox->setScale(.75f);
@@ -201,10 +201,10 @@ void StagesPopup::drawCurrentStage()
   m_currentStageNode->addChild(m_stageList);
 }
 
-void StagesPopup::drawStagesGraph()
+void BlitzkriegPopup::drawStagesGraph()
 {
   m_currentStageGraphNode = CCNode::create();
-  m_currentStageGraphNode->setID("stages-popup-profiles-list"_spr);
+  m_currentStageGraphNode->setID("blitzkrieg-popup-stage-graph"_spr);
   m_currentStageGraphNode->setTag(3);
 
   // ! --- StagesGraphLayer --- !
@@ -215,10 +215,10 @@ void StagesPopup::drawStagesGraph()
   contentContainers.push_back(m_currentStageGraphNode);
 }
 
-void StagesPopup::drawNewsSection()
+void BlitzkriegPopup::drawNewsSection()
 {
   m_helpNode = CCNode::create();
-  m_helpNode->setID("stages-popup-help"_spr);
+  m_helpNode->setID("blitzkrieg-popup-help"_spr);
   m_helpNode->setTag(4);
 
   // ! --- NewsLayer --- !
@@ -229,87 +229,81 @@ void StagesPopup::drawNewsSection()
   contentContainers.push_back(m_helpNode);
 }
 
-void StagesPopup::drawTabs()
+void BlitzkriegPopup::drawTabs()
 {
   // Settings
-  const float TAB_BUTTONS_GAP = 2.f;
+  const float TAB_BUTTONS_GAP = 3.f;
+  // How deep tabs go down into the popup border
+  const float TAB_BORDER_OVERLAP = 3.3f;
+  // Space between the close button in the top-left corner and the first tab
+  const float TAB_CLOSE_BUTTON_GAP = 6.f;
+  // Left offset used when the close button is not found
+  const float TAB_MIN_LEFT_OFFSET = 30.f;
 
-  auto oldTabsNode = m_mainLayer->getChildByID("stages-popup-tabs-node"_spr);
+  struct TabInfo
+  {
+    const char *id;
+    const char *label;
+    const char *icon;
+  };
+
+  const TabInfo tabs[] = {
+      {"profiles-tab"_spr, "Profiles", "tab-icon-profiles.png"_spr},
+      {"stage-browser-tab"_spr, "Stage Browser", "tab-icon-stages.png"_spr},
+      {"stage-graph-tab"_spr, "Stage Graph", "tab-icon-graph.png"_spr},
+      {"news-tab"_spr, "News", "tab-icon-news.png"_spr},
+  };
+
+  auto oldTabsNode = m_mainLayer->getChildByID("blitzkrieg-popup-tabs-node"_spr);
 
   if (oldTabsNode)
     oldTabsNode->removeFromParentAndCleanup(true);
 
   // ! --- Main Container --- !
   auto tabsNode = CCNode::create();
-  tabsNode->setID("stages-popup-tabs-node"_spr);
-
-  // ! --- Buttons --- !
-  auto tabBtnProfilesList = TabButton::create(
-      "Profiles",
-      this,
-      menu_selector(StagesPopup::onTabButton));
-  tabBtnProfilesList->setAnchorPoint({0.5f, 0.f});
-  tabBtnProfilesList->setTag(1);
-  tabBtnProfilesList->setID("tabBtnProfilesList"_spr);
-  tabBtnProfilesList->toggle(true);
-
-  auto tabBtnCurrentStage = TabButton::create(
-      "Stage Browser",
-      this,
-      menu_selector(StagesPopup::onTabButton));
-  tabBtnCurrentStage->setAnchorPoint({0.5f, 0.f});
-  tabBtnCurrentStage->setTag(2);
-  tabBtnCurrentStage->setID("tabBtnCurrentStage"_spr);
-
-  auto tabBtnCurrentStageGraph = TabButton::create(
-      "Stage Graph",
-      this,
-      menu_selector(StagesPopup::onTabButton));
-  tabBtnCurrentStageGraph->setAnchorPoint({0.5f, 0.f});
-  tabBtnCurrentStageGraph->setTag(3);
-  tabBtnCurrentStageGraph->setID("tabBtnStageGraph"_spr);
-
-  auto tabBtnNews = TabButton::create(
-      "News",
-      this,
-      menu_selector(StagesPopup::onTabButton));
-  tabBtnNews->setAnchorPoint({0.5f, 0.f});
-  tabBtnNews->setTag(4);
-  tabBtnNews->setID("tabBtnNews"_spr);
+  tabsNode->setID("blitzkrieg-popup-tabs-node"_spr);
 
   // ! --- Menu --- !
   auto tabMenu = CCMenu::create();
-  tabMenu->setPosition({m_size.width / 2, m_size.height - 3.5f});
-  tabMenu->setZOrder(1);
-  tabMenu->setID("stages-popup-tab-menu"_spr);
+  // Tabs are attached to the left side, right after the close button
+  float tabsLeft = TAB_MIN_LEFT_OFFSET;
 
+  if (m_closeBtn && m_closeBtn->getParent())
+  {
+    const auto closeBox = m_closeBtn->boundingBox();
+    const auto closeRightWorld = m_closeBtn->getParent()->convertToWorldSpace(
+        {closeBox.getMaxX(), closeBox.getMidY()});
+    const float closeRight = m_mainLayer->convertToNodeSpace(closeRightWorld).x;
+
+    tabsLeft = std::max(tabsLeft, closeRight + TAB_CLOSE_BUTTON_GAP);
+  }
+
+  tabMenu->setPosition({tabsLeft, m_size.height - TAB_BORDER_OVERLAP});
+  tabMenu->setZOrder(1);
+  tabMenu->setID("blitzkrieg-popup-tab-menu"_spr);
+
+  // ! --- Buttons --- !
+  m_tabButtonsGap = TAB_BUTTONS_GAP;
   tabButtons.clear();
 
-  tabMenu->addChild(tabBtnProfilesList);
-  tabButtons.push_back(tabBtnProfilesList);
-
-  tabMenu->addChild(tabBtnCurrentStage);
-  tabButtons.push_back(tabBtnCurrentStage);
-
-  tabMenu->addChild(tabBtnCurrentStageGraph);
-  tabButtons.push_back(tabBtnCurrentStageGraph);
-
-  tabMenu->addChild(tabBtnNews);
-  tabButtons.push_back(tabBtnNews);
-
-  tabMenu->alignItemsHorizontallyWithPadding(TAB_BUTTONS_GAP);
-
-  // ! --- Tab Buttons Backgrounds --- !
-  for (auto *btn : tabButtons)
+  for (auto const &tab : tabs)
   {
-    auto gradient = CCSprite::create("tab-gradient-mask.png"_spr);
-    gradient->setAnchorPoint({0.5f, 0.f});
-    gradient->setPosition(tabMenu->convertToWorldSpace(btn->getPosition()));
-    gradient->setColor({82, 82, 82});
-    gradient->setZOrder(0);
+    auto *btn = NavTabButton::create(
+        tab.label,
+        tab.icon,
+        this,
+        menu_selector(BlitzkriegPopup::onTabButton));
+    btn->setID(tab.id);
+    // Tabs animate their width, the row follows every frame
+    btn->setOnResize([this]()
+                     { layoutTabs(); });
 
-    tabsNode->addChild(gradient);
+    tabMenu->addChild(btn);
+    tabButtons.push_back(btn);
   }
+
+  tabButtons.front()->setActive(true, false);
+  layoutTabs();
 
   tabsNode->addChild(tabMenu);
   m_mainLayer->addChild(tabsNode);
@@ -319,40 +313,58 @@ void StagesPopup::drawTabs()
   CCSprite *settingsSpr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
   settingsSpr->setScale(0.8f);
 
-  CCMenuItemSpriteExtra *settingsBtn = CCMenuItemSpriteExtra::create(settingsSpr, this, menu_selector(StagesPopup::onSettingsButton));
-  CCSize settingsSize = settingsBtn->getContentSize();
+  CCMenuItemSpriteExtra *settingsBtn = CCMenuItemSpriteExtra::create(settingsSpr, this, menu_selector(BlitzkriegPopup::onSettingsButton));
 
   settingsBtn->setPositionX(this->m_bgSprite->getContentWidth() - 3);
   settingsBtn->setPositionY(3);
   m->addChild(settingsBtn);
 }
 
-void StagesPopup::activateTab(TabButton *sender)
+// Tabs change width when activated, so the row is laid out manually.
+// The row grows to the right from the menu origin,
+// buttons stand on it with their bottom edge.
+void BlitzkriegPopup::layoutTabs()
+{
+  float x = 0.f;
+
+  for (auto *btn : tabButtons)
+  {
+    const float width = btn->getContentWidth();
+
+    btn->setAnchorPoint({.5f, 0.f});
+    btn->setPosition({x + width / 2, 0.f});
+
+    x += width + m_tabButtonsGap;
+  }
+}
+
+void BlitzkriegPopup::activateTab(NavTabButton *sender, bool animate)
 {
   if (!sender)
     return;
 
-  // Deactivate all buttons except sender
   for (auto *btn : tabButtons)
   {
-    if (!btn)
-      continue;
-
-    if (btn != sender)
-      btn->toggle(false);
+    if (btn)
+      btn->setActive(btn == sender, animate);
   }
 
-  sender->toggle(true);
+  layoutTabs();
   drawContent();
 }
 
-void StagesPopup::onTabButton(CCObject *obj)
+void BlitzkriegPopup::onTabButton(CCObject *obj)
 {
-  auto *btnStage = typeinfo_cast<TabButton *>(obj);
-  activateTab(btnStage);
+  auto *btn = typeinfo_cast<NavTabButton *>(obj);
+
+  // Clicking the already open tab does nothing
+  if (!btn || btn->isActive())
+    return;
+
+  activateTab(btn);
 }
 
-void StagesPopup::onToggleSort(CCObject *sender)
+void BlitzkriegPopup::onToggleSort(CCObject *sender)
 {
   if (auto checkbox = typeinfo_cast<CCMenuItemToggler *>(sender))
   {
@@ -364,7 +376,7 @@ void StagesPopup::onToggleSort(CCObject *sender)
   }
 }
 
-void StagesPopup::onToggleVisability(CCObject *sender)
+void BlitzkriegPopup::onToggleVisability(CCObject *sender)
 {
   if (auto checkbox = typeinfo_cast<CCMenuItemToggler *>(sender))
   {
@@ -376,7 +388,7 @@ void StagesPopup::onToggleVisability(CCObject *sender)
   }
 }
 
-void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, UIPadding padding)
+void BlitzkriegPopup::drawCurrentStageTitle(std::vector<Stage> &stages, UIPadding padding)
 {
   auto metaInfo = getMetaInfoFromStages(stages);
 
@@ -455,7 +467,7 @@ void StagesPopup::drawCurrentStageTitle(std::vector<Stage> &stages, UIPadding pa
       });
 }
 
-void StagesPopup::onSettingsButton(CCObject *)
+void BlitzkriegPopup::onSettingsButton(CCObject *)
 {
   geode::openSettingsPopup(Mod::get(), false);
 }

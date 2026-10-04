@@ -17,6 +17,7 @@
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
 #include "./ui/StagesGraph/StagesGraphLayer.hpp"
 #include "./ui/News/NewsLayer.hpp"
+#include "./ui/NavTabs/NavTabButton.hpp"
 
 #include "../../ui/types/index.hpp"
 #include "../../ui/Include.hpp"
@@ -32,15 +33,16 @@
 
 using namespace geode::prelude;
 
-class StagesPopup : public geode::Popup
+class BlitzkriegPopup : public geode::Popup
 {
 private:
-  std::vector<TabButton *> tabButtons;
+  std::vector<NavTabButton *> tabButtons;
   std::vector<CCNode *> contentContainers;
   std::vector<CCMenuItemToggle *> stageCheckboxes;
   GJGameLevel *m_level;
   std::string m_levelId;
   bool m_isFirstLaunch = true;
+  float m_tabButtonsGap = 0.f;
 
   CCNode *m_profilesListNode;
   CCNode *m_currentStageNode;
@@ -54,6 +56,7 @@ private:
   geode::comm::ListenerHandle m_stageRangesChangedListener;
 
   void drawTabs();
+  void layoutTabs();
   void drawContent();
 
   void drawProfilesList();
@@ -67,15 +70,15 @@ private:
 
   void onTabButton(CCObject *);
   void onSettingsButton(CCObject *);
-  void activateTab(TabButton *btnToActivate);
+  void activateTab(NavTabButton *btnToActivate, bool animate = true);
   void onToggleSort(CCObject *sender);
   void onToggleVisability(CCObject *sender);
 
-  ~StagesPopup()
+  ~BlitzkriegPopup()
   {
     m_stageChangedListener.destroy();
   }
 
 public:
-  static StagesPopup *create(GJGameLevel *);
+  static BlitzkriegPopup *create(GJGameLevel *);
 };

@@ -1,6 +1,6 @@
 #include <Geode/modify/EndLevelLayer.hpp>
 
-#include "../../popups/StagesPopup/index.hpp"
+#include "../../popups/BlitzkriegPopup/index.hpp"
 #include "../../utils/selectJsonFile.hpp"
 
 using namespace geode::prelude;

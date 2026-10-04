@@ -1,7 +1,7 @@
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/loader/Event.hpp>
 
-#include "../../popups/StagesPopup/index.hpp"
+#include "../../popups/BlitzkriegPopup/index.hpp"
 
 #include "../../utils/selectJsonFile.hpp"
 #include "../../utils/getMetaInfoFromStages.hpp"
