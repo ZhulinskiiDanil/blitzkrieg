@@ -1,5 +1,6 @@
 #include "StageGraphData.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <fmt/core.h>
 
@@ -23,7 +24,7 @@ std::vector<StageGraphColumn> buildStageGraphColumns(Profile &profile)
     column.attempts = getStageAttempts(stage);
     column.timePlayed = getStagePlaytime(stage);
 
-    for (auto const &range : stage->ranges)
+    for (auto &range : stage->ranges)
     {
       if (std::abs(range.from) < .01f)
         column.endPercent = range.to;
@@ -35,7 +36,23 @@ std::vector<StageGraphColumn> buildStageGraphColumns(Profile &profile)
 
       if (range.checked)
         column.completedRuns++;
+
+      column.runs.push_back({
+          .range = &range,
+          .from = range.from,
+          .to = range.to,
+          .attempts = range.attempts,
+          .timePlayed = range.timePlayed,
+          .checked = range.checked,
+          .completedAt = range.checked ? range.completedAt : 0,
+      });
     }
+
+    std::sort(
+        column.runs.begin(),
+        column.runs.end(),
+        [](StageGraphRun const &a, StageGraphRun const &b)
+        { return a.from < b.from; });
 
     // The first stage that is not completed is the one the player is on
     if (progressIndex < 0 && !isStageDeepChecked(*stage))
@@ -46,6 +63,13 @@ std::vector<StageGraphColumn> buildStageGraphColumns(Profile &profile)
     else if (progressIndex < 0)
     {
       column.status = StageGraphStatus::Completed;
+    }
+
+    // The stage is done when its last run is closed
+    if (isStageDeepChecked(*stage))
+    {
+      for (auto const &run : column.runs)
+        column.completedAt = std::max(column.completedAt, run.completedAt);
     }
 
     columns.push_back(column);
@@ -96,6 +120,62 @@ std::optional<float> mapPercentFromZero(
   }
 
   return static_cast<float>(last->index);
+}
+
+StageGraphForecast estimateRemaining(std::vector<StageGraphColumn> const &columns)
+{
+  StageGraphForecast forecast;
+
+  int completed = 0;
+  float completedAttempts = 0.f;
+  float completedTime = 0.f;
+  // What the stages that are not completed already took
+  float spentAttempts = 0.f;
+  float spentTime = 0.f;
+
+  for (auto const &column : columns)
+  {
+    if (column.status == StageGraphStatus::Completed)
+    {
+      completed++;
+      completedAttempts += column.attempts;
+      completedTime += column.timePlayed;
+      continue;
+    }
+
+    forecast.stagesLeft++;
+    spentAttempts += column.attempts;
+    spentTime += column.timePlayed;
+  }
+
+  forecast.done = forecast.stagesLeft == 0 && !columns.empty();
+  forecast.known = completed > 0;
+
+  if (!forecast.known || forecast.done)
+    return forecast;
+
+  forecast.attempts = std::max(0.f, completedAttempts / completed * forecast.stagesLeft - spentAttempts);
+  forecast.time = std::max(0.f, completedTime / completed * forecast.stagesLeft - spentTime);
+
+  return forecast;
+}
+
+float getNiceAxisStep(float raw)
+{
+  if (raw <= 1.f)
+    return 1.f;
+
+  const float power = std::pow(10.f, std::floor(std::log10(raw)));
+  const float n = raw / power;
+
+  if (n <= 1.f)
+    return power;
+  if (n <= 2.f)
+    return 2.f * power;
+  if (n <= 5.f)
+    return 5.f * power;
+
+  return 10.f * power;
 }
 
 std::string formatCompactNumber(float value)

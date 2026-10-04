@@ -36,25 +36,6 @@ namespace
     }
   }
 
-  // 1, 2 or 5 times a power of 10
-  float getNiceStep(float raw)
-  {
-    if (raw <= 1.f)
-      return 1.f;
-
-    const float power = std::pow(10.f, std::floor(std::log10(raw)));
-    const float n = raw / power;
-
-    if (n <= 1.f)
-      return power;
-    if (n <= 2.f)
-      return 2.f * power;
-    if (n <= 5.f)
-      return 5.f * power;
-
-    return 10.f * power;
-  }
-
   // Steps that read well as time, in seconds
   float getNiceTimeStep(float raw)
   {
@@ -211,7 +192,7 @@ void StageBarChart::rebuild(bool animate)
 
   const float raw = maxValue / GRID_LINES;
   const float step = m_metric == StageGraphMetric::Attempts
-                         ? getNiceStep(raw)
+                         ? getNiceAxisStep(raw)
                          : getNiceTimeStep(raw);
 
   m_axisStep = step;

@@ -4,6 +4,8 @@
 #include <cmath>
 #include <ctime>
 
+#include "../../../../utils/formatCompletedAt.hpp"
+
 namespace
 {
     std::string formatCount(
@@ -42,19 +44,6 @@ namespace
     float runLength(float from, float to)
     {
         return std::abs(to - from);
-    }
-
-    // I'm so sorry
-    std::string formatCompletedAt(std::time_t timestamp)
-    {
-        if (timestamp <= 0)
-            return {};
-
-        auto timeInfo = geode::localtime(timestamp);
-
-        return fmt::format(
-            "{:%Y-%m-%d %H:%M}",
-            timeInfo);
     }
 
     std::string compactNote(std::string note)
