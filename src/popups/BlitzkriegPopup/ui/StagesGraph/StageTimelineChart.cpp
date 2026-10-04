@@ -18,8 +18,23 @@ namespace
   constexpr float DOT_RADIUS = 1.6f;
   constexpr float SELECTED_DOT_RADIUS = 2.8f;
 
-  // Shorter spans are widened, so a single completion sits in the middle
-  constexpr std::time_t MIN_SPAN = 3600;
+  const ccColor4B FILL_BREAK_COLOR{255, 0, 82, 16};
+  const ccColor4B BREAK_MARK_COLOR{150, 150, 150, 255};
+
+  // +5d, +3w, +4mo, +2y
+  std::string formatGap(std::time_t seconds)
+  {
+    const double days = seconds / 86400.0;
+
+    if (days < 14.0)
+      return fmt::format("+{}d", static_cast<int>(std::round(days)));
+    if (days < 60.0)
+      return fmt::format("+{}w", static_cast<int>(std::round(days / 7.0)));
+    if (days < 365.0)
+      return fmt::format("+{}mo", static_cast<int>(std::round(days / 30.0)));
+
+    return fmt::format("+{}y", static_cast<int>(std::round(days / 365.0)));
+  }
 
   // UILabel has no height, it is centered on its y
   UILabel *createLabel(std::string const &text, float scale, float anchorX)
@@ -132,10 +147,95 @@ bool StageTimelineChart::init(const CCSize &size)
 
 float StageTimelineChart::getTimeX(std::time_t time) const
 {
-  const double span = static_cast<double>(m_end - m_start);
-  const double t = span > 0 ? static_cast<double>(time - m_start) / span : .5;
+  if (m_knots.empty())
+    return m_plotSize.width / 2;
 
-  return m_plotSize.width * (X_MARGIN + (1.f - X_MARGIN * 2) * static_cast<float>(t));
+  if (time <= m_knots.front().time)
+    return m_knots.front().x;
+
+  for (std::size_t i = 0; i + 1 < m_knots.size(); ++i)
+  {
+    auto const &a = m_knots[i];
+    auto const &b = m_knots[i + 1];
+
+    if (time > b.time)
+      continue;
+
+    const double t = static_cast<double>(time - a.time) / static_cast<double>(b.time - a.time);
+    return a.x + (b.x - a.x) * static_cast<float>(t);
+  }
+
+  return m_knots.back().x;
+}
+
+// Short pauses keep their real length, long ones get a fixed narrow width
+void StageTimelineChart::buildTimeAxis()
+{
+  m_knots.clear();
+  m_breaks.clear();
+
+  std::vector<std::time_t> times;
+
+  for (auto const &point : m_points)
+  {
+    if (times.empty() || point.time != times.back())
+      times.push_back(point.time);
+  }
+
+  // Not done yet: the axis goes on to today
+  if (const auto now = std::time(nullptr); !m_levelDone && now > times.back())
+    times.push_back(now);
+
+  if (times.size() == 1)
+  {
+    m_knots.push_back({times.front(), m_plotSize.width / 2});
+    return;
+  }
+
+  const float left = m_plotSize.width * X_MARGIN;
+  const float usable = m_plotSize.width * (1.f - X_MARGIN * 2);
+  const std::size_t gaps = times.size() - 1;
+
+  std::size_t longGaps = 0;
+  double shortSum = 0.0;
+
+  for (std::size_t i = 0; i < gaps; ++i)
+  {
+    const auto gap = times[i + 1] - times[i];
+
+    if (gap > LONG_GAP)
+      longGaps++;
+    else
+      shortSum += static_cast<double>(gap);
+  }
+
+  // Only pauses: they share the width evenly
+  float breakWidth = 0.f;
+
+  if (longGaps == gaps)
+    breakWidth = usable / gaps;
+  else if (longGaps > 0)
+    breakWidth = std::min(BREAK_WIDTH, usable * MAX_BREAKS_SHARE / longGaps);
+
+  const float rest = usable - breakWidth * longGaps;
+
+  float x = left;
+  m_knots.push_back({times.front(), x});
+
+  for (std::size_t i = 0; i < gaps; ++i)
+  {
+    const auto gap = times[i + 1] - times[i];
+    const bool isLong = gap > LONG_GAP;
+    const float width = isLong
+                            ? breakWidth
+                            : rest * static_cast<float>(static_cast<double>(gap) / shortSum);
+
+    if (isLong)
+      m_breaks.push_back({x, x + width, gap});
+
+    x += width;
+    m_knots.push_back({times[i + 1], x});
+  }
 }
 
 CCPoint StageTimelineChart::getPointPosition(Point const &point) const
@@ -199,22 +299,15 @@ void StageTimelineChart::setData(std::vector<StageGraphColumn> const &columns)
   }
 
   // ! --- Time axis: first completion to now, or to the last one when the level is done --- !
-  m_start = m_points.front().time;
-  m_end = levelDone ? m_points.back().time : std::max(std::time(nullptr), m_points.back().time);
-
-  if (m_end - m_start < MIN_SPAN)
-  {
-    const std::time_t pad = (MIN_SPAN - (m_end - m_start)) / 2;
-    m_start -= pad;
-    m_end += pad;
-  }
+  m_levelDone = levelDone;
+  buildTimeAxis();
 
   // ! --- Stage axis: 0 to all stages --- !
   m_axisStep = getNiceAxisStep(static_cast<float>(m_totalStages) / GRID_LINES);
   m_axisMax = std::max(m_axisStep, std::ceil(m_totalStages / m_axisStep) * m_axisStep);
 
   drawAxis();
-  drawLine(levelDone);
+  drawLine();
   drawHitAreas();
 }
 
@@ -279,31 +372,121 @@ void StageTimelineChart::drawAxis()
   goalLabel->setPosition({2.f, std::min(goalY + 5.f, height + PLOT_TOP / 2)});
   m_plot->addChild(goalLabel);
 
-  // ! --- X labels: dates spread over the span, repeated ones are skipped --- !
-  std::string previous;
+  // ! --- Breaks: a cut on the baseline and the length of the pause --- !
+  const auto markColor = ccc4FFromccc4B(BREAK_MARK_COLOR);
 
-  for (int i = 0; i < DATE_LABELS; ++i)
+  for (auto const &pause : m_breaks)
   {
-    const auto time = m_start + static_cast<std::time_t>(
-                                    static_cast<double>(m_end - m_start) * i / (DATE_LABELS - 1));
-    const auto text = formatShortDate(time);
+    const float center = (pause.left + pause.right) / 2;
 
-    if (text.empty() || text == previous)
+    grid->drawSegment({center - 2.5f, -2.f}, {center - .5f, 2.f}, .4f, markColor);
+    grid->drawSegment({center + .5f, -2.f}, {center + 2.5f, 2.f}, .4f, markColor);
+
+    auto label = CCLabelBMFont::create(formatGap(pause.duration).c_str(), "bigFont.fnt");
+    label->setScale(.2f);
+    label->setOpacity(140);
+    label->setPosition({center, 7.f});
+
+    // Narrow breaks stay unlabeled
+    if (label->getScaledContentWidth() <= pause.right - pause.left + 4.f)
+      m_plot->addChild(label);
+  }
+
+  // ! --- X labels: where every active part starts, and the end --- !
+  struct DateLabel
+  {
+    float x;
+    std::string text;
+  };
+
+  std::vector<DateLabel> candidates;
+
+  for (std::size_t i = 0; i < m_knots.size(); ++i)
+  {
+    const bool afterBreak = std::any_of(
+        m_breaks.begin(),
+        m_breaks.end(),
+        [&](Break const &pause)
+        { return std::abs(pause.right - m_knots[i].x) < .01f; });
+
+    if (i == 0 || afterBreak || i + 1 == m_knots.size())
+      candidates.push_back({m_knots[i].x, formatShortDate(m_knots[i].time)});
+  }
+
+  if (!m_levelDone && candidates.size() > 1)
+    candidates.back().text = "Now";
+
+  std::vector<CCLabelBMFont *> placed;
+
+  for (std::size_t i = 0; i < candidates.size(); ++i)
+  {
+    auto const &candidate = candidates[i];
+    const bool isLast = i + 1 == candidates.size();
+
+    if (candidate.text.empty() || (!placed.empty() && candidate.text == placed.back()->getString()))
       continue;
 
-    previous = text;
-
-    auto label = CCLabelBMFont::create(text.c_str(), "bigFont.fnt");
+    auto label = CCLabelBMFont::create(candidate.text.c_str(), "bigFont.fnt");
     label->setScale(.25f);
     label->setOpacity(150);
 
     const float halfWidth = label->getScaledContentWidth() / 2;
-    label->setPosition({std::clamp(getTimeX(time), halfWidth, width - halfWidth), -7.f});
+    const float x = std::clamp(candidate.x, halfWidth, width - halfWidth);
+
+    if (!placed.empty() && x - halfWidth < placed.back()->boundingBox().getMaxX() + 4.f)
+    {
+      // The end always shows, it takes the place of the label before it, but not of the first one
+      if (!isLast || placed.size() < 2)
+        continue;
+
+      placed.back()->removeFromParent();
+      placed.pop_back();
+    }
+
+    label->setPosition({x, -7.f});
     m_plot->addChild(label);
+    placed.push_back(label);
   }
 }
 
-void StageTimelineChart::drawLine(bool levelDone)
+void StageTimelineChart::drawFlat(CCDrawNode *line, CCDrawNode *fill, float fromX, float toX, float y, bool dashed)
+{
+  const auto lineColor = ccc4FFromccc4B(LINE_COLOR);
+  const auto fillColor = premultiplyAlpha(ccc4FFromccc4B(FILL_COLOR));
+  const auto breakFillColor = premultiplyAlpha(ccc4FFromccc4B(FILL_BREAK_COLOR));
+
+  float x = fromX;
+
+  while (x < toX - .01f)
+  {
+    // The part up to the next break edge
+    float end = toX;
+    bool inBreak = false;
+
+    for (auto const &pause : m_breaks)
+    {
+      if (x >= pause.left - .01f && x < pause.right - .01f)
+      {
+        end = std::min(end, pause.right);
+        inBreak = true;
+        break;
+      }
+
+      if (pause.left > x)
+        end = std::min(end, pause.left);
+    }
+
+    if (inBreak || dashed)
+      drawDashedLine(line, {x, y}, {end, y}, LINE_WIDTH * .8f, lineColor);
+    else
+      line->drawSegment({x, y}, {end, y}, LINE_WIDTH, lineColor);
+
+    drawRect(fill, x, end, y, inBreak ? breakFillColor : fillColor);
+    x = end;
+  }
+}
+
+void StageTimelineChart::drawLine()
 {
   auto fill = CCDrawNode::create();
   m_plot->addChild(fill, 1);
@@ -312,7 +495,6 @@ void StageTimelineChart::drawLine(bool levelDone)
   m_plot->addChild(line, 2);
 
   const auto lineColor = ccc4FFromccc4B(LINE_COLOR);
-  const auto fillColor = premultiplyAlpha(ccc4FFromccc4B(FILL_COLOR));
 
   // ! --- Steps: flat until a stage is completed, then one up --- !
   CCPoint previous{getPointPosition(m_points.front()).x, 0.f};
@@ -321,24 +503,15 @@ void StageTimelineChart::drawLine(bool levelDone)
   {
     const auto position = getPointPosition(point);
 
-    if (position.x > previous.x)
-    {
-      line->drawSegment(previous, {position.x, previous.y}, LINE_WIDTH, lineColor);
-      drawRect(fill, previous.x, position.x, previous.y, fillColor);
-    }
+    drawFlat(line, fill, previous.x, position.x, previous.y, false);
 
     line->drawSegment({position.x, previous.y}, position, LINE_WIDTH, lineColor);
     previous = position;
   }
 
   // ! --- Still going: dashed until now --- !
-  if (!levelDone)
-  {
-    const float nowX = getTimeX(m_end);
-
-    drawDashedLine(line, previous, {nowX, previous.y}, LINE_WIDTH * .8f, lineColor);
-    drawRect(fill, previous.x, nowX, previous.y, fillColor);
-  }
+  if (!m_levelDone)
+    drawFlat(line, fill, previous.x, m_knots.back().x, previous.y, true);
 
   for (auto const &point : m_points)
     line->drawDot(getPointPosition(point), DOT_RADIUS, lineColor);

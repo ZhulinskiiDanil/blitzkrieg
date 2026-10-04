@@ -11,6 +11,7 @@
 using namespace geode::prelude;
 
 // Completed stages over time, a step for every stage completion.
+// Long pauses are squeezed into narrow breaks, so the active days fill the width.
 // Hover (desktop) or tap selects a step, a click on the selected step opens the stage.
 class StageTimelineChart : public CCLayer
 {
@@ -20,9 +21,27 @@ private:
   static constexpr float AXIS_BOTTOM = 14.f;
   static constexpr float PLOT_TOP = 12.f;
   static constexpr int GRID_LINES = 4;
-  static constexpr int DATE_LABELS = 4;
   // Room on both sides of the time axis, in parts of the width
   static constexpr float X_MARGIN = .03f;
+  // Pauses longer than this become a break
+  static constexpr std::time_t LONG_GAP = 3 * 24 * 60 * 60;
+  static constexpr float BREAK_WIDTH = 18.f;
+  // Breaks never take more than this part of the width
+  static constexpr float MAX_BREAKS_SHARE = .4f;
+
+  // Time to x, linear between neighbours
+  struct Knot
+  {
+    std::time_t time = 0;
+    float x = 0.f;
+  };
+
+  struct Break
+  {
+    float left = 0.f;
+    float right = 0.f;
+    std::time_t duration = 0;
+  };
 
   struct Point
   {
@@ -48,8 +67,9 @@ private:
   CCMenu *m_hitMenu = nullptr;
 
   std::vector<Point> m_points;
-  std::time_t m_start = 0;
-  std::time_t m_end = 0;
+  std::vector<Knot> m_knots;
+  std::vector<Break> m_breaks;
+  bool m_levelDone = false;
   float m_axisMax = 1.f;
   float m_axisStep = 1.f;
   int m_totalStages = 0;
@@ -60,10 +80,14 @@ private:
   CCPoint getPointPosition(Point const &point) const;
   float getTimeX(std::time_t time) const;
 
+  void buildTimeAxis();
+  // A flat part of the line, dashed and lighter over breaks
+  void drawFlat(CCDrawNode *line, CCDrawNode *fill, float fromX, float toX, float y, bool dashed);
+
   void drawEmptyState();
   void drawUndatedNote(int count);
   void drawAxis();
-  void drawLine(bool levelDone);
+  void drawLine();
   void drawHitAreas();
 
   void select(int index, bool byHover);
