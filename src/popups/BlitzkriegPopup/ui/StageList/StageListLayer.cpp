@@ -2,15 +2,10 @@
 
 #include <algorithm>
 
+#include "../../../../utils/getKeybindText.hpp"
+
 namespace
 {
-  // First keybind of a keybind setting, empty when nothing is bound
-  std::string getKeybindText(const char *settingKey)
-  {
-    auto keybinds = Mod::get()->getSettingValue<std::vector<Keybind>>(settingKey);
-    return keybinds.empty() ? std::string() : keybinds.front().toString();
-  }
-
   // Bottom center of a node in the space of another node
   CCPoint getBottomCenterIn(CCNode *node, CCNode *space)
   {
@@ -23,10 +18,11 @@ namespace
 StageListLayer *StageListLayer::create(
     GJGameLevel *level,
     const CCSize &contentSize,
-    std::optional<int> initialIndex)
+    std::optional<int> initialIndex,
+    std::string initialRangeId)
 {
   auto *ret = new StageListLayer();
-  if (ret && ret->init(level, contentSize, initialIndex))
+  if (ret && ret->init(level, contentSize, initialIndex, std::move(initialRangeId)))
   {
     ret->autorelease();
     return ret;
@@ -40,13 +36,15 @@ StageListLayer *StageListLayer::create(
 bool StageListLayer::init(
     GJGameLevel *level,
     const CCSize &contentSize,
-    std::optional<int> initialIndex)
+    std::optional<int> initialIndex,
+    std::string initialRangeId)
 {
   if (!CCLayer::init())
     return false;
 
   m_contentSize = contentSize;
   m_level = level;
+  m_focusRangeId = std::move(initialRangeId);
 
   if (auto *profile = GlobalStore::get()->getProfileByLevel(m_level))
     m_profileId = profile->id;
@@ -183,7 +181,11 @@ int StageListLayer::getProgressIndex() const
 
 // ! --- Pages --- !
 
-void StageListLayer::buildPage(StagePage *page, int stageIndex, bool keepScroll)
+void StageListLayer::buildPage(
+    StagePage *page,
+    int stageIndex,
+    bool keepScroll,
+    std::string const &focusRangeId)
 {
   if (!page)
     return;
@@ -196,7 +198,8 @@ void StageListLayer::buildPage(StagePage *page, int stageIndex, bool keepScroll)
       stageIndex,
       getProgressIndex(),
       m_options,
-      keepScroll);
+      keepScroll,
+      focusRangeId);
 }
 
 void StageListLayer::layoutPages()
@@ -238,11 +241,14 @@ void StageListLayer::reload(bool keepScroll)
       const int stageIndex = m_stageIndex - 1 + i;
       const bool keep = keepScroll && m_pages[i]->getStageIndex() == stageIndex;
 
-      buildPage(m_pages[i], stageIndex, keep);
+      buildPage(m_pages[i], stageIndex, keep, i == 1 ? m_focusRangeId : std::string());
     }
 
     layoutPages();
   }
+
+  // Only the first build scrolls to the requested run
+  m_focusRangeId.clear();
 
   updateNavigation();
 }

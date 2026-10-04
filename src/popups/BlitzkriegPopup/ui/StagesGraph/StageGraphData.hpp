@@ -10,6 +10,8 @@ enum class StageGraphMetric
 {
   Attempts,
   Playtime,
+  // Attempts divided by the runs of the stage, stages with more runs stay comparable
+  PerRun,
   // Not a bar metric, the layer shows the timeline chart instead
   Timeline
 };
@@ -35,6 +37,7 @@ struct StageGraphRun
   bool checked = false;
   std::time_t completedAt = 0;
 
+  // Per run is a stage value, a run keeps its attempts
   float getValue(StageGraphMetric metric) const
   {
     return metric == StageGraphMetric::Playtime
@@ -69,9 +72,15 @@ struct StageGraphColumn
 
   float getValue(StageGraphMetric metric) const
   {
-    return metric == StageGraphMetric::Playtime
-               ? timePlayed
-               : static_cast<float>(attempts);
+    switch (metric)
+    {
+    case StageGraphMetric::Playtime:
+      return timePlayed;
+    case StageGraphMetric::PerRun:
+      return totalRuns > 0 ? static_cast<float>(attempts) / totalRuns : 0.f;
+    default:
+      return static_cast<float>(attempts);
+    }
   }
 };
 
@@ -106,3 +115,7 @@ float getNiceAxisStep(float raw);
 
 // 950, 1.2k, 3M; units are wrapped in <small> for UILabel
 std::string formatCompactNumber(float value);
+
+// "Click to open" with a mouse, "Tap again to open" on touch screens,
+// where the first tap only selects
+const char *getOpenHint();

@@ -245,6 +245,14 @@
         "Q"
       ]
     },
+    "open-stage-keybind": {
+      "type": "keybind",
+      "name": "Open the selected stage",
+      "description": "Opens the stage selected on the Stage Graph in the Stage Browser",
+      "default": [
+        "Enter"
+      ]
+    },
     "developer-settings": {
       "type": "title",
       "name": "Developer"

@@ -2,6 +2,7 @@
 #include <Geode/Geode.hpp>
 #include <functional>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "StageGraphData.hpp"
@@ -28,6 +29,9 @@ private:
   static constexpr float MIN_SEGMENT_HEIGHT = 3.f;
   static constexpr float PLACEHOLDER_HEIGHT = 3.f;
   static constexpr float TWEEN_DURATION = .3f;
+  // "You are here" arrow above the current stage
+  static constexpr float MARKER_SIZE = 5.f;
+  static constexpr float MARKER_GAP = 3.f;
 
   // One run of a bar, animated from `from` to `to`
   struct BarSegment
@@ -64,6 +68,12 @@ private:
   CCNode *m_bestNode = nullptr;
   RectNode *m_highlight = nullptr;
   RectNode *m_segmentHighlight = nullptr;
+  // Follows the top of the current stage bar, the inner node bobs
+  CCNode *m_marker = nullptr;
+  CCNode *m_markerBody = nullptr;
+  CCLabelBMFont *m_markerLabel = nullptr;
+  // Nothing was played yet
+  CCNode *m_emptyState = nullptr;
   CCNode *m_tooltip = nullptr;
   RectNode *m_tooltipBg = nullptr;
   // Range or stage, the numbers, then a dimmed note and the click hint
@@ -78,6 +88,8 @@ private:
   StageGraphMetric m_metric = StageGraphMetric::Attempts;
   float m_axisMax = 1.f;
   float m_axisStep = 1.f;
+  // Every value of the metric is 0, the Y axis has nothing to show
+  bool m_isEmpty = false;
   float m_barWidth = 1.f;
 
   float m_tweenTime = 0.f;
@@ -91,6 +103,8 @@ private:
   int m_selectedRun = -1;
   // Selected by the mouse, cleared when the mouse leaves the plot
   bool m_selectedByHover = false;
+  // Keyboard and card selections stay until the mouse moves
+  CCPoint m_lastMousePos = {-1.f, -1.f};
 
   float getSlotWidth() const;
   float getColumnCenterX(float x) const;
@@ -98,6 +112,9 @@ private:
   // Target height of every run of the column for the current metric
   std::vector<float> getSegmentHeights(StageGraphColumn const &column) const;
   int getRunAt(int column, float y) const;
+  // Column of the stage the player is on, -1 when the level is done
+  int getCurrentColumn() const;
+  int getColumnOfStage(int stageIndex) const;
 
   void rebuild(bool animate);
   void drawAxis();
@@ -107,6 +124,10 @@ private:
   void drawAverageLine();
   void drawBestLine();
   void drawHitAreas();
+  void createMarker();
+  // Places the marker over the bar as it is drawn right now
+  void updateMarker();
+  void openColumn(int index, int run);
 
   void select(int index, int run, bool byHover);
   void updateHighlight();
@@ -116,7 +137,8 @@ private:
   void onTween(float dt);
 
 public:
-  std::function<void(int stageIndex)> onOpenStage;
+  // rangeId is the hovered run, empty for the whole stage
+  std::function<void(int stageIndex, std::string const &rangeId)> onOpenStage;
 
   static StageBarChart *create(const CCSize &size);
   bool init(const CCSize &size);
@@ -125,6 +147,13 @@ public:
   void setMetric(StageGraphMetric metric);
   // x on the column axis, see mapPercentFromZero
   void setBestFromZero(std::optional<float> x, float percent);
+
+  // ! --- Selection from outside: cards and keyboard --- !
+  void selectStage(int stageIndex);
+  bool isStageSelected(int stageIndex) const;
+  // From the current stage when nothing is selected
+  void moveSelection(int delta);
+  void openSelected();
 
   void update(float dt) override;
 };

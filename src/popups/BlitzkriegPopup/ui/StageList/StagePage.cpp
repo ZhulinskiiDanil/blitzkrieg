@@ -182,7 +182,8 @@ void StagePage::build(
     int stageIndex,
     int currentIndex,
     StagePageOptions const &options,
-    bool keepScroll)
+    bool keepScroll,
+    std::string const &focusRangeId)
 {
   m_stageIndex = stage ? stageIndex : -1;
 
@@ -224,7 +225,8 @@ void StagePage::build(
     if (!r.consider)
       continue;
 
-    if (options.hideCompletedRuns && (r.checked && !stage->checked))
+    // The requested run is shown even when the filter hides it
+    if (options.hideCompletedRuns && (r.checked && !stage->checked) && r.id != focusRangeId)
     {
       hiddenCount++;
       continue;
@@ -251,6 +253,9 @@ void StagePage::build(
     currentRangeId = GlobalStore::get()->getCurrentRange(profile->id).id;
 
   CCNode *currentRow = nullptr;
+  // The requested run wins over the current one
+  CCNode *focusRow = nullptr;
+  StageRangeCell *focusCell = nullptr;
 
   // ! --- Rows --- !
   const float gap = 5.f;
@@ -318,6 +323,12 @@ void StagePage::build(
       if (!currentRangeId.empty() && range.id == currentRangeId)
         currentRow = row;
 
+      if (!focusRangeId.empty() && range.id == focusRangeId)
+      {
+        focusRow = row;
+        focusCell = cell;
+      }
+
       row->addChild(cell);
       row->updateLayout();
     }
@@ -358,17 +369,21 @@ void StagePage::build(
   {
     distance = distanceFromTop;
   }
-  else if (currentRow)
+  else if (auto *targetRow = focusRow ? focusRow : currentRow)
   {
     // Distance from the top of the content to the top of the row, with a small margin
     const float rowTop =
-        m_content->boundingBox().getMinY() + currentRow->boundingBox().getMaxY();
+        m_content->boundingBox().getMinY() + targetRow->boundingBox().getMaxY();
 
     distance = contentHeight - rowTop - gap;
   }
 
   distance = std::clamp(distance, 0.f, maxDistance);
   contentLayer->setPositionY(viewHeight - contentHeight + distance);
+
+  // After the tab switch settles
+  if (focusCell)
+    focusCell->flash(.25f);
 }
 
 void StagePage::onGoToCurrent(CCObject *)

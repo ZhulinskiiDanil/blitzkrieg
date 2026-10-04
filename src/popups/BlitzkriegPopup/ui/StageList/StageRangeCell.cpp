@@ -1043,3 +1043,30 @@ void StageRangeCell::setDisabled(bool disabled)
     updateStatusBadge();
     updateTexture();
 }
+
+void StageRangeCell::flash(float delay)
+{
+    if (!m_background)
+        return;
+
+    // Over the background, under the content
+    auto overlay =
+        CCScale9Sprite::create("range-current-bg.png"_spr);
+
+    overlay->setContentSize(
+        m_background->getContentSize());
+    overlay->setPosition(
+        m_background->getPosition());
+    overlay->setOpacity(0);
+
+    this->addChild(overlay, 0);
+
+    overlay->runAction(CCSequence::create(
+        CCDelayTime::create(delay),
+        CCFadeTo::create(.18f, 220),
+        CCFadeTo::create(.3f, 0),
+        CCFadeTo::create(.18f, 220),
+        CCFadeTo::create(.5f, 0),
+        CCRemoveSelf::create(),
+        nullptr));
+}

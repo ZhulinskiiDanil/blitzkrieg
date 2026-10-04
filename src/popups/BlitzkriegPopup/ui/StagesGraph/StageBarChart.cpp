@@ -136,6 +136,26 @@ bool StageBarChart::init(const CCSize &size)
   m_bestNode = CCNode::create();
   m_plot->addChild(m_bestNode, 5);
 
+  createMarker();
+
+  // ! --- Empty state --- !
+  m_emptyState = CCNode::create();
+  m_emptyState->setPosition(m_plotSize / 2);
+  m_emptyState->setVisible(false);
+  m_plot->addChild(m_emptyState, 5);
+
+  auto emptyTitle = CCLabelBMFont::create("Nothing played yet", "bigFont.fnt");
+  emptyTitle->setScale(.4f);
+  emptyTitle->setOpacity(150);
+  emptyTitle->setPosition({0.f, 6.f});
+  m_emptyState->addChild(emptyTitle);
+
+  auto emptyHint = CCLabelBMFont::create("Play the level to see stats", "bigFont.fnt");
+  emptyHint->setScale(.25f);
+  emptyHint->setOpacity(110);
+  emptyHint->setPosition({0.f, -7.f});
+  m_emptyState->addChild(emptyHint);
+
   m_hitMenu = CCMenu::create();
   m_hitMenu->setPosition({0.f, 0.f});
   m_plot->addChild(m_hitMenu, 6);
@@ -160,7 +180,7 @@ bool StageBarChart::init(const CCSize &size)
   m_tooltipNote->setAnchorPoint({0.f, .5f});
   m_tooltip->addChild(m_tooltipNote);
 
-  m_tooltipHint = CCLabelBMFont::create("Click to open", "bigFont.fnt");
+  m_tooltipHint = CCLabelBMFont::create(getOpenHint(), "bigFont.fnt");
   m_tooltipHint->setScale(.2f);
   m_tooltipHint->setOpacity(130);
   m_tooltipHint->setAnchorPoint({0.f, .5f});
@@ -251,6 +271,10 @@ std::vector<float> StageBarChart::getSegmentHeights(StageGraphColumn const &colu
 
 int StageBarChart::getRunAt(int column, float y) const
 {
+  // Per run is an average of the stage, runs are not shown
+  if (m_metric == StageGraphMetric::PerRun)
+    return -1;
+
   if (column < 0 || column >= static_cast<int>(m_bars.size()))
     return -1;
 
@@ -264,6 +288,28 @@ int StageBarChart::getRunAt(int column, float y) const
     if (segment.toHeight > 0.f &&
         y >= segment.toY &&
         y < segment.toY + segment.toHeight)
+      return static_cast<int>(i);
+  }
+
+  return -1;
+}
+
+int StageBarChart::getCurrentColumn() const
+{
+  for (std::size_t i = 0; i < m_columns.size(); ++i)
+  {
+    if (m_columns[i].status == StageGraphStatus::Current)
+      return static_cast<int>(i);
+  }
+
+  return -1;
+}
+
+int StageBarChart::getColumnOfStage(int stageIndex) const
+{
+  for (std::size_t i = 0; i < m_columns.size(); ++i)
+  {
+    if (m_columns[i].index == stageIndex)
       return static_cast<int>(i);
   }
 
@@ -318,6 +364,8 @@ void StageBarChart::rebuild(bool recreate)
 
   m_axisStep = step;
   m_axisMax = std::max(step, std::ceil(maxValue / step) * step);
+  m_isEmpty = maxValue <= 0.f;
+  m_emptyState->setVisible(m_isEmpty);
 
   drawAxis();
 
@@ -344,7 +392,7 @@ void StageBarChart::drawAxis()
   auto grid = CCDrawNode::create();
   m_axisNode->addChild(grid);
 
-  const int lines = std::max(1, static_cast<int>(std::round(m_axisMax / m_axisStep)));
+  const int lines = m_isEmpty ? 0 : std::max(1, static_cast<int>(std::round(m_axisMax / m_axisStep)));
 
   for (int i = 0; i <= lines; ++i)
   {
@@ -356,6 +404,10 @@ void StageBarChart::drawAxis()
         {width, y},
         i == 0 ? .5f : .3f,
         ccc4FFromccc4B(i == 0 ? BASELINE_COLOR : GRID_COLOR));
+
+    // A lonely 0 says nothing
+    if (m_isEmpty)
+      continue;
 
     auto label = createLabel(formatValue(value, m_metric), .25f, 1.f);
     label->setPosition({-5.f, y});
@@ -486,6 +538,10 @@ void StageBarChart::applyBars(float time)
     bar.bar->setRadius(std::min({2.f, m_barWidth / 2, total / 2}));
     bar.bar->setSize({m_barWidth, total});
 
+    // Per run is an average, the runs do not add up to it
+    if (m_metric == StageGraphMetric::PerRun)
+      continue;
+
     // ! A divider at the bottom of every run but the first one
     for (auto const &segment : bar.segments)
     {
@@ -499,6 +555,8 @@ void StageBarChart::applyBars(float time)
           premultiplyAlpha(ccc4FFromccc4B(DIVIDER_COLOR)));
     }
   }
+
+  updateMarker();
 }
 
 void StageBarChart::onTween(float dt)
@@ -514,6 +572,69 @@ void StageBarChart::onTween(float dt)
   }
 
   applyBars(m_tweenTime);
+}
+
+// ! --- "You are here" --- !
+
+void StageBarChart::createMarker()
+{
+  m_marker = CCNode::create();
+  m_marker->setVisible(false);
+  m_plot->addChild(m_marker, 5);
+
+  // The marker stays in place, its body bobs
+  m_markerBody = CCNode::create();
+  m_marker->addChild(m_markerBody);
+
+  // ! A small triangle pointing down at the bar
+  auto arrow = CCDrawNode::create();
+  CCPoint vertices[] = {
+      {-MARKER_SIZE / 2, MARKER_SIZE},
+      {MARKER_SIZE / 2, MARKER_SIZE},
+      {0.f, 0.f},
+  };
+  arrow->drawPolygon(vertices, 3, ccc4FFromccc3B(CURRENT_COLOR), 0.f, {0.f, 0.f, 0.f, 0.f});
+  m_markerBody->addChild(arrow);
+
+  // ! Done runs of the stage above the arrow
+  m_markerLabel = CCLabelBMFont::create("", "bigFont.fnt");
+  m_markerLabel->setScale(.2f);
+  m_markerLabel->setColor(CURRENT_COLOR);
+  m_markerLabel->setAnchorPoint({.5f, 0.f});
+  m_markerLabel->setPosition({0.f, MARKER_SIZE + 1.5f});
+  m_markerBody->addChild(m_markerLabel);
+
+  m_markerBody->runAction(CCRepeatForever::create(CCSequence::createWithTwoActions(
+      CCEaseSineInOut::create(CCMoveBy::create(.6f, {0.f, 1.5f})),
+      CCEaseSineInOut::create(CCMoveBy::create(.6f, {0.f, -1.5f})))));
+}
+
+void StageBarChart::updateMarker()
+{
+  const int current = getCurrentColumn();
+
+  if (current < 0 || current >= static_cast<int>(m_bars.size()))
+  {
+    m_marker->setVisible(false);
+    return;
+  }
+
+  auto const &column = m_columns[current];
+
+  // The bar as it is drawn right now, the placeholder when it is empty
+  float top = PLACEHOLDER_HEIGHT;
+
+  for (auto const &segment : m_bars[current].segments)
+    top = std::max(top, segment.y + segment.height);
+
+  m_markerLabel->setString(fmt::format("{}/{}", column.completedRuns, column.totalRuns).c_str());
+
+  // A full height bar pushes the marker into the room above the plot
+  const float markerHeight = MARKER_SIZE + 1.5f + m_markerLabel->getScaledContentHeight();
+  const float y = std::min(top + MARKER_GAP, m_plotSize.height + PLOT_TOP - markerHeight);
+
+  m_marker->setPosition({getColumnCenterX(static_cast<float>(current)), y});
+  m_marker->setVisible(true);
 }
 
 void StageBarChart::drawAverageLine()
@@ -712,6 +833,20 @@ void StageBarChart::updateTooltip()
     else if (!run.checked && run.range && run.range->bestRunFrom >= 0.f && run.range->bestRunTo > 0.f)
       note = fmt::format("Best {} - {}", formatPercent(run.range->bestRunFrom), formatPercent(run.range->bestRunTo));
   }
+  else if (m_metric == StageGraphMetric::PerRun)
+  {
+    title = fmt::format("Stage {}", column.index + 1);
+    stats = fmt::format(
+        "{} <small>per run</small>   {} <small>{}</small>   {}/{} <small>runs</small>",
+        formatCompactNumber(column.getValue(m_metric)),
+        formatCompactNumber(static_cast<float>(column.attempts)),
+        column.attempts == 1 ? "attempt" : "attempts",
+        column.completedRuns,
+        column.totalRuns);
+
+    if (column.completedAt > 0)
+      note = fmt::format("Completed {}", formatShortDate(column.completedAt));
+  }
   else
   {
     title = fmt::format("Stage {}", column.index + 1);
@@ -730,6 +865,8 @@ void StageBarChart::updateTooltip()
   m_tooltipTitle->setText(title);
   m_tooltipStats->setText(stats);
   m_tooltipNote->setString(note.c_str());
+  // Runs are hovered only with a mouse, so they always click
+  m_tooltipHint->setString(m_selectedRun >= 0 ? "Click to open run" : getOpenHint());
 
   // ! --- Layout, top to bottom --- !
   struct Row
@@ -739,7 +876,7 @@ void StageBarChart::updateTooltip()
     float height;
   };
 
-  const bool withHint = m_selectedRun < 0;
+  const bool withHint = static_cast<bool>(onOpenStage);
   std::vector<Row> rows = {
       {m_tooltipTitle, m_tooltipTitle->getContentWidth(), 10.f},
       {m_tooltipStats, m_tooltipStats->getContentWidth(), 9.f},
@@ -815,13 +952,66 @@ void StageBarChart::onColumn(CCObject *sender)
   // With a mouse hover already selects, so one click opens.
   if (index == m_selected)
   {
-    if (onOpenStage)
-      onOpenStage(m_columns[index].index);
-
+    openColumn(index, m_selectedRun);
     return;
   }
 
   select(index, -1, false);
+}
+
+void StageBarChart::openColumn(int index, int run)
+{
+  if (!onOpenStage || index < 0 || index >= static_cast<int>(m_columns.size()))
+    return;
+
+  auto const &runs = m_columns[index].runs;
+  std::string rangeId;
+
+  if (run >= 0 && run < static_cast<int>(runs.size()) && runs[run].range)
+    rangeId = runs[run].range->id;
+
+  onOpenStage(m_columns[index].index, rangeId);
+}
+
+// ! --- Selection from outside --- !
+
+void StageBarChart::selectStage(int stageIndex)
+{
+  select(getColumnOfStage(stageIndex), -1, false);
+}
+
+bool StageBarChart::isStageSelected(int stageIndex) const
+{
+  return m_selected >= 0 &&
+         m_selected == getColumnOfStage(stageIndex) &&
+         m_selectedRun < 0;
+}
+
+void StageBarChart::moveSelection(int delta)
+{
+  const int count = static_cast<int>(m_columns.size());
+
+  if (count == 0)
+    return;
+
+  int index = m_selected;
+
+  if (index < 0)
+  {
+    const int current = getCurrentColumn();
+    index = current >= 0 ? current : (delta > 0 ? 0 : count - 1);
+  }
+  else
+  {
+    index = std::clamp(index + delta, 0, count - 1);
+  }
+
+  select(index, -1, false);
+}
+
+void StageBarChart::openSelected()
+{
+  openColumn(m_selected, m_selectedRun);
 }
 
 void StageBarChart::update(float dt)
@@ -829,7 +1019,15 @@ void StageBarChart::update(float dt)
   if (m_columns.empty() || !nodeIsVisible(this))
     return;
 
-  const auto mouse = m_plot->convertToNodeSpace(getMousePos());
+  // A still mouse keeps the keyboard or card selection
+  const auto mousePos = getMousePos();
+
+  if (mousePos.equals(m_lastMousePos))
+    return;
+
+  m_lastMousePos = mousePos;
+
+  const auto mouse = m_plot->convertToNodeSpace(mousePos);
   const bool inside =
       mouse.x >= 0.f && mouse.x < m_plotSize.width &&
       mouse.y >= -AXIS_BOTTOM && mouse.y <= m_plotSize.height;

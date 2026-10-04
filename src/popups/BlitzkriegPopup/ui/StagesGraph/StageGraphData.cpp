@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <fmt/core.h>
+#include <Geode/Geode.hpp>
 
 #include "../../../../utils/getMetaInfoFromStages.hpp"
 #include "../../../../utils/isStageDeepChecked.hpp"
@@ -192,4 +193,13 @@ std::string formatCompactNumber(float value)
     number.erase(number.size() - 2);
 
   return number + (isMillions ? "<small>M</small>" : "<small>k</small>");
+}
+
+const char *getOpenHint()
+{
+#ifdef GEODE_IS_DESKTOP
+  return "Click to open";
+#else
+  return "Tap again to open";
+#endif
 }

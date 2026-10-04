@@ -198,8 +198,13 @@ void BlitzkriegPopup::drawCurrentStage()
 
   // ! --- StageListLayer --- !
   auto stageListContentSize = CCSize(contentSize.width, contentSize.height);
-  m_stageList = StageListLayer::create(m_level, stageListContentSize, m_requestedStageIndex);
+  m_stageList = StageListLayer::create(
+      m_level,
+      stageListContentSize,
+      m_requestedStageIndex,
+      m_requestedRangeId);
   m_requestedStageIndex.reset();
+  m_requestedRangeId.clear();
   m_stageList->setPosition({padding.left, padding.bottom});
 
   m_stageList->setSortBy(!sortBtnCheckbox->isToggled() ? StageListSortBy::ASC : StageListSortBy::DESC);
@@ -222,9 +227,9 @@ void BlitzkriegPopup::drawStagesGraph()
 
   // ! --- StagesGraphLayer --- !
   auto stagesGraphLayer = StagesGraphLayer::create(m_level, m_size);
-  stagesGraphLayer->onOpenStage = [this](int stageIndex)
+  stagesGraphLayer->onOpenStage = [this](int stageIndex, std::string const &rangeId)
   {
-    openStageInBrowser(stageIndex);
+    openStageInBrowser(stageIndex, rangeId);
   };
   stagesGraphLayer->onOpenProfiles = [this]()
   {
@@ -468,16 +473,17 @@ void BlitzkriegPopup::updateStageHeader(int stageIndex, int totalStages, Stage *
   m_stageHeader->setStage(stageIndex, stage, status, currentRangeId);
 }
 
-void BlitzkriegPopup::openStageInBrowser(int stageIndex)
+void BlitzkriegPopup::openStageInBrowser(int stageIndex, std::string const &rangeId)
 {
   // The graph that asks for it is removed by the tab switch
   geode::queueInMainThread(
-      [self = Ref<BlitzkriegPopup>(this), stageIndex]()
+      [self = Ref<BlitzkriegPopup>(this), stageIndex, rangeId]()
       {
         if (self->tabButtons.size() < 2)
           return;
 
         self->m_requestedStageIndex = stageIndex;
+        self->m_requestedRangeId = rangeId;
         self->activateTab(self->tabButtons[1]);
       });
 }

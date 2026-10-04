@@ -83,12 +83,14 @@ public:
   // stage == nullptr clears the page.
   // currentIndex is the stage the player is on, stages after it are locked.
   // Without keepScroll the page scrolls to the current run, or to the top.
+  // focusRangeId scrolls to that run instead and flashes it.
   void build(
       Stage *stage,
       int stageIndex,
       int currentIndex,
       StagePageOptions const &options,
-      bool keepScroll);
+      bool keepScroll,
+      std::string const &focusRangeId = {});
 
   // -1 when the page is empty
   int getStageIndex() const { return m_stageIndex; }

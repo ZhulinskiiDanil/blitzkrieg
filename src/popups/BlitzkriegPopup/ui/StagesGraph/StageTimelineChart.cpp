@@ -130,7 +130,7 @@ bool StageTimelineChart::init(const CCSize &size)
   m_tooltipStats = createLabel("", .26f, 0.f);
   m_tooltip->addChild(m_tooltipStats);
 
-  m_tooltipHint = CCLabelBMFont::create("Click to open", "bigFont.fnt");
+  m_tooltipHint = CCLabelBMFont::create(getOpenHint(), "bigFont.fnt");
   m_tooltipHint->setScale(.2f);
   m_tooltipHint->setOpacity(130);
   m_tooltipHint->setAnchorPoint({0.f, .5f});
@@ -645,13 +645,31 @@ void StageTimelineChart::onPoint(CCObject *sender)
   // With a mouse hover already selects, so one click opens.
   if (index == m_selected)
   {
-    if (onOpenStage)
-      onOpenStage(m_points[index].stageIndex);
-
+    openSelected();
     return;
   }
 
   select(index, false);
+}
+
+void StageTimelineChart::moveSelection(int delta)
+{
+  const int count = static_cast<int>(m_points.size());
+
+  if (count == 0)
+    return;
+
+  const int index = m_selected < 0
+                        ? count - 1
+                        : std::clamp(m_selected + delta, 0, count - 1);
+
+  select(index, false);
+}
+
+void StageTimelineChart::openSelected()
+{
+  if (onOpenStage && m_selected >= 0 && m_selected < static_cast<int>(m_points.size()))
+    onOpenStage(m_points[m_selected].stageIndex, {});
 }
 
 void StageTimelineChart::update(float dt)
@@ -659,7 +677,15 @@ void StageTimelineChart::update(float dt)
   if (m_points.empty() || !nodeIsVisible(this))
     return;
 
-  const auto mouse = m_plot->convertToNodeSpace(getMousePos());
+  // A still mouse keeps the keyboard selection
+  const auto mousePos = getMousePos();
+
+  if (mousePos.equals(m_lastMousePos))
+    return;
+
+  m_lastMousePos = mousePos;
+
+  const auto mouse = m_plot->convertToNodeSpace(mousePos);
   const bool inside =
       mouse.x >= 0.f && mouse.x < m_plotSize.width &&
       mouse.y >= -AXIS_BOTTOM && mouse.y <= m_plotSize.height;

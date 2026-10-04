@@ -94,6 +94,8 @@ public:
 
   void setExpanded(bool expanded, bool triggerCallback = false);
   void setDisabled(bool disabled);
+  // Pulses the background twice, draws the eye to the cell
+  void flash(float delay = 0.f);
 
   bool isDisabled() const { return m_disabled; }
   bool isChecked() const { return m_checked; }

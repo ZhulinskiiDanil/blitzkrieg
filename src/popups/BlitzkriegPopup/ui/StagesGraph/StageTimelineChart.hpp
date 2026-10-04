@@ -2,6 +2,7 @@
 #include <Geode/Geode.hpp>
 #include <ctime>
 #include <functional>
+#include <string>
 #include <vector>
 
 #include "StageGraphData.hpp"
@@ -76,6 +77,8 @@ private:
 
   int m_selected = -1;
   bool m_selectedByHover = false;
+  // Keyboard selection stays until the mouse moves
+  CCPoint m_lastMousePos = {-1.f, -1.f};
 
   CCPoint getPointPosition(Point const &point) const;
   float getTimeX(std::time_t time) const;
@@ -96,12 +99,18 @@ private:
   void onPoint(CCObject *sender);
 
 public:
-  std::function<void(int stageIndex)> onOpenStage;
+  // Same as StageBarChart, a point is a whole stage so rangeId is empty
+  std::function<void(int stageIndex, std::string const &rangeId)> onOpenStage;
 
   static StageTimelineChart *create(const CCSize &size);
   bool init(const CCSize &size);
 
   void setData(std::vector<StageGraphColumn> const &columns);
+
+  // ! --- Keyboard --- !
+  // From the last point when nothing is selected
+  void moveSelection(int delta);
+  void openSelected();
 
   void update(float dt) override;
 };

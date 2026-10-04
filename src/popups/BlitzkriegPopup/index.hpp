@@ -54,6 +54,8 @@ private:
   StageListLayer *m_stageList = nullptr;
   // Stage to open when the Stage Browser is drawn, set by the Stage Graph
   std::optional<int> m_requestedStageIndex;
+  // Run of that stage to scroll to, empty for the whole stage
+  std::string m_requestedRangeId;
 
   geode::comm::ListenerHandle m_stageChangedListener;
   geode::comm::ListenerHandle m_stageRangesChangedListener;
@@ -80,7 +82,7 @@ private:
   void onToggleSort(CCObject *sender);
   void onToggleVisability(CCObject *sender);
   void onOpenProfiles(CCObject *sender);
-  void openStageInBrowser(int stageIndex);
+  void openStageInBrowser(int stageIndex, std::string const &rangeId = {});
 
   ~BlitzkriegPopup()
   {

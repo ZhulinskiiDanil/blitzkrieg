@@ -62,6 +62,9 @@ private:
 
   StagePageOptions m_options;
 
+  // Run to scroll to and flash on the first build, then cleared
+  std::string m_focusRangeId;
+
   bool m_isSliding = false;
   int m_slideDirection = 0;
   bool m_reloadQueued = false;
@@ -75,7 +78,7 @@ private:
   void createDots();
   void updateNavigation();
 
-  void buildPage(StagePage *page, int stageIndex, bool keepScroll);
+  void buildPage(StagePage *page, int stageIndex, bool keepScroll, std::string const &focusRangeId = {});
   void layoutPages();
 
   void switchStage(int index);
@@ -92,12 +95,18 @@ private:
   void onStageDot(CCObject *);
 
 public:
-  // initialIndex opens a given stage, by default the stage the player is on
+  // initialIndex opens a given stage, by default the stage the player is on.
+  // initialRangeId scrolls that stage to the run and flashes it.
   static StageListLayer *create(
       GJGameLevel *level,
       const CCSize &contentSize,
-      std::optional<int> initialIndex = std::nullopt);
-  bool init(GJGameLevel *level, const CCSize &contentSize, std::optional<int> initialIndex);
+      std::optional<int> initialIndex = std::nullopt,
+      std::string initialRangeId = {});
+  bool init(
+      GJGameLevel *level,
+      const CCSize &contentSize,
+      std::optional<int> initialIndex,
+      std::string initialRangeId);
 
   // keepScroll keeps the distance from the top of each page
   void reload(bool keepScroll = false);
