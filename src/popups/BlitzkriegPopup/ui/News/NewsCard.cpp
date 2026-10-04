@@ -1,9 +1,39 @@
 #include "NewsCard.hpp"
 
 #include "../../../../ui/RectNode.hpp"
+#include "../../../../ui/ScrollClip.hpp"
+#include "../../../../utils/ui/fitLabelWidth.hpp"
 
 #include <algorithm>
 #include <ctime>
+
+namespace
+{
+    // Neutral card colors, the news type is shown only by small accents
+    constexpr ccColor3B CARD_BACKGROUND = {36, 36, 36};
+    constexpr ccColor3B CARD_BORDER = {58, 58, 58};
+    constexpr ccColor3B PINNED_COLOR = {225, 190, 110};
+
+    // t = 0 gives `from`, t = 1 gives `to`
+    ccColor3B mixColors(ccColor3B from, ccColor3B to, float t)
+    {
+        auto channel = [t](GLubyte a, GLubyte b)
+        {
+            return static_cast<GLubyte>(a + (b - a) * t);
+        };
+
+        return {
+            channel(from.r, to.r),
+            channel(from.g, to.g),
+            channel(from.b, to.b),
+        };
+    }
+
+    ccColor4F toColor4F(ccColor3B color)
+    {
+        return ccc4FFromccc4B({color.r, color.g, color.b, 255});
+    }
+}
 
 NewsCard *NewsCard::create(
     NewsItem const &news,
@@ -67,20 +97,21 @@ ccColor4B NewsCard::getAccentColor(
 {
     switch (type)
     {
+    // Muted tones: readable on the dark card, but not glowing
     case NewsType::StartPosPublished:
-        return {80, 220, 70, 255};
+        return {120, 190, 125, 255};
 
     case NewsType::ModUpdate:
-        return {70, 150, 255, 255};
+        return {120, 160, 220, 255};
 
     case NewsType::Warning:
-        return {255, 110, 60, 255};
+        return {220, 140, 105, 255};
 
     case NewsType::Announcement:
-        return {255, 190, 40, 255};
+        return {215, 185, 115, 255};
 
     default:
-        return {130, 130, 130, 255};
+        return {140, 140, 140, 255};
     }
 }
 
@@ -206,6 +237,19 @@ bool NewsCard::init(
     auto accentColor =
         getAccentColor(news.type);
 
+    ccColor3B const accent3B{
+        accentColor.r,
+        accentColor.g,
+        accentColor.b,
+    };
+
+    // Opaque accent tints for the badge and action buttons
+    auto const badgeColor =
+        mixColors(CARD_BACKGROUND, accent3B, 0.22f);
+
+    auto const buttonColor =
+        mixColors(CARD_BACKGROUND, accent3B, 0.35f);
+
     float const leftPadding = 16.f;
     float const rightPadding = 12.f;
 
@@ -287,24 +331,25 @@ bool NewsCard::init(
 
     this->setContentSize(cardSize);
 
-    // ! --- Accent border --- !
+    // ! --- Border --- !
+    // Inset on the top, left and right, see SCROLL_CLIP_INSET
+
+    CCSize const borderSize{
+        cardSize.width - SCROLL_CLIP_INSET * 2.f,
+        cardHeight - SCROLL_CLIP_INSET,
+    };
 
     auto border = RectNode::create(
-        cardSize,
-        ccc4FFromccc4B({
-            accentColor.r,
-            accentColor.g,
-            accentColor.b,
-            170,
-        }),
+        borderSize,
+        toColor4F(CARD_BORDER),
         7.f);
 
     border->ignoreAnchorPointForPosition(false);
-    border->setAnchorPoint({0.5f, 0.5f});
+    border->setAnchorPoint({0.5f, 0.f});
 
     border->setPosition({
         cardSize.width / 2.f,
-        cardHeight / 2.f,
+        0.f,
     });
 
     this->addChild(border);
@@ -313,23 +358,18 @@ bool NewsCard::init(
 
     auto background = RectNode::create(
         {
-            cardSize.width - 2.f,
-            cardHeight - 2.f,
+            borderSize.width - 2.f,
+            borderSize.height - 2.f,
         },
-        ccc4FFromccc4B({
-            24,
-            30,
-            25,
-            255,
-        }),
+        toColor4F(CARD_BACKGROUND),
         6.f);
 
     background->ignoreAnchorPointForPosition(false);
-    background->setAnchorPoint({0.5f, 0.5f});
+    background->setAnchorPoint({0.5f, 0.f});
 
     background->setPosition({
         cardSize.width / 2.f,
-        cardHeight / 2.f,
+        1.f,
     });
 
     this->addChild(background);
@@ -338,11 +378,11 @@ bool NewsCard::init(
 
     auto accent = RectNode::create(
         {
-            4.f,
-            cardHeight - 12.f,
+            3.f,
+            cardHeight - 14.f,
         },
         ccc4FFromccc4B(accentColor),
-        2.f);
+        1.5f);
 
     accent->ignoreAnchorPointForPosition(false);
     accent->setAnchorPoint({0.f, 0.5f});
@@ -358,12 +398,7 @@ bool NewsCard::init(
 
     auto badge = RectNode::create(
         {52.f, 14.f},
-        ccc4FFromccc4B({
-            accentColor.r,
-            accentColor.g,
-            accentColor.b,
-            90,
-        }),
+        toColor4F(badgeColor),
         4.f);
 
     badge->ignoreAnchorPointForPosition(false);
@@ -382,6 +417,7 @@ bool NewsCard::init(
             "bigFont.fnt");
 
     typeLabel->setScale(0.25f);
+    typeLabel->setColor(accent3B);
     typeLabel->setAnchorPoint({0.5f, 0.5f});
 
     typeLabel->setPosition({
@@ -398,9 +434,10 @@ bool NewsCard::init(
         auto pinnedLabel =
             CCLabelBMFont::create(
                 "PINNED",
-                "goldFont.fnt");
+                "bigFont.fnt");
 
-        pinnedLabel->setScale(0.25f);
+        pinnedLabel->setScale(0.22f);
+        pinnedLabel->setColor(PINNED_COLOR);
         pinnedLabel->setAnchorPoint({0.f, 0.5f});
 
         pinnedLabel->setPosition({
@@ -438,7 +475,7 @@ bool NewsCard::init(
 
     auto title =
         CCLabelBMFont::create(
-            news.title.c_str(),
+            "",
             "bigFont.fnt");
 
     title->setAnchorPoint({0.f, 0.5f});
@@ -448,7 +485,10 @@ bool NewsCard::init(
         cardHeight - titleTopOffset,
     });
 
-    title->limitLabelWidth(
+    // Shrinks first, then cuts with "..." so it never runs under the actions
+    fitLabelWidth(
+        title,
+        news.title,
         contentWidth,
         0.41f,
         0.29f);
@@ -498,8 +538,7 @@ bool NewsCard::init(
             auto buttonBackground =
                 RectNode::create(
                     {buttonWidth, 22.f},
-                    ccc4FFromccc4B(
-                        accentColor),
+                    toColor4F(buttonColor),
                     5.f);
 
             buttonBackground

@@ -1,5 +1,7 @@
 #include "BlitzkriegProfile.hpp"
 
+#include <algorithm>
+
 BlitzkriegProfile *BlitzkriegProfile::create(Profile const &profile,
                                              GJGameLevel *level,
                                              CCSize const &size)
@@ -25,7 +27,7 @@ bool BlitzkriegProfile::init(Profile const &profile,
   const auto linkedProfile = GlobalStore::get()->getProfileByLevel(level);
 
   m_profile = profile;
-  m_stageMetaInfo = new StageMetaInfo(getMetaInfoFromStages(m_profile.data.stages));
+  m_summary = getProfileSummary(m_profile);
   m_isCurrent = linkedProfile && linkedProfile->id == profile.id;
   m_level = level;
   m_size = size;
@@ -33,34 +35,13 @@ bool BlitzkriegProfile::init(Profile const &profile,
 
   this->setContentSize(size);
 
+  // The menu goes first: labels and the progress bar fit into the space left of it
   createBackground();
-  createLabels();
   createMenu();
-
-  m_listener = ProfileChangedEvent().listen(
-      [this]()
-      {
-        updateFromCurrentProfile();
-        return ListenerResult::Propagate;
-      });
+  createLabels();
+  createProgressBar();
 
   return true;
-}
-
-void BlitzkriegProfile::updateFromCurrentProfile()
-{
-  if (!m_level)
-    return;
-
-  Profile *current = GlobalStore::get()->getProfileByLevel(m_level);
-  bool shouldBeCurrent = (current && current->id == m_profile.id);
-
-  if (m_isCurrent != shouldBeCurrent)
-  {
-    m_isCurrent = shouldBeCurrent;
-    updateButtons();
-    m_buttonMenu->updateLayout();
-  }
 }
 
 void BlitzkriegProfile::createMenu()
@@ -75,7 +56,7 @@ void BlitzkriegProfile::createMenu()
           ->setAutoGrowAxis(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setCrossAxisAlignment(AxisAlignment::Center));
-  this->addChild(m_toolsMenu);
+  this->addChild(m_toolsMenu, 1);
 
   m_buttonMenu = CCMenu::create();
   m_buttonMenu->setAnchorPoint({1.0f, 0.5f});
@@ -87,7 +68,6 @@ void BlitzkriegProfile::createMenu()
           ->setAutoGrowAxis(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setCrossAxisAlignment(AxisAlignment::Center));
-  // m_buttonMenu->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
   m_toolsMenu->addChild(m_buttonMenu);
 
   updateButtons();
@@ -152,55 +132,176 @@ void BlitzkriegProfile::createButton(
 
 void BlitzkriegProfile::createBackground()
 {
-  auto bg = CCScale9Sprite::create("square02b_small.png");
-  bg->setContentSize(m_size);
-  bg->setPosition(m_size.width / 2, m_size.height / 2);
-  bg->setColor({0, 0, 0});
-  bg->setOpacity(255 * 0.3f);
-  this->addChild(bg);
+  if (!m_isCurrent)
+  {
+    auto bg = CCScale9Sprite::create("square02b_small.png");
+    bg->setContentSize(m_size);
+    bg->setPosition(m_size.width / 2, m_size.height / 2);
+    bg->setColor({0, 0, 0});
+    bg->setOpacity(255 * 0.3f);
+    this->addChild(bg);
+    return;
+  }
+
+  // ! --- Linked profile: accent outline + accent-tinted fill --- !
+  // The inner fill is opaque, so the outline does not show through it
+  const float radius = 5.f;
+  const float outline = 1.f;
+
+  // Inset on the top, left and right, see SCROLL_CLIP_INSET
+  const CCSize borderSize{
+      m_size.width - SCROLL_CLIP_INSET * 2,
+      m_size.height - SCROLL_CLIP_INSET,
+  };
+
+  auto border = RectNode::create(
+      borderSize,
+      ccc4FFromccc3B(ACCENT_COLOR),
+      radius);
+  border->setPosition({SCROLL_CLIP_INSET, 0.f});
+  this->addChild(border);
+
+  auto fill = RectNode::create(
+      {borderSize.width - outline * 2, borderSize.height - outline * 2},
+      ccc4FFromccc4B({57, 26, 36, 255}),
+      radius - outline);
+  fill->setPosition({SCROLL_CLIP_INSET + outline, outline});
+  this->addChild(fill);
+}
+
+std::string BlitzkriegProfile::getDisplayName() const
+{
+  std::string name = m_profile.profileName;
+
+  if (Mod::get()->getSettingValue<bool>("enable-streamer-mode") && !name.empty())
+    name = name.substr(0, 1) + "...";
+
+  return name;
+}
+
+float BlitzkriegProfile::getContentRight()
+{
+  float buttonsLeft = m_size.width;
+
+  auto includeNode = [this, &buttonsLeft](CCNode *node)
+  {
+    const auto box = node->boundingBox();
+    const auto world = node->getParent()->convertToWorldSpace(box.origin);
+    buttonsLeft = std::min(buttonsLeft, this->convertToNodeSpace(world).x);
+  };
+
+  for (auto *child : CCArrayExt<CCNode *>(m_toolsMenu->getChildren()))
+  {
+    if (child != m_buttonMenu)
+      includeNode(child);
+  }
+
+  for (auto *child : CCArrayExt<CCNode *>(m_buttonMenu->getChildren()))
+    includeNode(child);
+
+  // Never let labels collapse completely if the measurement goes wrong
+  return std::max(buttonsLeft - CONTENT_TO_BUTTONS_GAP, m_size.width * .4f);
 }
 
 void BlitzkriegProfile::createLabels()
 {
-  bool streamerModEnabled = Mod::get()->getSettingValue<bool>("enable-streamer-mode");
+  const float contentRight = getContentRight();
+  const float nameY = 27.f;
 
-  std::string profileName = m_profile.profileName;
-
-  if (streamerModEnabled && !profileName.empty())
-    profileName = profileName.substr(0, 1) + "...";
-
-  if (profileName.length() > 20)
-    profileName = profileName.substr(0, 20) + "...";
-
-  auto nameLabel = CCLabelBMFont::create(profileName.c_str(), "bigFont.fnt");
-  nameLabel->setScale(.5f);
+  // ! --- Name --- !
+  auto nameLabel = CCLabelBMFont::create(getDisplayName().c_str(), "bigFont.fnt");
   nameLabel->setAnchorPoint({0, 0.5f});
-  nameLabel->setPosition({10.f, 25.f});
+  nameLabel->setPosition({PADDING_X, nameY});
 
-  int currentStageNumber = std::max(m_stageMetaInfo->completed, 1);
-
-  if (currentStageNumber >= m_stageMetaInfo->total)
-    nameLabel->setColor({99, 224, 110});
+  if (m_summary.isCompleted())
+    nameLabel->setColor(COMPLETED_COLOR);
 
   this->addChild(nameLabel);
 
-  std::string stagesText;
-  if (currentStageNumber >= m_stageMetaInfo->total)
-    stagesText = "Stages: " + geode::utils::numToString(m_stageMetaInfo->total) + "/" +
-                 geode::utils::numToString(m_stageMetaInfo->total);
-  else
-    stagesText = "Stages: " + geode::utils::numToString(currentStageNumber) + "/" +
-                 geode::utils::numToString(m_stageMetaInfo->total);
+  // ! --- Linked badge --- !
+  CCLabelBMFont *badge = nullptr;
+  float badgeSpace = 0.f;
 
-  auto stagesLabel = CCLabelBMFont::create(stagesText.c_str(), "bigFont.fnt");
-  stagesLabel->setScale(0.25f);
-  stagesLabel->setAnchorPoint({0, 0.5f});
-  stagesLabel->setPosition({10.f, 10.f});
-  stagesLabel->setOpacity(255 * 0.5f);
-  this->addChild(stagesLabel);
+  if (m_isCurrent)
+  {
+    badge = CCLabelBMFont::create("LINKED", "bigFont.fnt");
+    badge->setScale(.25f);
+    badge->setColor(ACCENT_COLOR);
+    badge->setAnchorPoint({0, 0.5f});
+    badgeSpace = badge->getScaledContentWidth() + LINKED_BADGE_GAP;
+  }
+
+  // Long names shrink first and are cut only when that is not enough,
+  // so the name never pushes the badge under the buttons
+  fitLabelWidth(
+      nameLabel,
+      getDisplayName(),
+      contentRight - PADDING_X - badgeSpace,
+      NAME_SCALE,
+      NAME_MIN_SCALE);
+
+  if (badge)
+  {
+    badge->setPosition({PADDING_X + nameLabel->getScaledContentWidth() + LINKED_BADGE_GAP, nameY});
+    this->addChild(badge);
+  }
+
+  // ! --- Info line: stage, attempts, time played --- !
+  const std::string stageText =
+      m_summary.totalStages > 0
+          ? fmt::format("Stage {}/{}", m_summary.currentStage(), m_summary.totalStages)
+          : std::string("<small>No stages</small>");
+
+  const std::string info = fmt::format(
+      "{}   {} <small>Attempts</small>   {}",
+      stageText,
+      m_summary.attempts,
+      formatTimePlayed(m_summary.timePlayed));
+
+  auto infoLabel = UILabel::create(info, "bigFont.fnt", .28f);
+  infoLabel->ignoreAnchorPointForPosition(false);
+  infoLabel->setAnchorPoint({0, 0.5f});
+  infoLabel->setPosition({PADDING_X, 14.f});
+
+  const float infoMaxWidth = contentRight - PADDING_X;
+  if (infoLabel->getContentWidth() > infoMaxWidth)
+    infoLabel->setScale(infoMaxWidth / infoLabel->getContentWidth());
+
+  this->addChild(infoLabel);
+}
+
+void BlitzkriegProfile::createProgressBar()
+{
+  const float width = getContentRight() - PADDING_X;
+  const float y = 4.f;
+
+  if (width <= 0.f)
+    return;
+
+  auto track = RectNode::create(
+      {width, PROGRESS_BAR_HEIGHT},
+      ccc4FFromccc4B({70, 70, 70, 255}),
+      PROGRESS_BAR_HEIGHT / 2);
+  track->setPosition({PADDING_X, y});
+  this->addChild(track);
+
+  const float fillWidth = width * m_summary.progress();
+
+  if (fillWidth <= 0.f)
+    return;
+
+  auto fill = RectNode::create(
+      {fillWidth, PROGRESS_BAR_HEIGHT},
+      ccc4FFromccc3B(m_summary.isCompleted() ? COMPLETED_COLOR : ACCENT_COLOR),
+      PROGRESS_BAR_HEIGHT / 2);
+  fill->setPosition({PADDING_X, y});
+  this->addChild(fill);
 }
 
 // ! --- Handlers --- !
+// Handlers only change the store and send events.
+// ProfilesListLayer rebuilds rows on the next frame, so a row is never
+// destroyed while its own button callback is running.
 void BlitzkriegProfile::onToggleProfile(CCObject *obj)
 {
   auto now = std::chrono::steady_clock::now();
@@ -209,14 +310,14 @@ void BlitzkriegProfile::onToggleProfile(CCObject *obj)
     return;
 
   m_lastToggleTime = now;
+  // The row is rebuilt after the event, block repeated clicks until then
+  m_profileToggleDisabled = true;
 
   if (m_isCurrent)
     unlinkProfileFromLevel(m_profile, m_level);
   else
     linkProfileWithLevel(m_profile, m_level);
 
-  updateButtons();
-  m_buttonMenu->updateLayout();
   ProfileChangedEvent().send();
 }
 
@@ -225,8 +326,6 @@ void BlitzkriegProfile::onTogglePinProfile(CCObject *obj)
   m_isPinned = !m_isPinned;
   GlobalStore::get()->pinProfileById(m_profile.id, m_isPinned);
   ProfilesChangedEvent().send();
-
-  updateButtons();
 }
 
 void BlitzkriegProfile::onUpProfile(CCObject *obj)
@@ -242,18 +341,20 @@ void BlitzkriegProfile::onEditProfile(CCObject *obj)
 
 void BlitzkriegProfile::onDeleteProfile(CCObject *obj)
 {
+  // Captured by value: the row may be rebuilt while the dialog is open
+  const std::string profileId = m_profile.id;
+
   geode::createQuickPopup(
       "Delete Profile",
-      fmt::format("Are you sure you want to delete profile \"{}\"?", m_profile.profileName),
+      fmt::format("Are you sure you want to delete profile \"{}\"?", getDisplayName()),
       "Cancel",
       "Delete",
-      [this](auto, bool confirmed)
+      [profileId](auto, bool confirmed)
       {
-        if (confirmed)
-        {
-          GlobalStore::get()->removeProfileById(m_profile.id);
-          this->removeFromParentAndCleanup(true);
-          ProfilesChangedEvent().send();
-        }
+        if (!confirmed)
+          return;
+
+        GlobalStore::get()->removeProfileById(profileId);
+        ProfilesChangedEvent().send();
       });
 }

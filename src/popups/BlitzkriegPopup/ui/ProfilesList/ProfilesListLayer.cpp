@@ -1,5 +1,8 @@
 #include "ProfilesListLayer.hpp"
 
+#include <algorithm>
+#include <numeric>
+
 ProfilesListLayer *ProfilesListLayer::create(
     GJGameLevel *level,
     std::vector<Profile> const &profiles,
@@ -68,6 +71,8 @@ bool ProfilesListLayer::init(
   for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
     child->setColor(ccc3(50, 50, 50));
 
+  createEmptyState();
+
   // ! --- Bottom buttons --- !
   auto btnsGap = 5.f;
 
@@ -100,7 +105,6 @@ bool ProfilesListLayer::init(
           ->setAutoGrowAxis(true)
           ->setAxisAlignment(AxisAlignment::End)
           ->setCrossAxisAlignment(AxisAlignment::Center));
-  // btnMenu->getLayout()->ignoreInvisibleChildren(true); // not required since geode v5
 
   btnMenu->addChild(btnCreate);
   btnMenu->addChild(btnImport);
@@ -111,12 +115,19 @@ bool ProfilesListLayer::init(
   this->addChild(btnMenu);
   btnMenu->updateLayout();
 
-  m_listener = ProfilesChangedEvent().listen(
+  // ! --- Events --- !
+  m_profilesListener = ProfilesChangedEvent().listen(
       [this]()
       {
-        m_profiles = GlobalStore::get()->getProfiles();
-        reload();
+        queueReload();
+        return ListenerResult::Propagate;
+      });
 
+  // Linking changes the order and the highlight of rows
+  m_profileListener = ProfileChangedEvent().listen(
+      [this]()
+      {
+        queueReload();
         return ListenerResult::Propagate;
       });
 
@@ -124,91 +135,122 @@ bool ProfilesListLayer::init(
   return true;
 }
 
-void ProfilesListLayer::reload()
+void ProfilesListLayer::createEmptyState()
+{
+  m_emptyState = CCNode::create();
+  m_emptyState->setPosition(m_contentSize / 2);
+  m_emptyState->setVisible(false);
+  this->addChild(m_emptyState, 1);
+
+  auto title = CCLabelBMFont::create("No profiles yet", "bigFont.fnt");
+  title->setScale(.5f);
+  title->setOpacity(200);
+  title->setPosition({0.f, 8.f});
+  m_emptyState->addChild(title);
+
+  auto hint = CCLabelBMFont::create(
+      "Create one for this level or import a backup",
+      "bigFont.fnt");
+  hint->setScale(.3f);
+  hint->setOpacity(120);
+  hint->setPosition({0.f, -8.f});
+  hint->limitLabelWidth(m_contentSize.width - 20.f, .3f, .15f);
+  m_emptyState->addChild(hint);
+}
+
+void ProfilesListLayer::queueReload(bool keepScroll)
+{
+  // If any request in this frame wants the top, go to the top
+  m_queuedKeepScroll = m_reloadQueued
+                           ? m_queuedKeepScroll && keepScroll
+                           : keepScroll;
+
+  if (m_reloadQueued)
+    return;
+
+  m_reloadQueued = true;
+
+  geode::queueInMainThread(
+      [self = Ref<ProfilesListLayer>(this)]()
+      {
+        self->m_reloadQueued = false;
+
+        // The popup was closed before the reload ran
+        if (!self->getParent())
+          return;
+
+        self->m_profiles = GlobalStore::get()->getProfiles();
+        self->reload(self->m_queuedKeepScroll);
+      });
+}
+
+void ProfilesListLayer::reload(bool keepScroll)
 {
   if (!m_level)
     return;
 
-  m_scroll->m_contentLayer->removeAllChildrenWithCleanup(true);
+  auto *content = m_scroll->m_contentLayer;
+  const float viewHeight = m_scroll->getContentHeight();
 
-  std::stable_sort(m_profiles.begin(), m_profiles.end(),
-                   [](const Profile &a, const Profile &b)
-                   {
-                     return GlobalStore::get()->isProfilePinned(a.id) &&
-                            !GlobalStore::get()->isProfilePinned(b.id);
-                   });
+  // Content layer is at (viewHeight - contentHeight) when scrolled to the top
+  const float distanceFromTop =
+      content->getPositionY() - (viewHeight - content->getContentHeight());
 
-  bool hasPinned = std::any_of(m_profiles.begin(), m_profiles.end(),
-                               [](const Profile &p)
-                               { return GlobalStore::get()->isProfilePinned(p.id); });
+  content->removeAllChildrenWithCleanup(true);
 
-  bool hasDefault = std::any_of(m_profiles.begin(), m_profiles.end(),
-                                [](const Profile &p)
-                                { return !GlobalStore::get()->isProfilePinned(p.id); });
+  // ! --- Order: linked, pinned, others; store order inside each group --- !
+  const auto *linkedProfile = GlobalStore::get()->getProfileByLevel(m_level);
+  const std::string linkedId = linkedProfile ? linkedProfile->id : "";
 
-  bool headerPinnedAdded = false;
-  bool headerOtherAdded = false;
+  std::vector<int> groups(m_profiles.size());
 
-  for (size_t i = 0; i < m_profiles.size(); ++i)
+  for (std::size_t i = 0; i < m_profiles.size(); ++i)
   {
-    const auto &profile = m_profiles[i];
-    bool pinned = GlobalStore::get()->isProfilePinned(profile.id);
+    const auto &id = m_profiles[i].id;
 
-    if (hasPinned && hasDefault)
-    {
-      if (pinned && !headerPinnedAdded)
-      {
-        // drawSectionHeader("Pinned");
-        headerPinnedAdded = true;
-      }
-      else if (!pinned && !headerOtherAdded)
-      {
-        // drawSectionHeader("Other");
-        headerOtherAdded = true;
-      }
-    }
+    if (!linkedId.empty() && id == linkedId)
+      groups[i] = 0;
+    else if (GlobalStore::get()->isProfilePinned(id))
+      groups[i] = 1;
+    else
+      groups[i] = 2;
+  }
 
+  std::vector<std::size_t> order(m_profiles.size());
+  std::iota(order.begin(), order.end(), std::size_t{0});
+  std::stable_sort(
+      order.begin(),
+      order.end(),
+      [&groups](std::size_t a, std::size_t b)
+      {
+        return groups[a] < groups[b];
+      });
+
+  // ! --- Rows --- !
+  for (auto index : order)
+  {
     auto profileItem = BlitzkriegProfile::create(
-        profile,
+        m_profiles[index],
         m_level,
         CCSize(m_scroll->getContentWidth(), 40.f));
 
     if (profileItem)
-    {
-      m_scroll->m_contentLayer->addChild(profileItem);
-    }
+      content->addChild(profileItem);
   }
 
-  m_scroll->m_contentLayer->updateLayout();
-  scrollToTop();
-}
+  if (m_emptyState)
+    m_emptyState->setVisible(m_profiles.empty());
 
-void ProfilesListLayer::drawSectionHeader(const std::string &title)
-{
-  float height = 20.f;
-  float padding = 4.f;
+  content->updateLayout();
 
-  auto header = CCNode::create();
-  header->setLayout(ColumnLayout::create()
-                        ->setGap(2.5f)
-                        ->setAutoScale(false)
-                        ->setAutoGrowAxis(true)
-                        ->setAxisReverse(true)
-                        ->setCrossAxisLineAlignment(AxisAlignment::Start));
+  // ! --- Scroll position --- !
+  const float maxDistance =
+      std::max(0.f, content->getContentHeight() - viewHeight);
 
-  auto label = CCLabelBMFont::create(title.c_str(), "bigFont.fnt");
-  label->setScale(0.6f);
-  header->addChild(label);
-  header->updateLayout();
+  const float distance =
+      keepScroll ? std::clamp(distanceFromTop, 0.f, maxDistance) : 0.f;
 
-  auto line = CCLayerColor::create({255, 255, 255, 50},
-                                   m_scroll->m_contentLayer->getContentSize().width - padding * 2,
-                                   1.f);
-  header->addChild(line);
-  header->updateLayout();
-
-  m_scroll->m_contentLayer->addChild(header);
-  header->updateLayout();
+  content->setPositionY(viewHeight - content->getContentHeight() + distance);
 }
 
 void ProfilesListLayer::scrollToTop()
@@ -219,52 +261,72 @@ void ProfilesListLayer::scrollToTop()
 
 void ProfilesListLayer::onImport(CCObject *obj)
 {
-  selectJsonFile([this](std::string jsonContent)
-                 {
+  selectJsonFile(
+      [](std::string jsonContent)
+      {
         if (jsonContent.empty())
-            return;
+          return;
 
         auto res = matjson::parseAs<std::vector<Profile>>(jsonContent);
-        if (res.isErr()) {
-            geode::log::error("JSON parse error: {}", res.unwrapErr());
 
-            FLAlertLayer::create(
+        if (res.isErr())
+        {
+          geode::log::error("JSON parse error: {}", res.unwrapErr());
+
+          FLAlertLayer::create(
               "Import Error",
               fmt::format("Failed to import profiles: {}", res.unwrapErr()),
-              "OK")->show();
+              "OK")
+              ->show();
 
-            return;
+          return;
         }
 
         auto profiles = res.unwrap();
 
-        if (profiles.empty() || !res.isOk()) {
-            geode::log::error("Parsed JSON is empty or not a valid profiles array");
+        if (profiles.empty())
+        {
+          geode::log::error("Imported JSON does not contain any profiles");
 
-            FLAlertLayer::create(
+          FLAlertLayer::create(
               "Import Error",
-              "Parsed JSON is empty or not a valid profiles array",
-              "OK")->show();
+              "The file does not contain any profiles",
+              "OK")
+              ->show();
 
-            return;
+          return;
         }
 
-        if (!res.isOk()) {
-            geode::log::error("JSON Parse error at import: {}", res.unwrapErr());
+        const std::size_t added = GlobalStore::get()->addProfiles(profiles);
+        const std::size_t skipped = profiles.size() - added;
 
-            FLAlertLayer::create(
-              "Import Error",
-              fmt::format("Failed to import profiles: {}", res.unwrapErr()),
-              "OK")->show();
+        auto plural = [](std::size_t count)
+        {
+          return count == 1 ? "profile" : "profiles";
+        };
 
-            return;
+        if (added == 0)
+        {
+          Notification::create(
+              profiles.size() == 1
+                  ? std::string("This profile already exists")
+                  : fmt::format("All {} profiles already exist", profiles.size()),
+              NotificationIcon::Info)
+              ->show();
+
+          return;
         }
 
-        GlobalStore::get()->addProfiles(profiles);
+        std::string message = fmt::format("Imported {} {}", added, plural(added));
+
+        if (skipped > 0)
+          message += fmt::format(", {} skipped (already exist)", skipped);
+
+        Notification::create(message, NotificationIcon::Success)->show();
+
+        // The list reloads itself through the event
         ProfilesChangedEvent().send();
-
-        // Update profiles list
-        reload(); });
+      });
 }
 
 void ProfilesListLayer::onExport(CCObject *obj)

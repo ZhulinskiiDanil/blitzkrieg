@@ -27,7 +27,10 @@ public:
 
     void addProfile(Profile const &profile);
 
-    void addProfiles(
+    // Returns the number of added profiles.
+    // Profiles with an existing ID are skipped unless overwrite is true,
+    // overwritten ones are not counted as added.
+    std::size_t addProfiles(
         std::vector<Profile> const &newProfiles,
         bool overwrite = false);
 

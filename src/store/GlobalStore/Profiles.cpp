@@ -22,11 +22,11 @@ void GlobalStore::addProfile(Profile const &profile)
   saveProfileIndex();
 }
 
-void GlobalStore::addProfiles(
+std::size_t GlobalStore::addProfiles(
     std::vector<Profile> const &newProfiles,
     bool overwrite)
 {
-  bool indexChanged = false;
+  std::size_t added = 0;
 
   for (auto const &profile : newProfiles)
   {
@@ -50,11 +50,13 @@ void GlobalStore::addProfiles(
 
     m_profiles.push_back(profile);
     saveProfile(m_profiles.back());
-    indexChanged = true;
+    added++;
   }
 
-  if (indexChanged)
+  if (added > 0)
     saveProfileIndex();
+
+  return added;
 }
 
 void GlobalStore::updateProfile(Profile const &profile)
