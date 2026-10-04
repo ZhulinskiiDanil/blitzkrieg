@@ -185,7 +185,11 @@ void StagesGraphLayer::drawSummary(std::vector<StageGraphColumn> const &columns,
       {fmt::format("{}<small>/{}</small>", completedStages, columns.size()), "Stages done"},
       forecastCard,
       {hardest
-           ? fmt::format("{} <small>({})</small>", hardest->index + 1, formatCompactNumber(static_cast<float>(hardest->attempts)))
+           ? fmt::format(
+                 "{} <small>({})</small>",
+                 hardest->index + 1,
+                 // Already inside <small>, UILabel does not nest tags
+                 stripSmallTags(formatCompactNumber(static_cast<float>(hardest->attempts))))
            : std::string("-"),
        "Hardest stage"},
   };
