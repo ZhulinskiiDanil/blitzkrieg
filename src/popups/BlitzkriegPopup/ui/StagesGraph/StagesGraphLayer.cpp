@@ -17,6 +17,18 @@ namespace
     std::string value;
     std::string caption;
   };
+
+  // Captions are plain CCLabelBMFont, the <small> tags of UILabel would show up
+  std::string stripSmallTags(std::string text)
+  {
+    for (std::string_view tag : {"<small>", "</small>"})
+    {
+      for (auto pos = text.find(tag); pos != std::string::npos; pos = text.find(tag))
+        text.erase(pos, tag.size());
+    }
+
+    return text;
+  }
 }
 
 StagesGraphLayer *StagesGraphLayer::create(GJGameLevel *level, const CCSize &contentSize)
@@ -57,9 +69,14 @@ bool StagesGraphLayer::init(GJGameLevel *level, const CCSize &contentSize)
     return true;
   }
 
-  m_metric = Mod::get()->getSavedValue<std::string>(METRIC_SAVE_KEY, "attempts") == "playtime"
-                 ? StageGraphMetric::Playtime
-                 : StageGraphMetric::Attempts;
+  const auto savedMetric = Mod::get()->getSavedValue<std::string>(METRIC_SAVE_KEY, "attempts");
+
+  if (savedMetric == "playtime")
+    m_metric = StageGraphMetric::Playtime;
+  else if (savedMetric == "timeline")
+    m_metric = StageGraphMetric::Timeline;
+  else
+    m_metric = StageGraphMetric::Attempts;
 
   // ! --- Best run from 0% --- !
   const float bestPercent = m_level ? static_cast<float>(m_level->m_normalPercent.value()) : 0.f;
@@ -74,18 +91,32 @@ bool StagesGraphLayer::init(GJGameLevel *level, const CCSize &contentSize)
   drawMetricSwitch(controlsY);
   drawLegend(controlsY, bestX.has_value());
 
-  // ! --- Chart --- !
-  m_chart = StageBarChart::create({m_size.width - SIDE_PADDING * 2, chartTop - BOTTOM_PADDING});
-  m_chart->setPosition({SIDE_PADDING, BOTTOM_PADDING});
-  m_chart->onOpenStage = [this](int stageIndex)
+  // ! --- Charts, both in the same place, one is visible --- !
+  const CCSize chartSize{m_size.width - SIDE_PADDING * 2, chartTop - BOTTOM_PADDING};
+
+  auto openStage = [this](int stageIndex)
   {
     if (onOpenStage)
       onOpenStage(stageIndex);
   };
+
+  m_timeline = StageTimelineChart::create(chartSize);
+  m_timeline->setPosition({SIDE_PADDING, BOTTOM_PADDING});
+  m_timeline->onOpenStage = openStage;
+  m_timeline->setData(columns);
+  this->addChild(m_timeline);
+
+  m_chart = StageBarChart::create(chartSize);
+  m_chart->setPosition({SIDE_PADDING, BOTTOM_PADDING});
+  m_chart->onOpenStage = openStage;
   this->addChild(m_chart);
 
-  m_chart->setData(std::move(columns), m_metric);
+  m_chart->setData(
+      std::move(columns),
+      m_metric == StageGraphMetric::Timeline ? StageGraphMetric::Attempts : m_metric);
   m_chart->setBestFromZero(bestX, bestPercent);
+
+  updateChartVisibility();
 
   return true;
 }
@@ -122,7 +153,6 @@ void StagesGraphLayer::drawSummary(std::vector<StageGraphColumn> const &columns,
   int totalAttempts = 0;
   float totalTime = 0.f;
   int completedStages = 0;
-  int completedAttempts = 0;
   StageGraphColumn const *hardest = nullptr;
 
   for (auto const &column : columns)
@@ -131,23 +161,29 @@ void StagesGraphLayer::drawSummary(std::vector<StageGraphColumn> const &columns,
     totalTime += column.timePlayed;
 
     if (column.status == StageGraphStatus::Completed)
-    {
       completedStages++;
-      completedAttempts += column.attempts;
-    }
 
     if (column.attempts > 0 && (!hardest || column.attempts > hardest->attempts))
       hardest = &column;
+  }
+
+  // ! The average per stage is a line on the chart, the card shows what is left
+  const auto forecast = estimateRemaining(columns);
+  SummaryCard forecastCard{"-", "Est. left"};
+
+  if (forecast.done)
+    forecastCard.value = "Done";
+  else if (forecast.known)
+  {
+    forecastCard.value = "~" + formatCompactNumber(forecast.attempts);
+    forecastCard.caption = fmt::format("Est. left, ~{}", stripSmallTags(formatTimePlayed(forecast.time)));
   }
 
   const std::vector<SummaryCard> cards = {
       {formatCompactNumber(static_cast<float>(totalAttempts)), "Attempts"},
       {formatTimePlayed(totalTime), "Playtime"},
       {fmt::format("{}<small>/{}</small>", completedStages, columns.size()), "Stages done"},
-      {completedStages > 0
-           ? formatCompactNumber(static_cast<float>(completedAttempts) / completedStages)
-           : std::string("-"),
-       "Avg per stage"},
+      forecastCard,
       {hardest
            ? fmt::format("{} <small>({})</small>", hardest->index + 1, formatCompactNumber(static_cast<float>(hardest->attempts)))
            : std::string("-"),
@@ -193,7 +229,7 @@ void StagesGraphLayer::drawSummary(std::vector<StageGraphColumn> const &columns,
 
 void StagesGraphLayer::drawMetricSwitch(float y)
 {
-  const CCSize buttonSize{62.f, CONTROLS_HEIGHT};
+  const CCSize buttonSize{56.f, CONTROLS_HEIGHT};
   const float gap = 4.f;
 
   auto menu = CCMenu::create();
@@ -203,6 +239,7 @@ void StagesGraphLayer::drawMetricSwitch(float y)
   const std::pair<StageGraphMetric, const char *> metrics[] = {
       {StageGraphMetric::Attempts, "Attempts"},
       {StageGraphMetric::Playtime, "Playtime"},
+      {StageGraphMetric::Timeline, "Timeline"},
   };
 
   float x = 0.f;
@@ -257,11 +294,32 @@ void StagesGraphLayer::onMetric(CCObject *sender)
 
   m_metric = metric;
   updateMetricButtons();
-  m_chart->setMetric(metric);
+  updateChartVisibility();
 
-  Mod::get()->setSavedValue<std::string>(
-      METRIC_SAVE_KEY,
-      metric == StageGraphMetric::Playtime ? "playtime" : "attempts");
+  if (metric != StageGraphMetric::Timeline)
+    m_chart->setMetric(metric);
+
+  const char *saved = "attempts";
+
+  if (metric == StageGraphMetric::Playtime)
+    saved = "playtime";
+  else if (metric == StageGraphMetric::Timeline)
+    saved = "timeline";
+
+  Mod::get()->setSavedValue<std::string>(METRIC_SAVE_KEY, saved);
+}
+
+void StagesGraphLayer::updateChartVisibility()
+{
+  const bool timeline = m_metric == StageGraphMetric::Timeline;
+
+  // Hidden charts also stop taking touches, CCMenu checks the parents
+  if (m_chart)
+    m_chart->setVisible(!timeline);
+  if (m_timeline)
+    m_timeline->setVisible(timeline);
+  if (m_legend)
+    m_legend->setVisible(!timeline);
 }
 
 // ! --- Legend --- !
@@ -289,6 +347,9 @@ void StagesGraphLayer::drawLegend(float y, bool withBestLine)
   const float swatchGap = 3.f;
   const float entryGap = 8.f;
 
+  m_legend = CCNode::create();
+  this->addChild(m_legend);
+
   float right = m_size.width - SIDE_PADDING;
 
   // From the right edge to the left, so the last entry ends at the edge
@@ -299,7 +360,7 @@ void StagesGraphLayer::drawLegend(float y, bool withBestLine)
     label->setOpacity(170);
     label->setAnchorPoint({1.f, .5f});
     label->setPosition({right, y});
-    this->addChild(label);
+    m_legend->addChild(label);
 
     const float swatchRight = right - label->getScaledContentWidth() - swatchGap;
 
@@ -313,13 +374,13 @@ void StagesGraphLayer::drawLegend(float y, bool withBestLine)
         dash->drawSegment({x, y}, {x + 2.f, y}, .5f, premultiplyAlpha(ccc4FFromccc4B(it->color)));
       }
 
-      this->addChild(dash);
+      m_legend->addChild(dash);
     }
     else
     {
       auto swatch = RectNode::create({swatchSize, swatchSize}, premultiplyAlpha(ccc4FFromccc4B(it->color)), 1.5f);
       swatch->setPosition({swatchRight - swatchSize, y - swatchSize / 2});
-      this->addChild(swatch);
+      m_legend->addChild(swatch);
     }
 
     right = swatchRight - swatchSize - entryGap;

@@ -5,6 +5,7 @@
 
 #include "StageBarChart.hpp"
 #include "StageGraphData.hpp"
+#include "StageTimelineChart.hpp"
 #include "../../../../ui/Label.hpp"
 #include "../../../../ui/RectNode.hpp"
 #include "../../../../store/GlobalStore.hpp"
@@ -33,6 +34,9 @@ private:
   GJGameLevel *m_level = nullptr;
 
   StageBarChart *m_chart = nullptr;
+  StageTimelineChart *m_timeline = nullptr;
+  // Bar colors and the best run line, the timeline has neither
+  CCNode *m_legend = nullptr;
   std::vector<MetricButton> m_metricButtons;
   StageGraphMetric m_metric = StageGraphMetric::Attempts;
 
@@ -41,6 +45,8 @@ private:
   void drawMetricSwitch(float y);
   void drawLegend(float y, bool withBestLine);
   void updateMetricButtons();
+  // Shows the chart of the current metric
+  void updateChartVisibility();
 
   void onMetric(CCObject *sender);
   void onOpenProfilesBtn(CCObject *);
