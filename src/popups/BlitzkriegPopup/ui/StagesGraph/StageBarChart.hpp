@@ -10,7 +10,7 @@
 
 using namespace geode::prelude;
 
-// Bar chart of attempts or playtime per stage.
+// Bar chart of attempts or playtime per stage, every bar is split into its runs.
 // Hover (desktop) or tap selects a column, a click on the selected column opens it.
 class StageBarChart : public CCLayer
 {
@@ -24,6 +24,32 @@ private:
   static constexpr float BAR_WIDTH_RATIO = .6f;
   static constexpr float MAX_BAR_WIDTH = 22.f;
   static constexpr int GRID_LINES = 4;
+  // Runs thinner than this are merged into a neighbour
+  static constexpr float MIN_SEGMENT_HEIGHT = 1.5f;
+  static constexpr float SEGMENT_GAP = .5f;
+  static constexpr float PLACEHOLDER_HEIGHT = 3.f;
+  static constexpr float TWEEN_DURATION = .3f;
+
+  // One run of a bar, animated from `from` to `to`
+  struct BarSegment
+  {
+    RectNode *node = nullptr;
+    // What is drawn right now
+    float y = 0.f;
+    float height = 0.f;
+    float fromY = 0.f;
+    float fromHeight = 0.f;
+    float toY = 0.f;
+    float toHeight = 0.f;
+  };
+
+  struct BarColumn
+  {
+    // Same order as StageGraphColumn::runs
+    std::vector<BarSegment> segments;
+    RectNode *placeholder = nullptr;
+    float delay = 0.f;
+  };
 
   CCSize m_size;
   CCSize m_plotSize;
@@ -32,41 +58,57 @@ private:
   CCNode *m_plot = nullptr;
   CCNode *m_axisNode = nullptr;
   CCNode *m_barsNode = nullptr;
+  CCNode *m_averageNode = nullptr;
   CCNode *m_bestNode = nullptr;
   RectNode *m_highlight = nullptr;
+  RectNode *m_segmentHighlight = nullptr;
   CCNode *m_tooltip = nullptr;
   RectNode *m_tooltipBg = nullptr;
-  UILabel *m_tooltipLabel = nullptr;
+  std::vector<UILabel *> m_tooltipLines;
   CCLabelBMFont *m_tooltipHint = nullptr;
   CCMenu *m_hitMenu = nullptr;
 
   std::vector<StageGraphColumn> m_columns;
-  std::vector<RectNode *> m_bars;
+  std::vector<BarColumn> m_bars;
   StageGraphMetric m_metric = StageGraphMetric::Attempts;
   float m_axisMax = 1.f;
   float m_axisStep = 1.f;
+  float m_barWidth = 1.f;
+
+  float m_tweenTime = 0.f;
+  float m_tweenEnd = 0.f;
 
   std::optional<float> m_bestX;
   float m_bestPercent = 0.f;
 
   int m_selected = -1;
+  // Run of the selected column under the mouse, -1 for the whole stage
+  int m_selectedRun = -1;
   // Selected by the mouse, cleared when the mouse leaves the plot
   bool m_selectedByHover = false;
 
   float getSlotWidth() const;
   float getColumnCenterX(float x) const;
   float getBarHeight(StageGraphColumn const &column) const;
+  // Target height of every run of the column for the current metric
+  std::vector<float> getSegmentHeights(StageGraphColumn const &column) const;
+  int getRunAt(int column, float y) const;
 
   void rebuild(bool animate);
   void drawAxis();
-  void drawBars(bool animate);
+  void createBars();
+  void retargetBars(bool fromZero);
+  void applyBars(float time);
+  void drawAverageLine();
   void drawBestLine();
   void drawHitAreas();
 
-  void select(int index, bool byHover);
+  void select(int index, int run, bool byHover);
+  void updateHighlight();
   void updateTooltip();
 
   void onColumn(CCObject *sender);
+  void onTween(float dt);
 
 public:
   std::function<void(int stageIndex)> onOpenStage;
