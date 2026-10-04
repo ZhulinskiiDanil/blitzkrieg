@@ -148,15 +148,19 @@ bool StageBarChart::init(const CCSize &size)
   m_tooltipBg = RectNode::create({1.f, 1.f}, premultiplyAlpha(ccc4FFromccc4B({10, 10, 10, 235})), 4);
   m_tooltip->addChild(m_tooltipBg);
 
-  for (int i = 0; i < 3; ++i)
-  {
-    // The first line is the stage, the others are a bit smaller
-    auto line = createLabel("", i == 0 ? .3f : .26f, 0.f);
-    m_tooltip->addChild(line);
-    m_tooltipLines.push_back(line);
-  }
+  m_tooltipTitle = createLabel("", .3f, 0.f);
+  m_tooltip->addChild(m_tooltipTitle);
 
-  m_tooltipHint = CCLabelBMFont::create("Click to open in Stage Browser", "bigFont.fnt");
+  m_tooltipStats = createLabel("", .24f, 0.f);
+  m_tooltip->addChild(m_tooltipStats);
+
+  m_tooltipNote = CCLabelBMFont::create("", "bigFont.fnt");
+  m_tooltipNote->setScale(.2f);
+  m_tooltipNote->setOpacity(150);
+  m_tooltipNote->setAnchorPoint({0.f, .5f});
+  m_tooltip->addChild(m_tooltipNote);
+
+  m_tooltipHint = CCLabelBMFont::create("Click to open", "bigFont.fnt");
   m_tooltipHint->setScale(.2f);
   m_tooltipHint->setOpacity(130);
   m_tooltipHint->setAnchorPoint({0.f, .5f});
@@ -686,87 +690,89 @@ void StageBarChart::updateTooltip()
 
   auto const &column = m_columns[m_selected];
 
-  // ! --- Text --- !
-  std::vector<std::string> lines;
-
-  lines.push_back(fmt::format(
-      "Stage {}   {} <small>{}</small>   {}   {}/{} <small>runs</small>",
-      column.index + 1,
-      formatCompactNumber(static_cast<float>(column.attempts)),
-      column.attempts == 1 ? "attempt" : "attempts",
-      formatTimePlayed(column.timePlayed),
-      column.completedRuns,
-      column.totalRuns));
+  // ! --- Text: a run shows only itself, the stage is the highlighted column --- !
+  std::string title;
+  std::string stats;
+  std::string note;
 
   if (m_selectedRun >= 0)
   {
     auto const &run = column.runs[m_selectedRun];
 
-    lines.push_back(fmt::format(
-        "{} - {}   {} <small>{}</small>   {}",
-        formatPercent(run.from),
-        formatPercent(run.to),
+    title = fmt::format("{} - {}", formatPercent(run.from), formatPercent(run.to));
+    stats = fmt::format(
+        "{} <small>{}</small>   {}",
         formatCompactNumber(static_cast<float>(run.attempts)),
         run.attempts == 1 ? "attempt" : "attempts",
-        formatTimePlayed(run.timePlayed)));
+        formatTimePlayed(run.timePlayed));
 
-    std::string details;
-
-    if (run.range && run.range->bestRunFrom >= 0.f && run.range->bestRunTo > 0.f)
-    {
-      details += fmt::format(
-          "<small>Best</small> {} - {}",
-          formatPercent(run.range->bestRunFrom),
-          formatPercent(run.range->bestRunTo));
-    }
-
-    if (auto date = formatCompletedAt(run.completedAt); !date.empty())
-      details += fmt::format("{}<small>Completed</small> {}", details.empty() ? "" : "   ", date);
-
-    if (!details.empty())
-      lines.push_back(details);
+    // A completed run needs only its date, an open one its best try
+    if (run.checked && run.completedAt > 0)
+      note = fmt::format("Completed {}", formatShortDate(run.completedAt));
+    else if (!run.checked && run.range && run.range->bestRunFrom >= 0.f && run.range->bestRunTo > 0.f)
+      note = fmt::format("Best {} - {}", formatPercent(run.range->bestRunFrom), formatPercent(run.range->bestRunTo));
   }
-  else if (auto date = formatCompletedAt(column.completedAt); !date.empty())
+  else
   {
-    lines.push_back(fmt::format("<small>Completed</small> {}", date));
+    title = fmt::format("Stage {}", column.index + 1);
+    stats = fmt::format(
+        "{} <small>{}</small>   {}   {}/{} <small>runs</small>",
+        formatCompactNumber(static_cast<float>(column.attempts)),
+        column.attempts == 1 ? "attempt" : "attempts",
+        formatTimePlayed(column.timePlayed),
+        column.completedRuns,
+        column.totalRuns);
+
+    if (column.completedAt > 0)
+      note = fmt::format("Completed {}", formatShortDate(column.completedAt));
   }
+
+  m_tooltipTitle->setText(title);
+  m_tooltipStats->setText(stats);
+  m_tooltipNote->setString(note.c_str());
 
   // ! --- Layout, top to bottom --- !
-  const float padding = 5.f;
-  const float firstLineHeight = 10.f;
-  const float lineHeight = 9.f;
-  const float hintHeight = 7.f;
-
-  float width = m_tooltipHint->getScaledContentWidth();
-  float height = padding * 2 + hintHeight;
-
-  for (std::size_t i = 0; i < m_tooltipLines.size(); ++i)
+  struct Row
   {
-    auto *label = m_tooltipLines[i];
-    const bool visible = i < lines.size();
+    CCNode *node;
+    float width;
+    float height;
+  };
 
-    label->setVisible(visible);
+  const bool withHint = m_selectedRun < 0;
+  std::vector<Row> rows = {
+      {m_tooltipTitle, m_tooltipTitle->getContentWidth(), 10.f},
+      {m_tooltipStats, m_tooltipStats->getContentWidth(), 9.f},
+  };
 
-    if (!visible)
-      continue;
+  m_tooltipNote->setVisible(!note.empty());
+  if (!note.empty())
+    rows.push_back({m_tooltipNote, m_tooltipNote->getScaledContentWidth(), 8.f});
 
-    label->setText(lines[i]);
-    width = std::max(width, label->getContentWidth());
-    height += i == 0 ? firstLineHeight : lineHeight;
+  m_tooltipHint->setVisible(withHint);
+  if (withHint)
+    rows.push_back({m_tooltipHint, m_tooltipHint->getScaledContentWidth(), 8.f});
+
+  const float padding = 5.f;
+  float width = 0.f;
+  float height = padding * 2;
+
+  for (auto const &row : rows)
+  {
+    width = std::max(width, row.width);
+    height += row.height;
   }
 
   width += padding * 2;
 
   float y = height - padding;
 
-  for (std::size_t i = 0; i < lines.size(); ++i)
+  for (auto const &row : rows)
   {
-    const float line = i == 0 ? firstLineHeight : lineHeight;
-    m_tooltipLines[i]->setPosition({padding, y - line / 2});
-    y -= line;
+    row.node->setPosition({padding, y - row.height / 2});
+    y -= row.height;
   }
 
-  m_tooltipHint->setPosition({padding, padding + hintHeight / 2});
   m_tooltipBg->setSize({width, height});
   m_tooltip->setContentSize({width, height});
 

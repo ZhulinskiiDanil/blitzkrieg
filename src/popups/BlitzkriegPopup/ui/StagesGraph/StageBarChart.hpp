@@ -66,7 +66,10 @@ private:
   RectNode *m_segmentHighlight = nullptr;
   CCNode *m_tooltip = nullptr;
   RectNode *m_tooltipBg = nullptr;
-  std::vector<UILabel *> m_tooltipLines;
+  // Range or stage, the numbers, then a dimmed note and the click hint
+  UILabel *m_tooltipTitle = nullptr;
+  UILabel *m_tooltipStats = nullptr;
+  CCLabelBMFont *m_tooltipNote = nullptr;
   CCLabelBMFont *m_tooltipHint = nullptr;
   CCMenu *m_hitMenu = nullptr;
 

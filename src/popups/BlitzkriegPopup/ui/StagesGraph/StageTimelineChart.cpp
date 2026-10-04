@@ -130,7 +130,7 @@ bool StageTimelineChart::init(const CCSize &size)
   m_tooltipStats = createLabel("", .26f, 0.f);
   m_tooltip->addChild(m_tooltipStats);
 
-  m_tooltipHint = CCLabelBMFont::create("Click to open in Stage Browser", "bigFont.fnt");
+  m_tooltipHint = CCLabelBMFont::create("Click to open", "bigFont.fnt");
   m_tooltipHint->setScale(.2f);
   m_tooltipHint->setOpacity(130);
   m_tooltipHint->setAnchorPoint({0.f, .5f});
