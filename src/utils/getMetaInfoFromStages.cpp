@@ -10,7 +10,7 @@ StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
   int currStageTotalRanges = 0;
   int currStageCompletedRanges = 0;
   auto currentStage = getFirstUncheckedStage(stages);
-  std::vector<Stage> *consideredStages = new std::vector<Stage>();
+  std::vector<Stage *> consideredStages = getConsideredStages(stages);
 
   if (currentStage)
   {
@@ -28,26 +28,13 @@ StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
     }
   }
 
-  for (auto &stage : stages)
+  for (auto *stage : consideredStages)
   {
-    bool stageConsidered = false;
-
-    // A stage is considered if it has at least one range with consider == true
-    for (auto &range : stage.ranges)
-      if (range.consider)
-        stageConsidered = true;
-
-    if (stageConsidered)
-      consideredStages->push_back(stage);
+    total++;
 
     // A stage is completed if it is considered and has all ranges deep checked
-    if (stageConsidered)
-    {
-      total++;
-
-      if (isStageDeepChecked(stage))
-        completed++;
-    }
+    if (isStageDeepChecked(*stage))
+      completed++;
   }
 
   return {
@@ -59,6 +46,26 @@ StageMetaInfo getMetaInfoFromStages(std::vector<Stage> &stages)
       currStageCompletedRanges,
       currentStage,
       consideredStages};
+}
+
+bool isStageConsidered(Stage const &stage)
+{
+  for (auto const &range : stage.ranges)
+    if (range.consider)
+      return true;
+
+  return false;
+}
+
+std::vector<Stage *> getConsideredStages(std::vector<Stage> &stages)
+{
+  std::vector<Stage *> res;
+
+  for (auto &stage : stages)
+    if (isStageConsidered(stage))
+      res.push_back(&stage);
+
+  return res;
 }
 
 float getStagePlaytime(Stage *stage)

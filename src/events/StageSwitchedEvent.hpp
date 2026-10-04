@@ -6,12 +6,9 @@
 
 using namespace geode::prelude;
 
-class StageSwitchedEvent : public Event<StageSwitchedEvent, bool(int totalStages, Stage *currentStage)>
+// stageIndex is the index among considered stages, totalStages is their count
+class StageSwitchedEvent : public Event<StageSwitchedEvent, bool(int stageIndex, int totalStages, Stage *stage)>
 {
-protected:
-  int m_totalStages;
-  Stage *m_currentStage;
-
 public:
   using Event::Event;
 };

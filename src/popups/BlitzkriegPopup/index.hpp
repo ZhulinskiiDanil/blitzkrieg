@@ -44,13 +44,17 @@ private:
   bool m_isFirstLaunch = true;
   float m_tabButtonsGap = 0.f;
 
-  CCNode *m_profilesListNode;
-  CCNode *m_currentStageNode;
-  CCNode *m_currentStageGraphNode;
-  CCNode *m_helpNode;
-  CCLabelBMFont *m_currentStageTitleLabel;
-  UILabel *m_totalStatLabel;
-  StageListLayer *m_stageList;
+  CCNode *m_profilesListNode = nullptr;
+  CCNode *m_currentStageNode = nullptr;
+  CCNode *m_currentStageGraphNode = nullptr;
+  CCNode *m_helpNode = nullptr;
+  CCLabelBMFont *m_currentStageTitleLabel = nullptr;
+  UILabel *m_totalStatLabel = nullptr;
+  RectNode *m_stageProgressFill = nullptr;
+  float m_stageProgressWidth = 0.f;
+  // The stat line shrinks to stay left of the filter buttons
+  float m_totalStatMaxWidth = 0.f;
+  StageListLayer *m_stageList = nullptr;
 
   geode::comm::ListenerHandle m_stageChangedListener;
   geode::comm::ListenerHandle m_stageRangesChangedListener;
@@ -64,7 +68,11 @@ private:
   void drawStagesGraph();
   void drawNewsSection();
 
-  void drawCurrentStageTitle(std::vector<Stage> &stages, UIPadding padding);
+  void drawCurrentStageTitle(UIPadding padding);
+  // Thin bar of completed runs of the shown stage, right above the list
+  void drawStageProgressBar(CCPoint const &origin, float width);
+  // stageIndex is the index among considered stages
+  void updateStageHeader(int stageIndex, int totalStages, Stage *stage);
 
   bool init(GJGameLevel *);
 
@@ -73,6 +81,7 @@ private:
   void activateTab(NavTabButton *btnToActivate, bool animate = true);
   void onToggleSort(CCObject *sender);
   void onToggleVisability(CCObject *sender);
+  void onOpenProfiles(CCObject *sender);
 
   ~BlitzkriegPopup()
   {
