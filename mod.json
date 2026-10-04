@@ -243,6 +243,24 @@
         "A",
         "Q"
       ]
+    },
+    "developer-settings": {
+      "type": "title",
+      "name": "Developer"
+    },
+    "debug-mode": {
+      "type": "bool",
+      "name": "Debug mode",
+      "description": "Write detailed diagnostic logs, such as how each run is assigned to a range. Useful for bug reports.",
+      "default": false
+    },
+    "debug-actions": {
+      "type": "button",
+      "name": "Debug logs",
+      "description": "Logs are saved to the <cy>geode/logs</c> folder. Send the newest <cy>.log</c> file when reporting a bug.",
+      "buttons": {
+        "open-logs-folder": "Open Logs Folder"
+      }
     }
   }
 }
