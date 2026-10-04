@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
@@ -51,6 +52,8 @@ private:
   CCNode *m_helpNode = nullptr;
   StageHeader *m_stageHeader = nullptr;
   StageListLayer *m_stageList = nullptr;
+  // Stage to open when the Stage Browser is drawn, set by the Stage Graph
+  std::optional<int> m_requestedStageIndex;
 
   geode::comm::ListenerHandle m_stageChangedListener;
   geode::comm::ListenerHandle m_stageRangesChangedListener;
@@ -77,6 +80,7 @@ private:
   void onToggleSort(CCObject *sender);
   void onToggleVisability(CCObject *sender);
   void onOpenProfiles(CCObject *sender);
+  void openStageInBrowser(int stageIndex);
 
   ~BlitzkriegPopup()
   {

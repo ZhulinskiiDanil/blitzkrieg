@@ -2,6 +2,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/loader/Event.hpp>
 #include <array>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -91,8 +92,12 @@ private:
   void onStageDot(CCObject *);
 
 public:
-  static StageListLayer *create(GJGameLevel *level, const CCSize &contentSize);
-  bool init(GJGameLevel *level, const CCSize &contentSize);
+  // initialIndex opens a given stage, by default the stage the player is on
+  static StageListLayer *create(
+      GJGameLevel *level,
+      const CCSize &contentSize,
+      std::optional<int> initialIndex = std::nullopt);
+  bool init(GJGameLevel *level, const CCSize &contentSize, std::optional<int> initialIndex);
 
   // keepScroll keeps the distance from the top of each page
   void reload(bool keepScroll = false);
