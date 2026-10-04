@@ -62,10 +62,29 @@ namespace
         std::replace(note.begin(), note.end(), '\n', ' ');
         std::replace(note.begin(), note.end(), '\r', ' ');
 
+        // In characters, not bytes
         constexpr std::size_t maxLength = 42;
+        std::size_t length = 0;
 
-        if (note.size() > maxLength)
-            note = note.substr(0, maxLength - 1) + "…";
+        for (std::size_t i = 0; i < note.size(); ++i)
+        {
+            // Continuation bytes of a UTF-8 character are not counted
+            if ((static_cast<unsigned char>(note[i]) & 0xC0) == 0x80)
+                continue;
+
+            if (length == maxLength)
+            {
+                // Cut on a character boundary, bitmap fonts have no ellipsis glyph
+                note.erase(i);
+
+                while (!note.empty() && note.back() == ' ')
+                    note.pop_back();
+
+                return note + "...";
+            }
+
+            ++length;
+        }
 
         return note;
     }
@@ -74,11 +93,12 @@ namespace
 StageRangeCell *StageRangeCell::create(
     Range *range,
     GJGameLevel *level,
-    const CCSize &cellSize)
+    const CCSize &cellSize,
+    std::optional<bool> expanded)
 {
     auto *ret = new StageRangeCell();
 
-    if (ret && ret->init(range, level, cellSize))
+    if (ret && ret->init(range, level, cellSize, expanded))
     {
         ret->autorelease();
         return ret;
@@ -91,7 +111,8 @@ StageRangeCell *StageRangeCell::create(
 bool StageRangeCell::init(
     Range *range,
     GJGameLevel *level,
-    const CCSize &cellSize)
+    const CCSize &cellSize,
+    std::optional<bool> expanded)
 {
     if (!CCLayer::init() || !range)
         return false;
@@ -108,7 +129,7 @@ bool StageRangeCell::init(
     m_to = range->to;
     m_id = range->id;
     m_checked = range->checked;
-    m_isExpanded = expandedByDefault;
+    m_isExpanded = expanded.value_or(expandedByDefault);
     m_level = level;
 
     if (auto *profile =
@@ -876,28 +897,54 @@ void StageRangeCell::updateMetaContent()
 
 void StageRangeCell::onToggle(CCObject *)
 {
+    // CCMenuItemToggler flips itself right after this callback.
+    // Keep the current state on screen, applyChecked shows the new one
+    if (m_checkbox)
+        m_checkbox->toggle(m_checked);
+
     if (
         m_disabled ||
         !m_level ||
         m_id.empty())
+        return;
+
+    if (!m_checked)
     {
-        if (m_checkbox)
-            m_checkbox->toggle(m_checked);
+        // Next frame, after the toggler has flipped
+        geode::queueInMainThread(
+            [self = Ref<StageRangeCell>(this)]()
+            {
+                self->applyChecked(true);
+            });
 
         return;
     }
+
+    // Unchecking resets the clear data, so it is confirmed first
+    geode::createQuickPopup(
+        "Uncheck Run",
+        "Its <cy>first clear</c>, <cy>clear attempts</c> and "
+        "<cy>completion date</c> will be <cr>reset</c>.",
+        "Cancel",
+        "Uncheck",
+        [self = Ref<StageRangeCell>(this)](auto, bool confirmed)
+        {
+            if (confirmed)
+                self->applyChecked(false);
+        });
+}
+
+void StageRangeCell::applyChecked(bool checked)
+{
+    if (m_id.empty())
+        return;
 
     auto *profile =
         GlobalStore::get()->getProfileByLevel(
             m_level);
 
     if (!profile)
-    {
-        if (m_checkbox)
-            m_checkbox->toggle(m_checked);
-
         return;
-    }
 
     Range *matchedRange = nullptr;
 
@@ -910,12 +957,9 @@ void StageRangeCell::onToggle(CCObject *)
 
             matchedRange = &range;
 
-            const bool newChecked =
-                !range.checked;
+            range.checked = checked;
 
-            range.checked = newChecked;
-
-            if (!newChecked && range.consider)
+            if (!checked && range.consider)
             {
                 range.attemptsToComplete = 0;
                 range.firstRunFrom = 0;
@@ -926,7 +970,7 @@ void StageRangeCell::onToggle(CCObject *)
             }
 
             if (
-                newChecked &&
+                checked &&
                 range.completionCounter <= 0)
             {
                 range.completionCounter = 1;
@@ -950,17 +994,14 @@ void StageRangeCell::onToggle(CCObject *)
     }
 
     if (!matchedRange)
-    {
-        if (m_checkbox)
-            m_checkbox->toggle(m_checked);
-
         return;
-    }
 
     m_range = matchedRange;
     m_checked = matchedRange->checked;
 
-    m_checkbox->toggle(m_checked);
+    // Called outside the toggler callback, so the state is set directly
+    if (m_checkbox)
+        m_checkbox->toggle(!m_checked);
 
     updateTextColors();
     updateStatusBadge();

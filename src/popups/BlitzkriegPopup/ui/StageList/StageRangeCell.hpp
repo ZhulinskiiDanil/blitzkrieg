@@ -5,6 +5,7 @@
 #include <fmt/core.h>
 
 #include <functional>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -59,6 +60,9 @@ private:
   void onToggle(CCObject *sender);
   void onExpand(CCObject *);
 
+  // Writes the new state to the profile and notifies the list
+  void applyChecked(bool checked);
+
   void updateTextColors();
   void updateStatusBadge();
   void updateMetaContent();
@@ -73,17 +77,20 @@ private:
   void onFinishTableAnimation();
 
 public:
+  // expanded overrides the "expand-progress-by-default" setting
   static StageRangeCell *create(
       Range *range,
       GJGameLevel *level,
-      const CCSize &cellSize);
+      const CCSize &cellSize,
+      std::optional<bool> expanded = std::nullopt);
 
   std::function<void(StageRangeCell *target, bool expanded)> onExpandChanged;
 
   bool init(
       Range *range,
       GJGameLevel *level,
-      const CCSize &cellSize);
+      const CCSize &cellSize,
+      std::optional<bool> expanded);
 
   void setExpanded(bool expanded, bool triggerCallback = false);
   void setDisabled(bool disabled);
@@ -91,4 +98,5 @@ public:
   bool isDisabled() const { return m_disabled; }
   bool isChecked() const { return m_checked; }
   bool isExpanded() const { return m_isExpanded; }
+  std::string const &getRangeId() const { return m_id; }
 };

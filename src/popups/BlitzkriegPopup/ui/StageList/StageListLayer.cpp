@@ -1,12 +1,31 @@
 #include "StageListLayer.hpp"
 
+#include <algorithm>
+
+namespace
+{
+  // First keybind of a keybind setting, empty when nothing is bound
+  std::string getKeybindText(const char *settingKey)
+  {
+    auto keybinds = Mod::get()->getSettingValue<std::vector<Keybind>>(settingKey);
+    return keybinds.empty() ? std::string() : keybinds.front().toString();
+  }
+
+  // Bottom center of a node in the space of another node
+  CCPoint getBottomCenterIn(CCNode *node, CCNode *space)
+  {
+    const auto box = node->boundingBox();
+    const auto world = node->getParent()->convertToWorldSpace({box.getMidX(), box.getMinY()});
+    return space->convertToNodeSpace(world);
+  }
+}
+
 StageListLayer *StageListLayer::create(
-    Stage *stage,
     GJGameLevel *level,
     const CCSize &contentSize)
 {
   auto *ret = new StageListLayer();
-  if (ret && ret->init(stage, level, contentSize))
+  if (ret && ret->init(level, contentSize))
   {
     ret->autorelease();
     return ret;
@@ -16,8 +35,8 @@ StageListLayer *StageListLayer::create(
   return nullptr;
 }
 
+// Pages are built by the first reload(), after the options are set
 bool StageListLayer::init(
-    Stage *stage,
     GJGameLevel *level,
     const CCSize &contentSize)
 {
@@ -26,52 +45,20 @@ bool StageListLayer::init(
 
   m_contentSize = contentSize;
   m_level = level;
-  m_profile = GlobalStore::get()->getProfileByLevel(m_level);
-  m_stage = stage;
 
-  float padding = 5.f;
+  if (auto *profile = GlobalStore::get()->getProfileByLevel(m_level))
+    m_profileId = profile->id;
+
   this->setContentSize(m_contentSize);
 
-  m_listenerStageRangesChanged = StageRangesChangedEvent().listen(
-      [this]()
-      {
-        m_profile = GlobalStore::get()->getProfileByLevel(m_level);
-        m_uncheckedStage = getFirstUncheckedStage(*m_profile);
+  const int total = getStagesCount();
 
-        return ListenerResult::Propagate;
-      });
-
-  if (m_stage && m_profile)
-  {
-    m_stages = &m_profile->data.stages;
-    m_currentIndex = m_stage->stage - 1;
-    m_uncheckedStage = getFirstUncheckedStage(*m_profile);
-  }
-
-  if (!m_stages || m_stages->size() <= 0)
+  if (total == 0)
     return true;
 
-  // ! --- ScrollLayer --- !
-  m_scroll = ScrollLayer::create(contentSize);
-  m_scroll->setContentSize({contentSize.width - padding * 2, contentSize.height - padding * 2});
-  m_scroll->setPosition({padding, padding});
-  m_scroll->m_contentLayer->setLayout(
-      ColumnLayout::create()
-          ->setAxisAlignment(AxisAlignment::End)
-          ->setAutoGrowAxis(m_scroll->getContentHeight()));
-
-  this->addChild(m_scroll);
-
-  // ! --- Scroll Content --- !
-  m_content = CCLayer::create();
-  m_content->setLayout(
-      ColumnLayout::create()
-          ->setGap(5)
-          ->setAxisReverse(true)
-          ->setAxisAlignment(AxisAlignment::End)
-          ->setAutoGrowAxis(m_scroll->getContentHeight())
-          ->ignoreInvisibleChildren(false));
-  m_scroll->m_contentLayer->addChild(m_content);
+  // ! --- Start from the stage the player is on, or the last one --- !
+  const int progressIndex = getProgressIndex();
+  m_stageIndex = progressIndex >= 0 ? progressIndex : total - 1;
 
   // ! --- BG --- !
   RectNode *bg = RectNode::create(contentSize, ccc4FFromccc4B({30, 30, 30, 255}), 8);
@@ -80,6 +67,23 @@ bool StageListLayer::init(
   bg->setPosition(contentSize / 2);
   bg->setZOrder(-1);
   this->addChild(bg);
+
+  // ! --- Pages --- !
+  auto stencil = CCLayerColor::create({255, 255, 255, 255}, contentSize.width, contentSize.height);
+  m_clip = CCClippingNode::create(stencil);
+  this->addChild(m_clip);
+
+  for (auto &page : m_pages)
+  {
+    page = StagePage::create(m_level, contentSize, &m_expandedRanges);
+    page->onGoToCurrentStage = [this]()
+    {
+      const int progress = getProgressIndex();
+      switchStage(progress >= 0 ? progress : getStagesCount() - 1);
+    };
+
+    m_clip->addChild(page);
+  }
 
   // ! --- Borders --- !
   auto borders = ListBorders::create();
@@ -95,43 +99,19 @@ bool StageListLayer::init(
 
   this->addChild(borders);
 
-  // ! --- Lock --- !
-  m_lockSpr = CCSprite::createWithSpriteFrameName("GJ_lock_001.png");
-  m_lockSpr->setPosition(m_contentSize / 2);
-  m_lockSpr->setScale(4.f);
-  m_lockSpr->setOpacity(255 * .25f);
-  m_lockSpr->setVisible(false);
+  // ! --- Navigation --- !
+  createArrows();
+  createDots();
 
-  this->addChild(m_lockSpr);
-
-  m_listener = StagesChangedEvent().listen(
+  // ! --- Events --- !
+  // A run was checked or unchecked: lock states, the hidden runs counter,
+  // stage dots and the header follow the new progress
+  m_listenerStageRangesChanged = StageRangesChangedEvent().listen(
       [this]()
       {
-        reload();
+        queueReload();
         return ListenerResult::Propagate;
       });
-  m_listenerUpdateScrollLayout = UpdateScrollLayoutEvent().listen(
-      [this]()
-      {
-        if (m_content)
-        {
-          const auto arr = m_content->getChildren();
-          CCObject *child;
-
-          for (auto child : CCArrayExt(arr))
-          {
-            if (auto obj = typeinfo_cast<CCLayer *>(child))
-              obj->updateLayout();
-          };
-
-          m_content->updateLayout();
-          m_scroll->m_contentLayer->updateLayout();
-        }
-
-        return ListenerResult::Propagate;
-      });
-
-  reload();
 
   this->addEventListener(
       KeybindSettingPressedEventV3(Mod::get(), "prev-stage-keybind"),
@@ -152,109 +132,234 @@ bool StageListLayer::init(
   return true;
 }
 
-void StageListLayer::reload()
+// ! --- Data --- !
+
+Profile *StageListLayer::getProfile() const
 {
-  if (!m_stage || !m_content)
-    return;
+  if (m_profileId.empty())
+    return nullptr;
 
-  drawArrows();
+  return GlobalStore::get()->getProfileById(m_profileId);
+}
 
-  bool isDisabled = m_uncheckedStage && m_stage->stage > m_uncheckedStage->stage;
-  m_content->removeAllChildrenWithCleanup(true);
-  m_lockSpr->setVisible(isDisabled);
+std::vector<Stage *> StageListLayer::getStages() const
+{
+  auto *profile = getProfile();
 
-  const float gap = 5.f;
-  const float cellHeight = 30.f;
-  const float totalWidth = m_scroll->getContentWidth();
-  const float cellWidth = (totalWidth - gap) / 2.f;
+  if (!profile)
+    return {};
 
-  std::vector<Range *> visibleRanges;
+  return getConsideredStages(profile->data.stages);
+}
 
-  for (auto &r : m_stage->ranges)
-    if (r.consider)
-    {
-      if (m_hideCompletedRuns && (r.checked && !m_stage->checked))
-        continue;
+Stage *StageListLayer::getCurrentStage() const
+{
+  const auto stages = getStages();
 
-      visibleRanges.push_back(&r);
-    }
+  if (m_stageIndex < 0 || m_stageIndex >= static_cast<int>(stages.size()))
+    return nullptr;
 
-  size_t total = visibleRanges.size();
-  std::sort(visibleRanges.begin(), visibleRanges.end(),
-            [this](const Range *a, const Range *b)
-            {
-              if (m_sortBy == StageListSortBy::ASC)
-                return a->from < b->from;
-              else
-                return a->from > b->from;
-            });
+  return stages[m_stageIndex];
+}
 
-  for (size_t i = 0; i < total;)
+int StageListLayer::getProgressIndex() const
+{
+  const auto stages = getStages();
+
+  for (std::size_t i = 0; i < stages.size(); ++i)
   {
-    size_t remaining = total - i;
-    size_t cellsInRow = std::min<size_t>(2, remaining);
-
-    auto row = CCLayer::create();
-    row->setLayout(
-        RowLayout::create()
-            ->setGap(5)
-            ->setAutoScale(false)
-            ->setCrossAxisLineAlignment(AxisAlignment::End));
-    row->setContentSize({totalWidth, cellHeight});
-
-    for (size_t j = 0; j < cellsInRow; ++j, ++i)
-    {
-      auto &range = *visibleRanges[i];
-      CCSize cellSize = (cellsInRow == 1)
-                            ? CCSize(totalWidth, cellHeight)
-                            : CCSize(cellWidth, cellHeight);
-
-      auto cell = StageRangeCell::create(&range, m_level, cellSize);
-      cell->ignoreAnchorPointForPosition(true);
-      cell->setDisabled(isDisabled);
-
-      cell->onExpandChanged = [this, row](StageRangeCell *target, bool expanded)
-      {
-        for (auto &anotherCell : CCArrayExt<StageRangeCell *>(row->getChildren()))
-          if (anotherCell != target)
-            anotherCell->setExpanded(expanded);
-
-        row->updateLayout();
-      };
-
-      row->addChild(cell);
-      row->updateLayout();
-    }
-
-    m_content->addChild(row);
+    if (!isStageDeepChecked(*stages[i]))
+      return static_cast<int>(i);
   }
 
-  m_content->updateLayout();
-  m_scroll->m_contentLayer->updateLayout();
-  scrollToTop();
+  return -1;
+}
+
+// ! --- Pages --- !
+
+void StageListLayer::buildPage(StagePage *page, int stageIndex, bool keepScroll)
+{
+  if (!page)
+    return;
+
+  const auto stages = getStages();
+  const bool inRange = stageIndex >= 0 && stageIndex < static_cast<int>(stages.size());
+
+  page->build(
+      inRange ? stages[stageIndex] : nullptr,
+      stageIndex,
+      getProgressIndex(),
+      m_options,
+      keepScroll);
+}
+
+void StageListLayer::layoutPages()
+{
+  const float width = m_contentSize.width;
+
+  for (int i = 0; i < 3; ++i)
+  {
+    auto *page = m_pages[i];
+
+    if (!page)
+      continue;
+
+    page->stopAllActions();
+    page->setPosition({(i - 1) * width, 0.f});
+    // Hidden pages do not take touches
+    page->setVisible(i == 1);
+  }
+}
+
+void StageListLayer::reload(bool keepScroll)
+{
+  if (!m_pages[1])
+    return;
+
+  if (m_isSliding)
+  {
+    // Pages are moving, rebuild each one in place
+    for (auto *page : m_pages)
+    {
+      if (page->getStageIndex() >= 0)
+        buildPage(page, page->getStageIndex(), true);
+    }
+  }
+  else
+  {
+    for (int i = 0; i < 3; ++i)
+    {
+      const int stageIndex = m_stageIndex - 1 + i;
+      const bool keep = keepScroll && m_pages[i]->getStageIndex() == stageIndex;
+
+      buildPage(m_pages[i], stageIndex, keep);
+    }
+
+    layoutPages();
+  }
+
+  updateNavigation();
+}
+
+void StageListLayer::queueReload()
+{
+  if (m_reloadQueued)
+    return;
+
+  m_reloadQueued = true;
+
+  geode::queueInMainThread(
+      [self = Ref<StageListLayer>(this)]()
+      {
+        self->m_reloadQueued = false;
+
+        // The popup was closed before the reload ran
+        if (!self->getParent())
+          return;
+
+        self->reload(true);
+        self->sendStageSwitched();
+      });
 }
 
 void StageListLayer::setSortBy(StageListSortBy sortBy)
 {
-  m_sortBy = sortBy;
+  m_options.sortBy = sortBy;
 }
 
 void StageListLayer::setRunsVisabilityForCompleted(bool visible)
 {
-  m_hideCompletedRuns = visible;
+  m_options.hideCompletedRuns = visible;
 }
 
-void StageListLayer::drawArrows()
-{
-  const auto stagesMetaInfo = getMetaInfoFromStages(*m_stages);
+// ! --- Switching --- !
 
-  if (!m_stages || !m_stage || stagesMetaInfo.consideredStages->empty() || stagesMetaInfo.consideredStages->size() < 2)
+void StageListLayer::sendStageSwitched()
+{
+  StageSwitchedEvent().send(m_stageIndex, getStagesCount(), getCurrentStage());
+}
+
+void StageListLayer::switchStage(int index)
+{
+  const int total = getStagesCount();
+
+  if (total < 2 || !m_pages[1])
     return;
 
-  if (m_buttonMenuLeft)
-    m_buttonMenuLeft->removeFromParentAndCleanup(true);
-  if (m_buttonMenuRight)
-    m_buttonMenuRight->removeFromParentAndCleanup(true);
+  // A new switch finishes the previous slide right away
+  if (m_isSliding)
+  {
+    this->stopAllActions();
+    onSlideFinished();
+  }
+
+  index = std::clamp(index, 0, total - 1);
+
+  if (index == m_stageIndex)
+    return;
+
+  const int direction = index > m_stageIndex ? 1 : -1;
+  auto *outgoing = m_pages[1];
+  auto *incoming = m_pages[1 + direction];
+
+  // A jump over several stages puts the target into the neighbor slot first
+  if (incoming->getStageIndex() != index)
+    buildPage(incoming, index, false);
+
+  m_stageIndex = index;
+  m_slideDirection = direction;
+  m_isSliding = true;
+
+  sendStageSwitched();
+  updateNavigation();
+
+  const float width = m_contentSize.width;
+
+  incoming->setVisible(true);
+  incoming->setPosition({direction * width, 0.f});
+
+  outgoing->runAction(CCEaseInOut::create(
+      CCMoveTo::create(SLIDE_DURATION, {-direction * width, 0.f}), 2.f));
+  incoming->runAction(CCEaseInOut::create(
+      CCMoveTo::create(SLIDE_DURATION, {0.f, 0.f}), 2.f));
+
+  this->runAction(CCSequence::createWithTwoActions(
+      CCDelayTime::create(SLIDE_DURATION),
+      CCCallFunc::create(this, callfunc_selector(StageListLayer::onSlideFinished))));
+}
+
+void StageListLayer::onSlideFinished()
+{
+  if (!m_isSliding)
+    return;
+
+  m_isSliding = false;
+
+  // Rotate the ring, the incoming page becomes the current one
+  if (m_slideDirection > 0)
+    std::rotate(m_pages.begin(), m_pages.begin() + 1, m_pages.end());
+  else
+    std::rotate(m_pages.begin(), m_pages.begin() + 2, m_pages.end());
+
+  // Neighbors that do not show the right stage are rebuilt,
+  // the page that just left keeps its scroll when it is still a neighbor
+  for (int i : {0, 2})
+  {
+    const int stageIndex = m_stageIndex - 1 + i;
+
+    if (m_pages[i]->getStageIndex() != stageIndex)
+      buildPage(m_pages[i], stageIndex, false);
+  }
+
+  layoutPages();
+}
+
+// ! --- Navigation --- !
+
+void StageListLayer::createArrows()
+{
+  if (getStagesCount() < 2)
+    return;
 
   // ! --- Left Arrow Button --- !
   m_buttonMenuLeft = CCMenu::create();
@@ -269,14 +374,12 @@ void StageListLayer::drawArrows()
           ->setCrossAxisAlignment(AxisAlignment::Center));
 
   const auto btnLeftSpr = CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png");
-  m_buttonLeft = CCMenuItemSpriteExtra::create(
+  auto buttonLeft = CCMenuItemSpriteExtra::create(
       btnLeftSpr,
       this,
       menu_selector(StageListLayer::onPrevStageBtn));
-  m_buttonMenuLeft->addChild(m_buttonLeft);
+  m_buttonMenuLeft->addChild(buttonLeft);
   m_buttonMenuLeft->updateLayout();
-
-  m_buttonMenuLeft->setVisible(m_stage->stage > 1);
   this->addChild(m_buttonMenuLeft);
 
   // ! --- Right Arrow Button --- !
@@ -289,21 +392,141 @@ void StageListLayer::drawArrows()
 
   const auto btnRightSpr = CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png");
   btnRightSpr->setFlipX(true);
-  m_buttonRight = CCMenuItemSpriteExtra::create(
+  auto buttonRight = CCMenuItemSpriteExtra::create(
       btnRightSpr,
       this,
       menu_selector(StageListLayer::onNextStageBtn));
-  m_buttonMenuRight->addChild(m_buttonRight);
+  m_buttonMenuRight->addChild(buttonRight);
   m_buttonMenuRight->updateLayout();
-
-  m_buttonMenuRight->setVisible(m_stage->stage < stagesMetaInfo.total);
   this->addChild(m_buttonMenuRight);
+
+  // ! --- Keybind hints under the arrows --- !
+  auto createKeybindLabel = [this](const char *settingKey, CCNode *button)
+  {
+    const auto text = getKeybindText(settingKey);
+
+    if (text.empty())
+      return static_cast<CCLabelBMFont *>(nullptr);
+
+    auto label = CCLabelBMFont::create(text.c_str(), "bigFont.fnt");
+    label->setScale(.3f);
+    label->setOpacity(120);
+    label->setAnchorPoint({.5f, 1.f});
+    label->setPosition(getBottomCenterIn(button, this) - CCPoint{0.f, 3.f});
+    this->addChild(label);
+
+    return label;
+  };
+
+  m_keybindLabelLeft = createKeybindLabel("prev-stage-keybind", buttonLeft);
+  m_keybindLabelRight = createKeybindLabel("next-stage-keybind", buttonRight);
 }
 
-void StageListLayer::scrollToTop()
+void StageListLayer::createDots()
 {
-  if (m_scroll)
-    m_scroll->scrollToTop();
+  const int total = getStagesCount();
+
+  if (total < 2)
+    return;
+
+  m_dotsMenu = CCMenu::create();
+  m_dotsMenu->setPosition({m_contentSize.width / 2, DOTS_OFFSET_Y});
+  this->addChild(m_dotsMenu);
+
+  for (int i = 0; i < total; ++i)
+  {
+    StageDot dot;
+
+    // The dot is thin, the button around it is easier to hit
+    dot.hitArea = CCNode::create();
+    dot.rect = RectNode::create({1.f, 1.f});
+    dot.hitArea->ignoreAnchorPointForPosition(true);
+    dot.hitArea->addChild(dot.rect);
+
+    dot.item = CCMenuItemSpriteExtra::create(
+        dot.hitArea,
+        this,
+        menu_selector(StageListLayer::onStageDot));
+    dot.item->setTag(i);
+    dot.item->m_scaleMultiplier = 1.15f;
+
+    m_dotsMenu->addChild(dot.item);
+    m_dots.push_back(dot);
+  }
+}
+
+// Arrows and dots are created once and only updated here,
+// so their buttons are never destroyed inside their own callbacks
+void StageListLayer::updateNavigation()
+{
+  const int total = getStagesCount();
+
+  // ! --- Arrows --- !
+  const bool hasPrev = m_stageIndex > 0;
+  const bool hasNext = m_stageIndex + 1 < total;
+
+  if (m_buttonMenuLeft)
+    m_buttonMenuLeft->setVisible(hasPrev);
+  if (m_keybindLabelLeft)
+    m_keybindLabelLeft->setVisible(hasPrev);
+  if (m_buttonMenuRight)
+    m_buttonMenuRight->setVisible(hasNext);
+  if (m_keybindLabelRight)
+    m_keybindLabelRight->setVisible(hasNext);
+
+  // ! --- Dots --- !
+  if (m_dots.empty())
+    return;
+
+  constexpr float DOT_WIDTH = 8.f;
+  constexpr float ACTIVE_DOT_WIDTH = 18.f;
+  constexpr float DOT_HEIGHT = 4.f;
+  constexpr float DOT_GAP = 4.f;
+  constexpr float HIT_HEIGHT = 14.f;
+
+  const ccColor3B completedColor{99, 224, 110};
+  const ccColor3B progressColor{255, 220, 90};
+  const ccColor3B lockedColor{90, 90, 90};
+
+  const int count = static_cast<int>(m_dots.size());
+  const int progressIndex = getProgressIndex();
+
+  // Many stages shrink the dots to fit under the list
+  const float naturalWidth = (count - 1) * (DOT_WIDTH + DOT_GAP) + ACTIVE_DOT_WIDTH + DOT_GAP;
+  const float maxWidth = m_contentSize.width - 40.f;
+  const float scale = std::min(1.f, maxWidth / naturalWidth);
+
+  float x = -naturalWidth * scale / 2;
+
+  for (int i = 0; i < count; ++i)
+  {
+    auto &dot = m_dots[i];
+    const bool isShown = i == m_stageIndex;
+
+    const float width = (isShown ? ACTIVE_DOT_WIDTH : DOT_WIDTH) * scale;
+    const float slotWidth = width + DOT_GAP * scale;
+    const CCSize hitSize{slotWidth, HIT_HEIGHT};
+
+    ccColor3B color = lockedColor;
+
+    if (progressIndex < 0 || i < progressIndex)
+      color = completedColor;
+    else if (i == progressIndex)
+      color = progressColor;
+
+    auto color4F = ccc4FFromccc3B(color);
+    color4F.a = isShown ? 1.f : .55f;
+
+    dot.rect->setSize({width, DOT_HEIGHT});
+    dot.rect->setColor(color4F);
+    dot.rect->setPosition({(slotWidth - width) / 2, (HIT_HEIGHT - DOT_HEIGHT) / 2});
+
+    dot.hitArea->setContentSize(hitSize);
+    dot.item->setContentSize(hitSize);
+    dot.item->setPosition({x + slotWidth / 2, 0.f});
+
+    x += slotWidth;
+  }
 }
 
 void StageListLayer::onPrevStageBtn(CCObject *sender)
@@ -316,32 +539,18 @@ void StageListLayer::onNextStageBtn(CCObject *sender)
   onNextStage();
 }
 
+void StageListLayer::onStageDot(CCObject *sender)
+{
+  if (auto *node = typeinfo_cast<CCNode *>(sender))
+    switchStage(node->getTag());
+}
+
 void StageListLayer::onPrevStage()
 {
-  const auto stagesMetaInfo = getMetaInfoFromStages(*m_stages);
-
-  if (!m_stages || stagesMetaInfo.consideredStages->empty() || stagesMetaInfo.consideredStages->size() < 2)
-    return;
-
-  if (m_currentIndex > 0)
-    --m_currentIndex;
-
-  m_stage = &stagesMetaInfo.consideredStages->at(m_currentIndex);
-  StageSwitchedEvent().send(stagesMetaInfo.consideredStages->size(), m_stage);
-  reload();
+  switchStage(m_stageIndex - 1);
 }
 
 void StageListLayer::onNextStage()
 {
-  const auto stagesMetaInfo = getMetaInfoFromStages(*m_stages);
-
-  if (!m_stages || stagesMetaInfo.consideredStages->empty() || stagesMetaInfo.consideredStages->size() < 2)
-    return;
-
-  if (m_currentIndex + 1 < static_cast<int>(stagesMetaInfo.total))
-    ++m_currentIndex;
-
-  m_stage = &stagesMetaInfo.consideredStages->at(m_currentIndex);
-  StageSwitchedEvent().send(stagesMetaInfo.consideredStages->size(), m_stage);
-  reload();
+  switchStage(m_stageIndex + 1);
 }

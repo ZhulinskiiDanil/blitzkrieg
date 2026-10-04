@@ -14,6 +14,7 @@
 #include <Geode/cocos/extensions/GUI/CCControlExtension/CCScale9Sprite.h>
 
 #include "./ui/StageList/StageListLayer.hpp"
+#include "./ui/StageList/StageHeader.hpp"
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
 #include "./ui/StagesGraph/StagesGraphLayer.hpp"
 #include "./ui/News/NewsLayer.hpp"
@@ -44,13 +45,12 @@ private:
   bool m_isFirstLaunch = true;
   float m_tabButtonsGap = 0.f;
 
-  CCNode *m_profilesListNode;
-  CCNode *m_currentStageNode;
-  CCNode *m_currentStageGraphNode;
-  CCNode *m_helpNode;
-  CCLabelBMFont *m_currentStageTitleLabel;
-  UILabel *m_totalStatLabel;
-  StageListLayer *m_stageList;
+  CCNode *m_profilesListNode = nullptr;
+  CCNode *m_currentStageNode = nullptr;
+  CCNode *m_currentStageGraphNode = nullptr;
+  CCNode *m_helpNode = nullptr;
+  StageHeader *m_stageHeader = nullptr;
+  StageListLayer *m_stageList = nullptr;
 
   geode::comm::ListenerHandle m_stageChangedListener;
   geode::comm::ListenerHandle m_stageRangesChangedListener;
@@ -64,7 +64,10 @@ private:
   void drawStagesGraph();
   void drawNewsSection();
 
-  void drawCurrentStageTitle(std::vector<Stage> &stages, UIPadding padding);
+  // From the left edge to the filter buttons, right above the list
+  void drawStageHeader(CCPoint const &origin, float width);
+  // stageIndex is the index among considered stages
+  void updateStageHeader(int stageIndex, int totalStages, Stage *stage);
 
   bool init(GJGameLevel *);
 
@@ -73,6 +76,7 @@ private:
   void activateTab(NavTabButton *btnToActivate, bool animate = true);
   void onToggleSort(CCObject *sender);
   void onToggleVisability(CCObject *sender);
+  void onOpenProfiles(CCObject *sender);
 
   ~BlitzkriegPopup()
   {

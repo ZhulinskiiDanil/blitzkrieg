@@ -117,23 +117,17 @@ void BlitzkriegPopup::drawProfilesList()
 
 void BlitzkriegPopup::drawCurrentStage()
 {
-  UIPadding padding{55.f, 10.f, 10.f, 10.f}; // top, bottom, left, right
+  // The bottom padding leaves room for the stage dots
+  UIPadding padding{55.f, 24.f, 10.f, 10.f}; // top, bottom, left, right
 
   auto profile = GlobalStore::get()->getProfileByLevel(m_levelId);
-  Stage *currentStage = nullptr;
-
-  if (profile && !profile->data.stages.empty())
-  {
-    currentStage = getFirstUncheckedStage(*profile);
-    if (!currentStage)
-    {
-      currentStage = &profile->data.stages.back();
-    }
-  }
 
   const auto contentSize = CCSize(
       m_size.width - padding.left - padding.right,
       m_size.height - padding.top - padding.bottom);
+
+  // The header of a previous draw is gone with its container
+  m_stageHeader = nullptr;
 
   m_currentStageNode = CCNode::create();
   m_currentStageNode->setID("blitzkrieg-popup-current-stage"_spr);
@@ -147,15 +141,22 @@ void BlitzkriegPopup::drawCurrentStage()
     auto errorLabel = CCLabelBMFont::create("Attach your profile first", "bigFont.fnt");
     errorLabel->setScale(.75f);
     errorLabel->setOpacity(255 * .6f);
-    errorLabel->setPosition(m_size / 2);
+    errorLabel->setPosition(m_size / 2 + CCPoint{0.f, 15.f});
 
     m_currentStageNode->addChild(errorLabel);
+
+    auto profilesBtn = CCMenuItemSpriteExtra::create(
+        ButtonSprite::create("Open Profiles"),
+        this,
+        menu_selector(BlitzkriegPopup::onOpenProfiles));
+    profilesBtn->setScale(.7f);
+    profilesBtn->m_baseScale = .7f;
+
+    auto profilesMenu = CCMenu::createWithItem(profilesBtn);
+    profilesMenu->setPosition(m_size / 2 - CCPoint{0.f, 15.f});
+    m_currentStageNode->addChild(profilesMenu);
     return;
   }
-
-  // ! --- Title --- !
-  drawCurrentStageTitle(
-      profile->data.stages, padding);
 
   auto filterButtonsMenu = CCMenu::create();
   filterButtonsMenu->setLayout(RowLayout::create()
@@ -189,9 +190,15 @@ void BlitzkriegPopup::drawCurrentStage()
   m_currentStageNode->addChild(filterButtonsMenu);
   filterButtonsMenu->updateLayout();
 
+  // ! --- Header --- !
+  const CCPoint headerOrigin{padding.left + 2.f, m_size.height - padding.top + 4.f};
+  const float filtersLeft = filterButtonsMenu->boundingBox().getMinX();
+
+  drawStageHeader(headerOrigin, filtersLeft - 10.f - headerOrigin.x);
+
   // ! --- StageListLayer --- !
   auto stageListContentSize = CCSize(contentSize.width, contentSize.height);
-  m_stageList = StageListLayer::create(currentStage, m_level, stageListContentSize);
+  m_stageList = StageListLayer::create(m_level, stageListContentSize);
   m_stageList->setPosition({padding.left, padding.bottom});
 
   m_stageList->setSortBy(!sortBtnCheckbox->isToggled() ? StageListSortBy::ASC : StageListSortBy::DESC);
@@ -199,6 +206,11 @@ void BlitzkriegPopup::drawCurrentStage()
   m_stageList->reload();
 
   m_currentStageNode->addChild(m_stageList);
+
+  updateStageHeader(
+      m_stageList->getStageIndex(),
+      m_stageList->getStagesCount(),
+      m_stageList->getCurrentStage());
 }
 
 void BlitzkriegPopup::drawStagesGraph()
@@ -369,8 +381,12 @@ void BlitzkriegPopup::onToggleSort(CCObject *sender)
   if (auto checkbox = typeinfo_cast<CCMenuItemToggler *>(sender))
   {
     bool isToggled = checkbox->isToggled();
-    m_stageList->setSortBy(isToggled ? StageListSortBy::ASC : StageListSortBy::DESC);
-    m_stageList->reload();
+
+    if (m_stageList)
+    {
+      m_stageList->setSortBy(isToggled ? StageListSortBy::ASC : StageListSortBy::DESC);
+      m_stageList->reload(true);
+    }
 
     Mod::get()->setSavedValue("sort-stage-runs-asc-enabled", isToggled);
   }
@@ -381,89 +397,76 @@ void BlitzkriegPopup::onToggleVisability(CCObject *sender)
   if (auto checkbox = typeinfo_cast<CCMenuItemToggler *>(sender))
   {
     bool isToggled = checkbox->isToggled();
-    m_stageList->setRunsVisabilityForCompleted(isToggled);
-    m_stageList->reload();
+
+    if (m_stageList)
+    {
+      m_stageList->setRunsVisabilityForCompleted(isToggled);
+      m_stageList->reload(true);
+    }
 
     Mod::get()->setSavedValue("hide-stage-completed-runs-enabled", isToggled);
   }
 }
 
-void BlitzkriegPopup::drawCurrentStageTitle(std::vector<Stage> &stages, UIPadding padding)
+void BlitzkriegPopup::drawStageHeader(CCPoint const &origin, float width)
 {
-  auto metaInfo = getMetaInfoFromStages(stages);
+  m_stageHeader = StageHeader::create(std::max(width, 100.f));
+  m_stageHeader->setPosition(origin);
+  m_currentStageNode->addChild(m_stageHeader);
 
-  std::string title = fmt::format(
-      "Stage: {}/{}",
-      geode::utils::numToString(std::min(metaInfo.completed + 1, metaInfo.total)),
-      geode::utils::numToString(metaInfo.total));
+  // StageListLayer sends it on stage switch and when runs are checked
+  m_stageChangedListener = StageSwitchedEvent().listen(
+      [this](int stageIndex, int totalStages, Stage *stage)
+      {
+        updateStageHeader(stageIndex, totalStages, stage);
+        return ListenerResult::Propagate;
+      });
+}
 
-  m_currentStageTitleLabel = CCLabelBMFont::create(
-      title.c_str(),
-      "goldFont.fnt");
-  m_currentStageTitleLabel->setPosition({padding.left + 5, m_size.height - padding.top / 2 + 5}); // n - 2.5f
-  m_currentStageTitleLabel->setAnchorPoint({0, 0.5});
-  m_currentStageNode->addChild(m_currentStageTitleLabel);
+void BlitzkriegPopup::updateStageHeader(int stageIndex, int totalStages, Stage *stage)
+{
+  if (!m_stageHeader)
+    return;
 
-  std::string statLabel = "";
+  auto *profile = GlobalStore::get()->getProfileByLevel(m_levelId);
 
-  float totalAttempts = 0;
-  float totalTimePlayed = 0;
+  // ! --- Status: stages before the first unchecked one are done, after it locked --- !
+  auto status = StageHeaderStatus::Completed;
+  std::string currentRangeId;
 
-  Stage *currentStage = metaInfo.currentStage;
-
-  if (!currentStage && !stages.empty())
-    currentStage = &stages.back();
-
-  if (currentStage)
+  if (profile)
   {
-    totalAttempts = getStageAttempts(currentStage);
-    totalTimePlayed = getStagePlaytime(currentStage);
+    const auto stages = getConsideredStages(profile->data.stages);
+
+    for (std::size_t i = 0; i < stages.size(); ++i)
+    {
+      if (isStageDeepChecked(*stages[i]))
+        continue;
+
+      const int progressIndex = static_cast<int>(i);
+
+      if (stageIndex == progressIndex)
+        status = StageHeaderStatus::Current;
+      else if (stageIndex > progressIndex)
+        status = StageHeaderStatus::Locked;
+
+      break;
+    }
+
+    currentRangeId = GlobalStore::get()->getCurrentRange(profile->id).id;
   }
 
-  statLabel += fmt::format("{} <small>Attempts</small> ", totalAttempts);
-  statLabel += formatTimePlayed(totalTimePlayed);
+  m_stageHeader->setStage(stageIndex, stage, status, currentRangeId);
+}
 
-  m_totalStatLabel = UILabel::create(statLabel, "bigFont.fnt", .4f);
-  m_totalStatLabel->setPosition({padding.left + 6, m_size.height - padding.top / 2 - 15});
-  m_totalStatLabel->setAnchorPoint({0, 0.5});
-  m_currentStageNode->addChild(m_totalStatLabel);
-
-  m_stageChangedListener = StageSwitchedEvent().listen(
-      [this](int totalStages, Stage *currentStage)
+void BlitzkriegPopup::onOpenProfiles(CCObject *)
+{
+  // The button lives in the content that the tab switch removes
+  geode::queueInMainThread(
+      [self = Ref<BlitzkriegPopup>(this)]()
       {
-        if (!m_currentStageTitleLabel || !m_totalStatLabel)
-          return ListenerResult::Stop;
-
-        std::string newTitle = fmt::format(
-            "Stage: {}/{}",
-            geode::utils::numToString(currentStage->stage),
-            geode::utils::numToString(totalStages));
-
-        m_currentStageTitleLabel->setString(newTitle.c_str());
-
-        std::string stat = "";
-
-        float totalAttempts = 0;
-        float totalTimePlayed = 0;
-
-        if (currentStage)
-        {
-          for (const auto &range : currentStage->ranges)
-          {
-            if (range.consider)
-            {
-              totalAttempts += range.attempts;
-              totalTimePlayed += range.timePlayed;
-            }
-          }
-        }
-
-        stat += fmt::format("{} <small>Attempts</small> ", totalAttempts);
-        stat += formatTimePlayed(totalTimePlayed);
-
-        m_totalStatLabel->setText(stat);
-
-        return ListenerResult::Propagate;
+        if (!self->tabButtons.empty())
+          self->activateTab(self->tabButtons.front());
       });
 }
 
