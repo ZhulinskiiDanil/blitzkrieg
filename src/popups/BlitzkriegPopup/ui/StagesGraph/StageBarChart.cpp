@@ -17,8 +17,9 @@ namespace
   const ccColor4B AVERAGE_LINE_COLOR{255, 255, 255, 110};
   const ccColor4B PLACEHOLDER_COLOR{110, 110, 110, 64};
 
-  // Every other run is a bit darker, so neighbours stay apart
-  constexpr float ALTERNATE_RUN_SHADE = .82f;
+  // Dark and see-through, a hint of where one run ends
+  const ccColor4B DIVIDER_COLOR{0, 0, 0, 90};
+  constexpr float DIVIDER_WIDTH = .3f;
 
   // UILabel has no height, it is centered on its y
   UILabel *createLabel(std::string const &text, float scale, float anchorX)
@@ -29,33 +30,18 @@ namespace
     return label;
   }
 
-  ccColor4F getRunColor(StageGraphColumn const &column, StageGraphRun const &run, std::size_t index)
+  ccColor4F getStatusColor(StageGraphStatus status)
   {
-    ccColor3B color = UPCOMING_COLOR;
-    float alpha = .6f;
-
-    if (run.checked)
+    switch (status)
     {
-      color = COMPLETED_COLOR;
-      alpha = 1.f;
+    case StageGraphStatus::Completed:
+      return ccc4FFromccc3B(COMPLETED_COLOR);
+    case StageGraphStatus::Current:
+      return ccc4FFromccc3B(CURRENT_COLOR);
+    default:
+      // Upcoming stages stay in the background
+      return premultiplyAlpha({UPCOMING_COLOR.r / 255.f, UPCOMING_COLOR.g / 255.f, UPCOMING_COLOR.b / 255.f, .6f});
     }
-    else if (column.status != StageGraphStatus::Upcoming)
-    {
-      color = CURRENT_COLOR;
-      alpha = 1.f;
-    }
-
-    auto result = ccc4FFromccc3B(color);
-    result.a = alpha;
-
-    if (index % 2 == 1)
-    {
-      result.r *= ALTERNATE_RUN_SHADE;
-      result.g *= ALTERNATE_RUN_SHADE;
-      result.b *= ALTERNATE_RUN_SHADE;
-    }
-
-    return premultiplyAlpha(result);
   }
 
   // Steps that read well as time, in seconds
@@ -273,7 +259,7 @@ int StageBarChart::getRunAt(int column, float y) const
     // The gap above a run belongs to it
     if (segment.toHeight > 0.f &&
         y >= segment.toY &&
-        y < segment.toY + segment.toHeight + SEGMENT_GAP)
+        y < segment.toY + segment.toHeight)
       return static_cast<int>(i);
   }
 
@@ -415,16 +401,16 @@ void StageBarChart::createBars()
     bar.placeholder->setPosition({x, 0.f});
     m_barsNode->addChild(bar.placeholder);
 
-    for (std::size_t run = 0; run < column.runs.size(); ++run)
-    {
-      BarSegment segment;
-      segment.node = RectNode::create({m_barWidth, 1.f}, getRunColor(column, column.runs[run], run), 0.f);
-      segment.node->setPosition({x, 0.f});
-      segment.node->setVisible(false);
-      m_barsNode->addChild(segment.node);
+    bar.x = x;
+    bar.bar = RectNode::create({m_barWidth, 1.f}, getStatusColor(column.status), 0.f);
+    bar.bar->setPosition({x, 0.f});
+    bar.bar->setVisible(false);
+    m_barsNode->addChild(bar.bar);
 
-      bar.segments.push_back(segment);
-    }
+    bar.dividers = CCDrawNode::create();
+    m_barsNode->addChild(bar.dividers);
+
+    bar.segments.resize(column.runs.size());
 
     m_bars.push_back(std::move(bar));
   }
@@ -439,14 +425,7 @@ void StageBarChart::retargetBars(bool fromZero)
     auto &bar = m_bars[i];
     const auto heights = getSegmentHeights(m_columns[i]);
 
-    // The top run has no gap above it
-    int top = -1;
-    for (std::size_t k = 0; k < heights.size(); ++k)
-    {
-      if (heights[k] > 0.f)
-        top = static_cast<int>(k);
-    }
-
+    bool empty = true;
     float y = 0.f;
 
     for (std::size_t k = 0; k < bar.segments.size(); ++k)
@@ -457,14 +436,13 @@ void StageBarChart::retargetBars(bool fromZero)
       segment.fromY = fromZero ? 0.f : segment.y;
       segment.fromHeight = fromZero ? 0.f : segment.height;
       segment.toY = y;
-      segment.toHeight = static_cast<int>(k) == top || height <= SEGMENT_GAP
-                             ? height
-                             : height - SEGMENT_GAP;
+      segment.toHeight = height;
 
+      empty = empty && height <= 0.f;
       y += height;
     }
 
-    bar.placeholder->setVisible(top < 0);
+    bar.placeholder->setVisible(empty);
 
     // Bars grow from the baseline one after another
     bar.delay = fromZero ? std::min(.15f, i * .012f) : 0.f;
@@ -485,21 +463,36 @@ void StageBarChart::applyBars(float time)
   for (auto &bar : m_bars)
   {
     const float progress = easeOutCubic(std::clamp((time - bar.delay) / TWEEN_DURATION, 0.f, 1.f));
+    float total = 0.f;
 
     for (auto &segment : bar.segments)
     {
       segment.y = segment.fromY + (segment.toY - segment.fromY) * progress;
       segment.height = segment.fromHeight + (segment.toHeight - segment.fromHeight) * progress;
+      total = std::max(total, segment.y + segment.height);
+    }
 
-      const bool visible = segment.height > .05f;
-      segment.node->setVisible(visible);
+    const bool visible = total > .05f;
+    bar.bar->setVisible(visible);
+    bar.dividers->clear();
 
-      if (!visible)
+    if (!visible)
+      continue;
+
+    bar.bar->setRadius(std::min({2.f, m_barWidth / 2, total / 2}));
+    bar.bar->setSize({m_barWidth, total});
+
+    // ! A divider at the bottom of every run but the first one
+    for (auto const &segment : bar.segments)
+    {
+      if (segment.height <= .05f || segment.y <= .05f)
         continue;
 
-      segment.node->setRadius(std::min({2.f, m_barWidth / 2, segment.height / 2}));
-      segment.node->setSize({m_barWidth, segment.height});
-      segment.node->setPositionY(segment.y);
+      bar.dividers->drawSegment(
+          {bar.x, segment.y},
+          {bar.x + m_barWidth, segment.y},
+          DIVIDER_WIDTH,
+          premultiplyAlpha(ccc4FFromccc4B(DIVIDER_COLOR)));
     }
   }
 }
@@ -674,7 +667,7 @@ void StageBarChart::updateHighlight()
   if (segment.toHeight <= 0.f)
     return;
 
-  m_segmentHighlight->setRadius(std::min({2.f, m_barWidth / 2, segment.toHeight / 2}));
+  m_segmentHighlight->setRadius(std::min({1.f, m_barWidth / 2, segment.toHeight / 2}));
   m_segmentHighlight->setSize({m_barWidth, segment.toHeight});
   m_segmentHighlight->setPosition({
       getColumnCenterX(static_cast<float>(m_selected)) - m_barWidth / 2,

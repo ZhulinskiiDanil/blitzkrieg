@@ -10,7 +10,7 @@
 
 using namespace geode::prelude;
 
-// Bar chart of attempts or playtime per stage, every bar is split into its runs.
+// Bar chart of attempts or playtime per stage, dividers split every bar into its runs.
 // Hover (desktop) or tap selects a column, a click on the selected column opens it.
 class StageBarChart : public CCLayer
 {
@@ -25,15 +25,13 @@ private:
   static constexpr float MAX_BAR_WIDTH = 22.f;
   static constexpr int GRID_LINES = 4;
   // Runs thinner than this are merged into a neighbour
-  static constexpr float MIN_SEGMENT_HEIGHT = 1.5f;
-  static constexpr float SEGMENT_GAP = .5f;
+  static constexpr float MIN_SEGMENT_HEIGHT = 3.f;
   static constexpr float PLACEHOLDER_HEIGHT = 3.f;
   static constexpr float TWEEN_DURATION = .3f;
 
   // One run of a bar, animated from `from` to `to`
   struct BarSegment
   {
-    RectNode *node = nullptr;
     // What is drawn right now
     float y = 0.f;
     float height = 0.f;
@@ -47,6 +45,10 @@ private:
   {
     // Same order as StageGraphColumn::runs
     std::vector<BarSegment> segments;
+    // One solid bar in the stage color, the runs are split by thin dividers on top
+    RectNode *bar = nullptr;
+    CCDrawNode *dividers = nullptr;
+    float x = 0.f;
     RectNode *placeholder = nullptr;
     float delay = 0.f;
   };
