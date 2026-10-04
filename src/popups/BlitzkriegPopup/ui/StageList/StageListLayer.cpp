@@ -22,10 +22,11 @@ namespace
 
 StageListLayer *StageListLayer::create(
     GJGameLevel *level,
-    const CCSize &contentSize)
+    const CCSize &contentSize,
+    std::optional<int> initialIndex)
 {
   auto *ret = new StageListLayer();
-  if (ret && ret->init(level, contentSize))
+  if (ret && ret->init(level, contentSize, initialIndex))
   {
     ret->autorelease();
     return ret;
@@ -38,7 +39,8 @@ StageListLayer *StageListLayer::create(
 // Pages are built by the first reload(), after the options are set
 bool StageListLayer::init(
     GJGameLevel *level,
-    const CCSize &contentSize)
+    const CCSize &contentSize,
+    std::optional<int> initialIndex)
 {
   if (!CCLayer::init())
     return false;
@@ -56,9 +58,13 @@ bool StageListLayer::init(
   if (total == 0)
     return true;
 
-  // ! --- Start from the stage the player is on, or the last one --- !
+  // ! --- Start from the requested stage, the stage the player is on, or the last one --- !
   const int progressIndex = getProgressIndex();
-  m_stageIndex = progressIndex >= 0 ? progressIndex : total - 1;
+
+  if (initialIndex)
+    m_stageIndex = std::clamp(*initialIndex, 0, total - 1);
+  else
+    m_stageIndex = progressIndex >= 0 ? progressIndex : total - 1;
 
   // ! --- BG --- !
   RectNode *bg = RectNode::create(contentSize, ccc4FFromccc4B({30, 30, 30, 255}), 8);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
@@ -55,6 +56,8 @@ private:
   // The stat line shrinks to stay left of the filter buttons
   float m_totalStatMaxWidth = 0.f;
   StageListLayer *m_stageList = nullptr;
+  // Stage to open when the Stage Browser is drawn, set by the Stage Graph
+  std::optional<int> m_requestedStageIndex;
 
   geode::comm::ListenerHandle m_stageChangedListener;
   geode::comm::ListenerHandle m_stageRangesChangedListener;
@@ -82,6 +85,7 @@ private:
   void onToggleSort(CCObject *sender);
   void onToggleVisability(CCObject *sender);
   void onOpenProfiles(CCObject *sender);
+  void openStageInBrowser(int stageIndex);
 
   ~BlitzkriegPopup()
   {
