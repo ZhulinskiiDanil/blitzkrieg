@@ -15,8 +15,8 @@ class StagesGraphLayer : public CCLayer
 {
 private:
   static constexpr float SIDE_PADDING = 10.f;
-  // Below the tabs
-  static constexpr float TOP_PADDING = 47.f;
+  // Tabs sit on the popup border, same top padding as the profiles tab
+  static constexpr float TOP_PADDING = 12.f;
   static constexpr float BOTTOM_PADDING = 8.f;
   static constexpr float SUMMARY_HEIGHT = 30.f;
   static constexpr float CONTROLS_HEIGHT = 16.f;

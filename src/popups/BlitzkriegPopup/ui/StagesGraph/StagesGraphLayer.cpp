@@ -310,14 +310,14 @@ void StagesGraphLayer::drawLegend(float y, bool withBestLine)
       for (int i = 0; i < 2; ++i)
       {
         const float x = swatchRight - swatchSize + i * 4.f;
-        dash->drawSegment({x, y}, {x + 2.f, y}, .5f, ccc4FFromccc4B(it->color));
+        dash->drawSegment({x, y}, {x + 2.f, y}, .5f, premultiplyAlpha(ccc4FFromccc4B(it->color)));
       }
 
       this->addChild(dash);
     }
     else
     {
-      auto swatch = RectNode::create({swatchSize, swatchSize}, ccc4FFromccc4B(it->color), 1.5f);
+      auto swatch = RectNode::create({swatchSize, swatchSize}, premultiplyAlpha(ccc4FFromccc4B(it->color)), 1.5f);
       swatch->setPosition({swatchRight - swatchSize, y - swatchSize / 2});
       this->addChild(swatch);
     }

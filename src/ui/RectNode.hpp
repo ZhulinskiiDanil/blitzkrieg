@@ -3,6 +3,12 @@
 #include <Geode/Geode.hpp>
 using namespace geode::prelude;
 
+// CCDrawNode blends with GL_ONE, so a translucent RectNode color must be premultiplied
+inline ccColor4F premultiplyAlpha(ccColor4F color)
+{
+  return {color.r * color.a, color.g * color.a, color.b * color.a, color.a};
+}
+
 class RectNode : public CCLayer
 {
 private:

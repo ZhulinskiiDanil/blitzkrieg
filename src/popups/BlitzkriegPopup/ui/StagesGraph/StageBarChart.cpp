@@ -107,7 +107,7 @@ bool StageBarChart::init(const CCSize &size)
   this->addChild(m_plot);
 
   // ! --- Layers, bottom to top --- !
-  m_highlight = RectNode::create({1.f, 1.f}, ccc4FFromccc4B({255, 255, 255, 14}), 3);
+  m_highlight = RectNode::create({1.f, 1.f}, premultiplyAlpha(ccc4FFromccc4B({255, 255, 255, 10})), 3);
   m_highlight->setVisible(false);
   m_plot->addChild(m_highlight, 0);
 
@@ -129,7 +129,7 @@ bool StageBarChart::init(const CCSize &size)
   m_tooltip->setVisible(false);
   m_plot->addChild(m_tooltip, 5);
 
-  m_tooltipBg = RectNode::create({1.f, 1.f}, ccc4FFromccc4B({10, 10, 10, 235}), 4);
+  m_tooltipBg = RectNode::create({1.f, 1.f}, premultiplyAlpha(ccc4FFromccc4B({10, 10, 10, 235})), 4);
   m_tooltip->addChild(m_tooltipBg);
 
   m_tooltipLabel = createLabel("", .3f, 0.f);
@@ -291,7 +291,7 @@ void StageBarChart::drawBars(bool animate)
 
     const float radius = std::min({2.f, barWidth / 2, barHeight / 2});
 
-    auto bar = RectNode::create({barWidth, std::max(barHeight, .01f)}, color, radius);
+    auto bar = RectNode::create({barWidth, std::max(barHeight, .01f)}, premultiplyAlpha(color), radius);
     bar->setAnchorPoint({0.f, 0.f});
     bar->setPosition({getColumnCenterX(static_cast<float>(i)) - barWidth / 2, 0.f});
     bar->setVisible(barHeight > 0.f);
@@ -329,7 +329,7 @@ void StageBarChart::drawBestLine()
         {x, y},
         {x, std::min(y + dash, m_plotSize.height)},
         .5f,
-        ccc4FFromccc4B(BEST_LINE_COLOR));
+        premultiplyAlpha(ccc4FFromccc4B(BEST_LINE_COLOR)));
   }
 
   m_bestNode->addChild(line);
