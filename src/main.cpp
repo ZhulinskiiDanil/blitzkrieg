@@ -14,13 +14,10 @@
 #include "./store/GlobalStore.hpp"
 #include "./store/SessionStore/SessionStore.hpp"
 #include "./store/BackupStore/BackupStore.hpp"
+#include "./store/Achievements/Achievements.hpp"
+#include "./utils/playSfx.hpp"
 
 using namespace geode::prelude;
-
-namespace BKGlobal
-{
-    FMOD::ChannelGroup *sfxGroup = nullptr;
-}
 
 $on_mod(Loaded)
 {
@@ -82,16 +79,7 @@ public:
         if (!PlayLayer::init(level, p1, p2))
             return false;
 
-        auto engine = FMODAudioEngine::get();
-        auto system = engine->m_system;
-
-        if (BKGlobal::sfxGroup == nullptr)
-            system->createChannelGroup("blitzkrieg", &BKGlobal::sfxGroup);
-
-        if (Mod::get()->getSettingValue<bool>("ignore-built-in-game-sfx"))
-            BKGlobal::sfxGroup->setVolume(Mod::get()->getSettingValue<float>("sfx-volume"));
-        else
-            BKGlobal::sfxGroup->setVolume(GameManager::get()->m_sfxVolume * Mod::get()->getSettingValue<float>("sfx-volume"));
+        prepareSfx();
 
         m_fields->runClosedListener = RunClosedEvent().listen(
             [this](float from, float to, Profile *profile, Range *closedRange, Stage *closedStage)
@@ -228,8 +216,18 @@ public:
         {
             int res = GlobalStore::get()->checkRun(currentProfile->id, timePlayedForAttempt, &report);
 
-            if (res != -1)
-                playSound(!!res);
+            // ! An achievement or the daily goal takes over the run sound
+            const auto unlocked = updateAchievements(*currentProfile);
+
+            if (!unlocked.empty())
+                GlobalStore::get()->updateProfile(*currentProfile);
+
+            const bool goalReached = checkDailyGoalReached();
+
+            if (!unlocked.empty() || goalReached)
+                playSfx(SfxKind::Achievement);
+            else if (res != -1)
+                playSfx(res ? SfxKind::Stage : SfxKind::Progress);
         }
 
         SessionStore::get()->add(std::move(report));
@@ -279,68 +277,6 @@ public:
             this->getCurrentPercent());
 
         checkRun();
-    }
-
-    static FMOD_RESULT fmodNonBlockCallback(FMOD_SOUND *a, FMOD_RESULT b)
-    {
-        log::info("nonBlockCallback called");
-
-        // auto engine = FMODAudioEngine::get();
-        // auto system = engine->m_system;
-        // FMOD::Channel *playingChannel;
-
-        return FMOD_OK;
-    }
-
-    void playSound(bool isStage)
-    {
-        if (Mod::get()->getSettingValue<bool>("disable-run-notification-sound"))
-            return;
-
-        FMOD_RESULT result;
-        FMOD::Sound *sound;
-        FMOD_CREATESOUNDEXINFO exinfo;
-        FMOD::Channel *playingChannel;
-
-        memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
-        exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
-        exinfo.nonblockcallback = BlitzPlayLayer::fmodNonBlockCallback;
-
-        if (Mod::get()->getSettingValue<bool>("ignore-built-in-game-sfx"))
-            BKGlobal::sfxGroup->setVolume(Mod::get()->getSettingValue<float>("sfx-volume"));
-        else
-            BKGlobal::sfxGroup->setVolume(GameManager::get()->m_sfxVolume * Mod::get()->getSettingValue<float>("sfx-volume"));
-
-        auto engine = FMODAudioEngine::get();
-        auto system = engine->m_system;
-
-        auto sfxStagePath = Mod::get()->getSettingValue<std::filesystem::path>("sfx-stage-path");
-        auto sfxProgressPath = Mod::get()->getSettingValue<std::filesystem::path>("sfx-progress-path");
-        auto sfxUseCustomSounds = Mod::get()->getSettingValue<bool>("sfx-use-custom-sounds");
-
-        auto stageSound = !sfxStagePath.empty() &&
-                                  sfxUseCustomSounds
-                              ? geode::utils::string::pathToString(sfxStagePath)
-                              : fmt::format("{}/stage_complete.mp3", Mod::get()->getResourcesDir());
-        auto progressSound = !sfxProgressPath.empty() &&
-                                     sfxUseCustomSounds
-                                 ? geode::utils::string::pathToString(sfxProgressPath)
-                                 : fmt::format("{}/progress_complete.mp3", Mod::get()->getResourcesDir());
-
-        std::string actualSound = isStage ? stageSound : progressSound;
-        result = system->createStream(actualSound.c_str(), FMOD_DEFAULT | FMOD_LOOP_OFF | FMOD_2D | FMOD_LOWMEM, &exinfo, &sound);
-
-        if (result != FMOD_OK)
-        {
-            log::info("FMOD ERROR {}", (int)result);
-        }
-        else
-        {
-            auto res = system->playSound(sound, BKGlobal::sfxGroup, false, &playingChannel);
-
-            if (res != FMOD_OK)
-                log::info("FMOD ERROR STARTING AUDIO: {}", (int)res);
-        }
     }
 
     void resetState()

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctime>
 #include <map>
 #include <string>
 #include <vector>
@@ -22,4 +23,6 @@ struct ProfileData
   std::vector<Stage> stages;
   // Keyed by local date, YYYY-MM-DD
   std::map<std::string, DayStats> history;
+  // When each achievement was unlocked, keyed by its id
+  std::map<std::string, std::time_t> achievements;
 };

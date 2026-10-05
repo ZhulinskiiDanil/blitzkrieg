@@ -225,6 +225,30 @@
         ]
       }
     },
+    "sfx-achievement-path": {
+      "name": "Achievement SFX",
+      "type": "file",
+      "description": "Custom sound played when an achievement is unlocked or the daily goal is reached. The stage sound is used when it is empty.",
+      "enable-if": "sfx-use-custom-sounds",
+      "default": {
+        "android": "",
+        "mac": "",
+        "win": "",
+        "ios": ""
+      },
+      "control": {
+        "dialog": "open",
+        "filters": [
+          {
+            "files": [
+              "*.mp3",
+              "*.ogg"
+            ],
+            "description": "Sound Files"
+          }
+        ]
+      }
+    },
     "backups": {
       "type": "title",
       "name": "Backups"

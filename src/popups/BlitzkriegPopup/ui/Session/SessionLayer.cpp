@@ -86,9 +86,9 @@ bool SessionLayer::init(GJGameLevel *level, const CCSize &size)
   drawList(listTop);
   rebuildList(false);
 
-  applyView(Mod::get()->getSavedValue<std::string>(VIEW_SAVE_KEY, "attempts") == "days"
-                ? SessionView::Days
-                : SessionView::Attempts);
+  const auto savedView = Mod::get()->getSavedValue<std::string>(VIEW_SAVE_KEY, "attempts");
+
+  applyView(savedView == "days" ? SessionView::Days : SessionView::Attempts);
 
   m_sessionChangedListener = SessionChangedEvent().listen(
       [this]()

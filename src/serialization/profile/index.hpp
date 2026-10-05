@@ -224,6 +224,45 @@ struct matjson::Serialize<std::map<std::string, DayStats>>
   }
 };
 
+// ! --- Achievements ---- !
+// An array of unlocked achievements, older profiles have none
+template <>
+struct matjson::Serialize<std::map<std::string, std::time_t>>
+{
+  static geode::Result<std::map<std::string, std::time_t>> fromJson(matjson::Value const &value)
+  {
+    std::map<std::string, std::time_t> result;
+
+    if (!value.isArray())
+      return geode::Ok(result);
+
+    for (auto const &item : value)
+    {
+      const auto id = getOr<std::string>(item, "id", "");
+
+      if (!id.empty())
+        result[id] = getOr<std::time_t>(item, "unlockedAt", 0);
+    }
+
+    return geode::Ok(result);
+  }
+
+  static matjson::Value toJson(std::map<std::string, std::time_t> const &achievements)
+  {
+    auto arr = matjson::Value::array();
+
+    for (auto const &[id, unlockedAt] : achievements)
+    {
+      auto obj = matjson::Value::object();
+      obj["id"] = id;
+      obj["unlockedAt"] = unlockedAt;
+      arr.push(obj);
+    }
+
+    return arr;
+  }
+};
+
 // ! --- ProfileData ---- !
 template <>
 struct matjson::Serialize<ProfileData>
@@ -238,6 +277,8 @@ struct matjson::Serialize<ProfileData>
       pd.stages = arr.unwrap().as<std::vector<Stage>>().unwrap();
     if (auto arr = value.get("history"))
       pd.history = arr.unwrap().as<std::map<std::string, DayStats>>().unwrapOr(std::map<std::string, DayStats>{});
+    if (auto arr = value.get("achievements"))
+      pd.achievements = arr.unwrap().as<std::map<std::string, std::time_t>>().unwrapOr(std::map<std::string, std::time_t>{});
 
     return geode::Ok(pd);
   }
@@ -247,7 +288,8 @@ struct matjson::Serialize<ProfileData>
     auto obj = matjson::Value::object();
     obj["tags"] = pd.tags;       // Serialize<std::vector<int>>
     obj["stages"] = pd.stages;   // Serialize<std::vector<Stage>>
-    obj["history"] = pd.history; // Serialize<std::map<std::string, DayStats>>
+    obj["history"] = pd.history;           // Serialize<std::map<std::string, DayStats>>
+    obj["achievements"] = pd.achievements; // Serialize<std::map<std::string, std::time_t>>
     return obj;
   }
 };

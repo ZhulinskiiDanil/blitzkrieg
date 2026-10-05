@@ -18,6 +18,7 @@
 #include "./ui/StageList/StageHeader.hpp"
 #include "./ui/Session/SessionLayer.hpp"
 #include "./ui/Backups/BackupsLayer.hpp"
+#include "./ui/Goals/GoalsLayer.hpp"
 #include "./ui/ProfilesList/ProfilesListLayer.hpp"
 #include "./ui/StagesGraph/StagesGraphLayer.hpp"
 #include "./ui/News/NewsLayer.hpp"
@@ -53,6 +54,7 @@ private:
   CCNode *m_currentStageGraphNode = nullptr;
   CCNode *m_helpNode = nullptr;
   CCNode *m_sessionNode = nullptr;
+  CCNode *m_goalsNode = nullptr;
   CCNode *m_backupsNode = nullptr;
   StageHeader *m_stageHeader = nullptr;
   StageListLayer *m_stageList = nullptr;
@@ -72,6 +74,7 @@ private:
   void drawCurrentStage();
   void drawStagesGraph();
   void drawSession();
+  void drawGoals();
   void drawBackups();
   void drawNewsSection();
 

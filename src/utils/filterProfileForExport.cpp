@@ -19,6 +19,10 @@ Profile filterProfileForExport(
   if (!includeAttempts)
     filtered.data.history.clear();
 
+  // Achievements are progress
+  if (!includeProgression)
+    filtered.data.achievements.clear();
+
   for (auto &stage : filtered.data.stages)
   {
     if (!includeProgression)

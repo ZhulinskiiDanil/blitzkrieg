@@ -88,6 +88,8 @@ void BlitzkriegPopup::drawContent()
       drawStagesGraph();
     else if (btnId == "session-tab"_spr)
       drawSession();
+    else if (btnId == "goals-tab"_spr)
+      drawGoals();
     else if (btnId == "backups-tab"_spr)
       drawBackups();
     else if (btnId == "news-tab"_spr)
@@ -258,6 +260,19 @@ void BlitzkriegPopup::drawSession()
   contentContainers.push_back(m_sessionNode);
 }
 
+void BlitzkriegPopup::drawGoals()
+{
+  m_goalsNode = CCNode::create();
+  m_goalsNode->setID("blitzkrieg-popup-goals"_spr);
+  m_goalsNode->setTag(7);
+
+  // ! --- GoalsLayer --- !
+  m_goalsNode->addChild(GoalsLayer::create(m_level, m_size));
+
+  m_mainLayer->addChild(m_goalsNode);
+  contentContainers.push_back(m_goalsNode);
+}
+
 void BlitzkriegPopup::drawBackups()
 {
   m_backupsNode = CCNode::create();
@@ -308,6 +323,7 @@ void BlitzkriegPopup::drawTabs()
       {"stage-browser-tab"_spr, "Stage Browser", "tab-icon-stages.png"_spr},
       {"stage-graph-tab"_spr, "Stage Graph", "tab-icon-graph.png"_spr},
       {"session-tab"_spr, "Session", "tab-icon-session.png"_spr},
+      {"goals-tab"_spr, "Goals", "tab-icon-goals.png"_spr},
       {"backups-tab"_spr, "Backups", "tab-icon-backups.png"_spr},
       {"news-tab"_spr, "News", "tab-icon-news.png"_spr},
   };
