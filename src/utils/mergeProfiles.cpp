@@ -10,6 +10,8 @@ Profile mergeProfiles(
     result.id = oldProfile.id;
     result.profileName = oldProfile.profileName;
     result.data.tags = newProfile.data.tags;
+    // The days played stay with the profile, whatever its runs become
+    result.data.history = oldProfile.data.history;
     result.data.stages = mergeProfileStages(
         oldProfile.data.stages,
         newProfile.data.stages,

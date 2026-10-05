@@ -2,6 +2,7 @@
 #include "RunWindow.hpp"
 #include "../../utils/debugLog.hpp"
 #include "../../utils/getMetaInfoFromStages.hpp"
+#include "../../utils/dateKey.hpp"
 
 using namespace geode::prelude;
 
@@ -70,6 +71,14 @@ int GlobalStore::checkRun(
 
     return -1;
   }
+
+  // ! --- Today in the history, every checked attempt counts --- !
+  auto &today = currentProfile->data.history[getDateKey(std::time(nullptr))];
+  today.attempts++;
+  today.timePlayed += timePlayed;
+
+  if (runStart <= RunWindow::eps)
+    today.bestFromZero = std::max(today.bestFromZero, runEnd);
 
   Stage *targetStage = nullptr;
   Range *targetRange = nullptr;
@@ -432,6 +441,7 @@ int GlobalStore::checkRun(
 
     targetRange = statsRange;
     progressHasChecked = true;
+    today.runsPassed++;
 
     if (report)
     {
@@ -466,6 +476,7 @@ int GlobalStore::checkRun(
     {
       targetStage->checked = true;
       isStageClosed = true;
+      today.stagesClosed++;
 
       if (report && targetRange)
       {

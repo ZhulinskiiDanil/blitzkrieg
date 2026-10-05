@@ -15,6 +15,10 @@ Profile filterProfileForExport(
     filtered.discordWebhookForRunNotificationsEnabled = false;
   }
 
+  // The days are made of attempts
+  if (!includeAttempts)
+    filtered.data.history.clear();
+
   for (auto &stage : filtered.data.stages)
   {
     if (!includeProgression)

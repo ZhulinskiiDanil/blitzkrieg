@@ -6,7 +6,7 @@
 namespace
 {
   const ccColor4B ACCENT_COLOR{255, 0, 82, 255};
-  const ccColor4B BUTTON_COLOR{45, 45, 45, 255};
+  const ccColor4B BUTTON_COLOR{36, 36, 36, 255};
   const ccColor4B CHIP_COLOR{36, 36, 36, 255};
   const ccColor4B LIST_COLOR{30, 30, 30, 255};
 

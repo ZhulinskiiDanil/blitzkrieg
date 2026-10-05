@@ -11,11 +11,12 @@
 namespace
 {
   const ccColor4B ACCENT_COLOR{255, 0, 82, 255};
-  const ccColor4B BUTTON_COLOR{32, 32, 32, 255};
+  const ccColor4B BUTTON_COLOR{36, 36, 36, 255};
   const ccColor4B CHIP_COLOR{36, 36, 36, 255};
   const ccColor4B LIST_COLOR{30, 30, 30, 255};
 
   const char *LEVEL_FILTER_SAVE_KEY = "session-this-level-only";
+  const char *VIEW_SAVE_KEY = "session-view";
 
   bool isCounted(AttemptOutcome outcome)
   {
@@ -71,13 +72,23 @@ bool SessionLayer::init(GJGameLevel *level, const CCSize &size)
 
   m_thisLevelOnly = Mod::get()->getSavedValue<bool>(LEVEL_FILTER_SAVE_KEY, true);
 
-  // ! --- Layout, top to bottom --- !
+  // ! --- Layout, top to bottom: switch and buttons, then the view --- !
   const float controlsY = m_size.height - TOP_PADDING - CONTROLS_HEIGHT / 2;
-  const float listTop = controlsY - CONTROLS_HEIGHT / 2 - ROW_GAP;
+  const float summaryY = controlsY - CONTROLS_HEIGHT - 6.f;
+  const float listTop = summaryY - CONTROLS_HEIGHT / 2 - ROW_GAP;
 
-  drawControls(controlsY);
+  m_daysTop = controlsY - CONTROLS_HEIGHT / 2 - ROW_GAP;
+
+  m_attemptsNode = CCNode::create();
+  this->addChild(m_attemptsNode);
+
+  drawControls(controlsY, summaryY);
   drawList(listTop);
   rebuildList(false);
+
+  applyView(Mod::get()->getSavedValue<std::string>(VIEW_SAVE_KEY, "attempts") == "days"
+                ? SessionView::Days
+                : SessionView::Attempts);
 
   m_sessionChangedListener = SessionChangedEvent().listen(
       [this]()
@@ -138,13 +149,21 @@ SessionLayer::PillButton SessionLayer::createPill(
   return {item, bg};
 }
 
-void SessionLayer::drawControls(float y)
+void SessionLayer::drawControls(float y, float summaryY)
 {
   const float gap = 4.f;
   const float widths[] = {58.f, 46.f, 42.f};
   const float buttonsWidth = widths[0] + widths[1] + widths[2] + gap * 2;
   const float buttonsLeft = m_size.width - SIDE_PADDING - buttonsWidth;
 
+  // ! --- Attempts | Days on the left --- !
+  auto switchMenu = CCMenu::create();
+  switchMenu->setPosition({SIDE_PADDING, y});
+  this->addChild(switchMenu);
+
+  drawViewSwitch(switchMenu);
+
+  // ! --- Buttons on the right, Export and Reset belong to the attempts --- !
   auto menu = CCMenu::create();
   menu->setPosition({buttonsLeft, y});
   this->addChild(menu);
@@ -152,12 +171,15 @@ void SessionLayer::drawControls(float y)
   float x = 0.f;
 
   m_levelFilterButton = createPill(menu, "This level", widths[0], x, menu_selector(SessionLayer::onLevelFilter));
+  m_levelFilterAttemptsX = x + widths[0] / 2;
+  m_levelFilterDaysX = buttonsWidth - widths[0] / 2;
   x += widths[0] + gap;
 
-  createPill(menu, "Export", widths[1], x, menu_selector(SessionLayer::onExport));
+  m_exportButton = createPill(menu, "Export", widths[1], x, menu_selector(SessionLayer::onExport));
   x += widths[1] + gap;
 
   auto reset = createPill(menu, "Reset", widths[2], x, menu_selector(SessionLayer::onReset));
+  m_resetButton = reset;
 
   // Reset deletes the log, its text is red
   if (auto *content = reset.item->getNormalImage())
@@ -171,11 +193,107 @@ void SessionLayer::drawControls(float y)
 
   updateLevelFilterButton();
 
-  // ! Summary chips fill the room left of the buttons
+  // ! Summary chips get their own row under the switch
   m_summary = CCNode::create();
-  m_summary->setPosition({SIDE_PADDING, y});
-  m_summary->setContentSize({buttonsLeft - 8.f - SIDE_PADDING, 0.f});
-  this->addChild(m_summary);
+  m_summary->setPosition({SIDE_PADDING, summaryY});
+  m_summary->setContentSize({m_size.width - SIDE_PADDING * 2, 0.f});
+  m_attemptsNode->addChild(m_summary);
+}
+
+void SessionLayer::drawViewSwitch(CCMenu *menu)
+{
+  const float gap = 4.f;
+  const std::tuple<SessionView, const char *, float> views[] = {
+      {SessionView::Attempts, "Attempts", 56.f},
+      {SessionView::Days, "Days", 42.f},
+  };
+
+  float x = 0.f;
+
+  for (auto const &[view, text, width] : views)
+  {
+    auto button = createPill(menu, text, width, x, menu_selector(SessionLayer::onView));
+    button.item->setTag(static_cast<int>(view));
+
+    m_viewButtons.push_back({view, button});
+    x += width + gap;
+  }
+}
+
+// ! --- Views --- !
+
+void SessionLayer::applyView(SessionView view)
+{
+  m_view = view;
+
+  const bool days = view == SessionView::Days;
+
+  m_attemptsNode->setVisible(!days);
+  m_exportButton.item->setVisible(!days);
+  m_resetButton.item->setVisible(!days);
+  m_levelFilterButton.item->setPositionX(days ? m_levelFilterDaysX : m_levelFilterAttemptsX);
+
+  if (days)
+    rebuildDays();
+  else if (m_daysNode)
+    m_daysNode->setVisible(false);
+
+  updateViewButtons();
+
+  Mod::get()->setSavedValue<std::string>(VIEW_SAVE_KEY, days ? "days" : "attempts");
+}
+
+void SessionLayer::updateViewButtons()
+{
+  for (auto &[view, button] : m_viewButtons)
+  {
+    button.bg->setColor(ccc4FFromccc4B(view == m_view ? ACCENT_COLOR : BUTTON_COLOR));
+  }
+}
+
+void SessionLayer::onView(CCObject *sender)
+{
+  auto *node = typeinfo_cast<CCNode *>(sender);
+
+  if (!node)
+    return;
+
+  const auto view = static_cast<SessionView>(node->getTag());
+
+  if (view != m_view)
+    applyView(view);
+}
+
+// The profile of this level, or every profile summed up
+void SessionLayer::rebuildDays()
+{
+  if (m_daysNode)
+    m_daysNode->removeFromParentAndCleanup(true);
+
+  std::map<std::string, DayStats> history;
+  bool showBestFromZero = true;
+
+  auto *store = GlobalStore::get();
+  auto *profile = m_levelId.empty() ? nullptr : store->getProfileByLevel(m_levelId);
+
+  if (m_thisLevelOnly && profile)
+  {
+    history = profile->data.history;
+  }
+  else
+  {
+    for (auto const &each : store->getProfiles())
+      addHistory(history, each.data.history);
+
+    // Percents of different levels can not be compared
+    showBestFromZero = store->getProfiles().size() == 1;
+  }
+
+  const CCSize size{m_size.width - SIDE_PADDING * 2, m_daysTop - BOTTOM_PADDING};
+
+  m_daysNode = SessionDaysView::create(size, std::move(history), showBestFromZero);
+  m_daysNode->setPosition({SIDE_PADDING, BOTTOM_PADDING});
+  this->addChild(m_daysNode);
 }
 
 void SessionLayer::updateLevelFilterButton()
@@ -257,7 +375,7 @@ void SessionLayer::drawList(float top)
   background->ignoreAnchorPointForPosition(false);
   background->setAnchorPoint({.5f, .5f});
   background->setPosition(listCenter);
-  this->addChild(background, -1);
+  m_attemptsNode->addChild(background, -1);
 
   m_scroll = ScrollLayer::create({listSize.width - 8.f, listSize.height - 8.f});
   m_scroll->setPosition({SIDE_PADDING + 4.f, BOTTOM_PADDING + 4.f});
@@ -268,7 +386,7 @@ void SessionLayer::drawList(float top)
           ->setAxisAlignment(AxisAlignment::End)
           ->setCrossAxisAlignment(AxisAlignment::Center)
           ->setAutoGrowAxis(m_scroll->getContentHeight()));
-  this->addChild(m_scroll);
+  m_attemptsNode->addChild(m_scroll);
 
   // ! --- Borders, the same as the other lists --- !
   auto borders = ListBorders::create();
@@ -277,7 +395,7 @@ void SessionLayer::drawList(float top)
   borders->setAnchorPoint({.5f, .5f});
   borders->setPosition(listCenter - CCPoint{0.f, .5f});
   borders->updateLayout();
-  this->addChild(borders);
+  m_attemptsNode->addChild(borders);
 
   for (auto child : CCArrayExt<CCNodeRGBA *>(borders->getChildren()))
     child->setColor(ccc3(50, 50, 50));
@@ -286,7 +404,7 @@ void SessionLayer::drawList(float top)
   m_emptyState = CCNode::create();
   m_emptyState->setPosition(listCenter);
   m_emptyState->setVisible(false);
-  this->addChild(m_emptyState, 1);
+  m_attemptsNode->addChild(m_emptyState, 1);
 
   auto title = CCLabelBMFont::create("", "bigFont.fnt");
   title->setID("title");
@@ -417,6 +535,9 @@ void SessionLayer::onLevelFilter(CCObject *)
 
   updateLevelFilterButton();
   queueRebuild(false);
+
+  if (m_view == SessionView::Days)
+    rebuildDays();
 }
 
 void SessionLayer::onShowMore(CCObject *)

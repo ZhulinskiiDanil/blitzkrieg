@@ -173,6 +173,57 @@ struct matjson::Serialize<std::vector<float>>
   }
 };
 
+// ! --- History ---- !
+// An array of days, older profiles have none
+template <>
+struct matjson::Serialize<std::map<std::string, DayStats>>
+{
+  static geode::Result<std::map<std::string, DayStats>> fromJson(matjson::Value const &value)
+  {
+    std::map<std::string, DayStats> result;
+
+    if (!value.isArray())
+      return geode::Ok(result);
+
+    for (auto const &item : value)
+    {
+      const auto date = getOr<std::string>(item, "date", "");
+
+      if (date.empty())
+        continue;
+
+      result[date] = DayStats{
+          .attempts = getOr<int>(item, "attempts", 0),
+          .timePlayed = getOr<float>(item, "timePlayed", 0.f),
+          .runsPassed = getOr<int>(item, "runsPassed", 0),
+          .stagesClosed = getOr<int>(item, "stagesClosed", 0),
+          .bestFromZero = getOr<float>(item, "bestFromZero", 0.f),
+      };
+    }
+
+    return geode::Ok(result);
+  }
+
+  static matjson::Value toJson(std::map<std::string, DayStats> const &history)
+  {
+    auto arr = matjson::Value::array();
+
+    for (auto const &[date, day] : history)
+    {
+      auto obj = matjson::Value::object();
+      obj["date"] = date;
+      obj["attempts"] = day.attempts;
+      obj["timePlayed"] = day.timePlayed;
+      obj["runsPassed"] = day.runsPassed;
+      obj["stagesClosed"] = day.stagesClosed;
+      obj["bestFromZero"] = day.bestFromZero;
+      arr.push(obj);
+    }
+
+    return arr;
+  }
+};
+
 // ! --- ProfileData ---- !
 template <>
 struct matjson::Serialize<ProfileData>
@@ -185,6 +236,8 @@ struct matjson::Serialize<ProfileData>
       pd.tags = arr.unwrap().as<std::vector<float>>().unwrap();
     if (auto arr = value.get("stages"))
       pd.stages = arr.unwrap().as<std::vector<Stage>>().unwrap();
+    if (auto arr = value.get("history"))
+      pd.history = arr.unwrap().as<std::map<std::string, DayStats>>().unwrapOr(std::map<std::string, DayStats>{});
 
     return geode::Ok(pd);
   }
@@ -192,8 +245,9 @@ struct matjson::Serialize<ProfileData>
   static matjson::Value toJson(ProfileData const &pd)
   {
     auto obj = matjson::Value::object();
-    obj["tags"] = pd.tags;     // Serialize<std::vector<int>>
-    obj["stages"] = pd.stages; // Serialize<std::vector<Stage>>
+    obj["tags"] = pd.tags;       // Serialize<std::vector<int>>
+    obj["stages"] = pd.stages;   // Serialize<std::vector<Stage>>
+    obj["history"] = pd.history; // Serialize<std::map<std::string, DayStats>>
     return obj;
   }
 };
