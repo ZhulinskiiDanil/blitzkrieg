@@ -14,24 +14,70 @@ namespace
     constexpr ccColor3B CARD_BORDER = {58, 58, 58};
     constexpr ccColor3B PINNED_COLOR = {225, 190, 110};
 
-    // t = 0 gives `from`, t = 1 gives `to`
-    ccColor3B mixColors(ccColor3B from, ccColor3B to, float t)
-    {
-        auto channel = [t](GLubyte a, GLubyte b)
-        {
-            return static_cast<GLubyte>(a + (b - a) * t);
-        };
-
-        return {
-            channel(from.r, to.r),
-            channel(from.g, to.g),
-            channel(from.b, to.b),
-        };
-    }
-
     ccColor4F toColor4F(ccColor3B color)
     {
         return ccc4FFromccc4B({color.r, color.g, color.b, 255});
+    }
+
+    // ! --- Chips and buttons, the same as in the Backups tab --- !
+
+    constexpr float CHIP_HEIGHT = 11.f;
+    constexpr float CHIP_LABEL_SCALE = .22f;
+    constexpr float BUTTON_HEIGHT = 16.f;
+    constexpr float BUTTON_LABEL_SCALE = .28f;
+    constexpr float BUTTON_MIN_WIDTH = 50.f;
+    constexpr ccColor4B BUTTON_COLOR = {55, 55, 55, 255};
+
+    // Colored text on a faint fill of the same color, its left edge is the origin
+    CCNode *createChip(
+        std::string const &text,
+        ccColor3B color)
+    {
+        auto label =
+            CCLabelBMFont::create(
+                text.c_str(),
+                "bigFont.fnt");
+
+        label->setScale(CHIP_LABEL_SCALE);
+        label->setColor(color);
+
+        CCSize const size{
+            label->getScaledContentWidth() + 10.f,
+            CHIP_HEIGHT,
+        };
+
+        auto fill = toColor4F(color);
+        fill.a = .15f;
+
+        auto chip = CCNode::create();
+        chip->setContentSize(size);
+        chip->setAnchorPoint({0.f, 0.5f});
+
+        chip->addChild(RectNode::create(
+            size,
+            premultiplyAlpha(fill),
+            size.height / 2.f));
+
+        label->setPosition(size / 2.f);
+        chip->addChild(label);
+
+        return chip;
+    }
+
+    // Wide enough for the label, never narrower than the Backups buttons
+    float getButtonWidth(
+        std::string const &text)
+    {
+        auto label =
+            CCLabelBMFont::create(
+                text.c_str(),
+                "bigFont.fnt");
+
+        return std::max(
+            BUTTON_MIN_WIDTH,
+            label->getContentWidth() *
+                    BUTTON_LABEL_SCALE +
+                16.f);
     }
 }
 
@@ -121,19 +167,19 @@ std::string NewsCard::getTypeName(
     switch (type)
     {
     case NewsType::StartPosPublished:
-        return "STARTPOS";
+        return "Start pos";
 
     case NewsType::ModUpdate:
-        return "UPDATE";
+        return "Update";
 
     case NewsType::Warning:
-        return "WARNING";
+        return "Warning";
 
     case NewsType::Announcement:
-        return "NEWS";
+        return "News";
 
     default:
-        return "UNKNOWN";
+        return "Unknown";
     }
 }
 
@@ -243,39 +289,24 @@ bool NewsCard::init(
         accentColor.b,
     };
 
-    // Opaque accent tints for the badge and action buttons
-    auto const badgeColor =
-        mixColors(CARD_BACKGROUND, accent3B, 0.22f);
-
-    auto const buttonColor =
-        mixColors(CARD_BACKGROUND, accent3B, 0.35f);
-
     float const leftPadding = 16.f;
     float const rightPadding = 12.f;
 
     // ! --- Layout offsets --- !
 
-    float const topStripOffset = 11.f;
-    float const titleTopOffset = 29.f;
-    float const descriptionTopOffset = 38.f;
+    float const topStripOffset = 14.f;
+    float const titleTopOffset = 31.f;
+    float const descriptionTopOffset = 40.f;
     float const descriptionBottomPadding = 8.f;
-    float const actionsTopOffset = 36.f;
+    // Buttons are on the title line
+    float const actionsTopOffset = 31.f;
 
     // ! --- Calculate actions width --- !
 
     float actionsWidth = 0.f;
 
     for (auto const &action : news.actions)
-    {
-        auto buttonWidth = std::max(
-            58.f,
-            static_cast<float>(
-                action.label.size()) *
-                    5.f +
-                16.f);
-
-        actionsWidth += buttonWidth + 6.f;
-    }
+        actionsWidth += getButtonWidth(action.label) + 6.f;
 
     if (actionsWidth > 0.f)
         actionsWidth -= 6.f;
@@ -394,15 +425,11 @@ bool NewsCard::init(
 
     this->addChild(accent);
 
-    // ! --- Type badge --- !
+    // ! --- Type chip --- !
 
-    auto badge = RectNode::create(
-        {52.f, 14.f},
-        toColor4F(badgeColor),
-        4.f);
-
-    badge->ignoreAnchorPointForPosition(false);
-    badge->setAnchorPoint({0.f, 0.5f});
+    auto badge = createChip(
+        getTypeName(news.type),
+        accent3B);
 
     badge->setPosition({
         leftPadding,
@@ -411,44 +438,31 @@ bool NewsCard::init(
 
     this->addChild(badge);
 
-    auto typeLabel =
-        CCLabelBMFont::create(
-            getTypeName(news.type).c_str(),
-            "bigFont.fnt");
-
-    typeLabel->setScale(0.25f);
-    typeLabel->setColor(accent3B);
-    typeLabel->setAnchorPoint({0.5f, 0.5f});
-
-    typeLabel->setPosition({
-        badge->getContentWidth() / 2.f,
-        badge->getContentHeight() / 2.f,
-    });
-
-    badge->addChild(typeLabel);
-
-    // ! --- Pinned label --- !
+    // ! --- Pin icon, as tall as the chip --- !
 
     if (news.pinned)
     {
-        auto pinnedLabel =
-            CCLabelBMFont::create(
-                "PINNED",
-                "bigFont.fnt");
+        if (auto pin = CCSprite::createWithSpriteFrameName("pin.png"_spr))
+        {
+            pin->setScale(
+                CHIP_HEIGHT /
+                std::max(
+                    pin->getContentWidth(),
+                    pin->getContentHeight()));
 
-        pinnedLabel->setScale(0.22f);
-        pinnedLabel->setColor(PINNED_COLOR);
-        pinnedLabel->setAnchorPoint({0.f, 0.5f});
+            pin->setColor(PINNED_COLOR);
+            pin->setAnchorPoint({0.f, 0.5f});
 
-        pinnedLabel->setPosition({
-            leftPadding +
-                badge->getContentWidth() +
-                7.f,
+            pin->setPosition({
+                leftPadding +
+                    badge->getContentWidth() +
+                    5.f,
 
-            cardHeight - topStripOffset,
-        });
+                cardHeight - topStripOffset,
+            });
 
-        this->addChild(pinnedLabel);
+            this->addChild(pin);
+        }
     }
 
     // ! --- Published date --- !
@@ -528,46 +542,46 @@ bool NewsCard::init(
             auto const &action =
                 news.actions[actionIndex];
 
-            auto buttonWidth = std::max(
-                58.f,
-                static_cast<float>(
-                    action.label.size()) *
-                        5.f +
-                    16.f);
+            auto buttonWidth =
+                getButtonWidth(action.label);
 
-            auto buttonBackground =
-                RectNode::create(
-                    {buttonWidth, 22.f},
-                    toColor4F(buttonColor),
-                    5.f);
+            CCSize const buttonSize{
+                buttonWidth,
+                BUTTON_HEIGHT,
+            };
 
-            buttonBackground
-                ->ignoreAnchorPointForPosition(
-                    false);
+            auto buttonContent = CCNode::create();
+            buttonContent->setContentSize(buttonSize);
 
+            buttonContent->addChild(RectNode::create(
+                buttonSize,
+                ccc4FFromccc4B(BUTTON_COLOR),
+                buttonSize.height / 2.f));
+
+            // Colored text on a gray pill, like Restore
             auto buttonLabel =
                 CCLabelBMFont::create(
                     action.label.c_str(),
                     "bigFont.fnt");
 
-            buttonLabel->setScale(0.32f);
-            buttonLabel->setAnchorPoint({0.5f, 0.5f});
+            buttonLabel->limitLabelWidth(
+                buttonWidth - 10.f,
+                BUTTON_LABEL_SCALE,
+                .1f);
 
-            buttonLabel->setPosition({
-                buttonWidth / 2.f,
-                11.f,
-            });
+            buttonLabel->setColor(accent3B);
+            buttonLabel->setPosition(buttonSize / 2.f);
 
-            buttonBackground->addChild(
-                buttonLabel);
+            buttonContent->addChild(buttonLabel);
 
             auto button =
                 CCMenuItemSpriteExtra::create(
-                    buttonBackground,
+                    buttonContent,
                     this,
                     menu_selector(
                         NewsCard::onAction));
 
+            button->m_scaleMultiplier = 1.05f;
             button->setTag(actionIndex);
 
             button->setPosition({
