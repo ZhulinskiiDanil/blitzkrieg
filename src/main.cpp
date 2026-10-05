@@ -4,6 +4,7 @@
 #include <Geode/modify/PlayLayer.hpp>
 
 #include <chrono>
+#include <ctime>
 #include <deque>
 #include <optional>
 
@@ -11,12 +12,19 @@
 #include "./events/RunClosedEvent.hpp"
 #include "./serialization/profile/index.hpp"
 #include "./store/GlobalStore.hpp"
+#include "./store/SessionStore/SessionStore.hpp"
 
 using namespace geode::prelude;
 
 namespace BKGlobal
 {
     FMOD::ChannelGroup *sfxGroup = nullptr;
+}
+
+// The session log can be large, read it before the first attempt
+$on_mod(Loaded)
+{
+    SessionStore::get();
 }
 
 class $modify(BlitzPlayLayer, PlayLayer)
@@ -52,6 +60,11 @@ class $modify(BlitzPlayLayer, PlayLayer)
 
         float attStartTime = 0.f;
         float attEndTime = 0.f;
+
+        // For the session log
+        std::time_t attStartedAt = 0;
+        float attFrom = 0.f;
+        float attTo = 0.f;
     };
 
     static void onModify(auto &self)
@@ -147,6 +160,8 @@ public:
 
         m_fields->hasRespawned = true;
         m_fields->attStartTime = this->timeForPos(m_player1->getPosition(), 0, 0, true, 0);
+        m_fields->attStartedAt = std::time(nullptr);
+        m_fields->attFrom = this->getCurrentPercent();
 
         GlobalStore::get()->setRunStart(
             this->getCurrentPercent());
@@ -163,6 +178,7 @@ public:
         if (!m_level->isPlatformer())
         {
             m_fields->attEndTime = this->timeForPos({m_levelLength, 0}, 0, 0, true, 0);
+            m_fields->attTo = 100.f;
             GlobalStore::get()->setRunEnd(100.f);
             checkRun();
         }
@@ -173,19 +189,47 @@ public:
     void checkRun()
     {
         auto currentProfile = GlobalStore::get()->getProfileByLevel(BlitzPlayLayer::get()->m_level);
-        const bool ignorePractice = Mod::get()->getSettingValue<bool>("ignore-practice-mode");
 
-        if (ignorePractice && this->m_isPracticeMode)
+        // Levels without a profile are not tracked, the log stays about tracked ones
+        if (!currentProfile)
             return;
 
-        if (isLegal() && currentProfile)
+        const bool ignorePractice = Mod::get()->getSettingValue<bool>("ignore-practice-mode");
+        const auto timePlayedForAttempt = m_fields->attEndTime - m_fields->attStartTime;
+
+        // ! --- Session log entry --- !
+        SessionAttempt report;
+        report.levelId = m_level->m_levelID
+                             ? utils::numToString(m_level->m_levelID.value())
+                             : utils::numToString(EditorIDs::getID(m_level));
+        report.levelName = m_level->m_levelName;
+        report.profileId = currentProfile->id;
+        report.profileName = currentProfile->profileName;
+        report.startedAt = m_fields->attStartedAt;
+        report.endedAt = std::time(nullptr);
+        report.duration = timePlayedForAttempt;
+        report.from = m_fields->attFrom;
+        report.to = m_fields->attTo;
+
+        if (ignorePractice && this->m_isPracticeMode)
         {
-            const auto timePlayedForAttempt = m_fields->attEndTime - m_fields->attStartTime;
-            int res = GlobalStore::get()->checkRun(currentProfile->id, timePlayedForAttempt);
+            report.outcome = AttemptOutcome::Ignored;
+            report.reason = "Practice mode is ignored in the settings";
+        }
+        else if (!isLegal())
+        {
+            report.outcome = AttemptOutcome::Ignored;
+            report.reason = getIllegalReason();
+        }
+        else
+        {
+            int res = GlobalStore::get()->checkRun(currentProfile->id, timePlayedForAttempt, &report);
 
             if (res != -1)
                 playSound(!!res);
         }
+
+        SessionStore::get()->add(std::move(report));
     }
 
     void destroyPlayer(
@@ -225,6 +269,8 @@ public:
                 0,
                 true,
                 0);
+
+        m_fields->attTo = this->getCurrentPercent();
 
         GlobalStore::get()->setRunEnd(
             this->getCurrentPercent());
@@ -306,6 +352,7 @@ public:
 
         m_fields->attStartTime = 0.f;
         m_fields->attEndTime = 0.f;
+        m_fields->attTo = 0.f;
 
         resetSpeedhackSamples();
 
@@ -504,6 +551,21 @@ public:
 
             return;
         }
+    }
+
+    // Why isLegal() is false, for the session log
+    std::string getIllegalReason()
+    {
+        if (m_fields->isNoclip)
+            return "Noclip was detected, the attempt is not counted";
+
+        if (m_fields->isSpeedhack)
+            return "Speedhack was detected, the attempt is not counted";
+
+        if (m_isIgnoreDamageEnabled || m_ignoreDamage)
+            return "Damage was ignored (safe mode or a hack), the attempt is not counted";
+
+        return "The attempt is not legal";
     }
 
     bool isLegal()

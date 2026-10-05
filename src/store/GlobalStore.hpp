@@ -14,6 +14,7 @@
 #include "../events/RunClosedEvent.hpp"
 
 #include "../serialization/profile/index.hpp"
+#include "./SessionStore/SessionAttempt.hpp"
 
 using namespace geode::prelude;
 
@@ -49,9 +50,11 @@ public:
     void setRunEnd(float end);
     void resetRun();
 
+    // report receives where the attempt went and why, for the session log
     int checkRun(
         std::string const &profileId,
-        float timePlayed = 0.f);
+        float timePlayed = 0.f,
+        SessionAttempt *report = nullptr);
 
     // ! --- Search API --- !
     Profile *getProfileById(std::string const &profileId);

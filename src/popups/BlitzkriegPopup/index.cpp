@@ -86,6 +86,8 @@ void BlitzkriegPopup::drawContent()
       drawCurrentStage();
     else if (btnId == "stage-graph-tab"_spr)
       drawStagesGraph();
+    else if (btnId == "session-tab"_spr)
+      drawSession();
     else if (btnId == "news-tab"_spr)
       drawNewsSection();
   }
@@ -241,6 +243,19 @@ void BlitzkriegPopup::drawStagesGraph()
   contentContainers.push_back(m_currentStageGraphNode);
 }
 
+void BlitzkriegPopup::drawSession()
+{
+  m_sessionNode = CCNode::create();
+  m_sessionNode->setID("blitzkrieg-popup-session"_spr);
+  m_sessionNode->setTag(5);
+
+  // ! --- SessionLayer --- !
+  m_sessionNode->addChild(SessionLayer::create(m_level, m_size));
+
+  m_mainLayer->addChild(m_sessionNode);
+  contentContainers.push_back(m_sessionNode);
+}
+
 void BlitzkriegPopup::drawNewsSection()
 {
   m_helpNode = CCNode::create();
@@ -277,6 +292,7 @@ void BlitzkriegPopup::drawTabs()
       {"profiles-tab"_spr, "Profiles", "tab-icon-profiles.png"_spr},
       {"stage-browser-tab"_spr, "Stage Browser", "tab-icon-stages.png"_spr},
       {"stage-graph-tab"_spr, "Stage Graph", "tab-icon-graph.png"_spr},
+      {"session-tab"_spr, "Session", "tab-icon-session.png"_spr},
       {"news-tab"_spr, "News", "tab-icon-news.png"_spr},
   };
 

@@ -1,8 +1,18 @@
 #include "../GlobalStore.hpp"
 #include "RunWindow.hpp"
 #include "../../utils/debugLog.hpp"
+#include "../../utils/getMetaInfoFromStages.hpp"
 
 using namespace geode::prelude;
+
+namespace
+{
+  // 45.00-62.00%
+  std::string formatRange(Range const *range)
+  {
+    return fmt::format("{:.2f}-{:.2f}%", range->from, range->to);
+  }
+}
 
 void GlobalStore::setRunStart(float val)
 {
@@ -24,7 +34,8 @@ void GlobalStore::resetRun()
 
 int GlobalStore::checkRun(
     std::string const &profileId,
-    float timePlayed)
+    float timePlayed,
+    SessionAttempt *report)
 {
   // A single id shared by all logs produced for one checkRun call.
   // checkRun is expected to run on the game's main thread.
@@ -50,6 +61,13 @@ int GlobalStore::checkRun(
         "[Run #{}][DROP] Profile '{}' was not found; the attempt cannot be assigned",
         runLogId,
         profileId);
+
+    if (report)
+    {
+      report->outcome = AttemptOutcome::Dropped;
+      report->reason = "The profile was not found";
+    }
+
     return -1;
   }
 
@@ -62,6 +80,14 @@ int GlobalStore::checkRun(
   const RunWindow run{runStart, runEnd};
 
   std::size_t stageIndex = 0;
+  // The same numbering as the Stage Browser
+  int consideredIndex = 0;
+
+  if (report)
+  {
+    report->outcome = AttemptOutcome::Dropped;
+    report->reason = "Every stage is already completed";
+  }
 
   for (auto &stage : currentProfile->data.stages)
   {
@@ -72,10 +98,17 @@ int GlobalStore::checkRun(
           runLogId,
           stageIndex);
       ++stageIndex;
+
+      if (isStageConsidered(stage))
+        ++consideredIndex;
+
       continue;
     }
 
     targetStage = &stage;
+
+    if (report)
+      report->stageIndex = isStageConsidered(stage) ? consideredIndex : -1;
 
     debugLog::info(
         "[Run #{}][STAGE {}] checking first open stage ({} ranges)",
@@ -129,6 +162,19 @@ int GlobalStore::checkRun(
 
       touchedRanges.push_back(&range);
 
+      if (report)
+      {
+        report->candidates.push_back({
+            .rangeId = range.id,
+            .from = range.from,
+            .to = range.to,
+            .overlap = overlap,
+            .coverage = coverage,
+            .checked = range.checked,
+            .passable = passable,
+        });
+      }
+
       if (!range.checked)
       {
         uncheckedRanges.push_back(
@@ -151,6 +197,16 @@ int GlobalStore::checkRun(
           "[Run #{}][DROP] No range was touched in first open stage {}; later stages are not checked",
           runLogId,
           stageIndex);
+
+      if (report)
+      {
+        report->outcome = AttemptOutcome::Dropped;
+        report->reason = fmt::format(
+            "No run of the open stage was touched by {:.2f}-{:.2f}%, later stages are not checked",
+            runStart,
+            runEnd);
+      }
+
       break;
     }
 
@@ -172,6 +228,13 @@ int GlobalStore::checkRun(
           "[Run #{}][DROP] Candidate lists were non-empty, but no stats range was selected in stage {}",
           runLogId,
           stageIndex);
+
+      if (report)
+      {
+        report->outcome = AttemptOutcome::Dropped;
+        report->reason = "Runs were touched, but none could take the attempt";
+      }
+
       break;
     }
 
@@ -190,11 +253,53 @@ int GlobalStore::checkRun(
         selectionRule,
         statsRange->checked);
 
+    // ! Why this run, in words
+    std::string selectionReason;
+
+    if (report)
+    {
+      int passableCount = 0;
+
+      for (auto *range : selectFromChecked ? touchedRanges : uncheckedRanges)
+      {
+        if (run.passes(range))
+          ++passableCount;
+      }
+
+      for (auto &candidate : report->candidates)
+        candidate.selected = candidate.rangeId == statsRange->id;
+
+      report->pool = selectionPool;
+      report->rule = selectionRule ? selectionRule : "";
+      report->rangeId = statsRange->id;
+      report->rangeFrom = statsRange->from;
+      report->rangeTo = statsRange->to;
+
+      if (passableCount == 1)
+        selectionReason = "the only run it passes";
+      else if (passableCount > 1)
+        selectionReason = fmt::format(
+            "of {} runs it passes, this one starts nearest to {:.2f}%",
+            passableCount,
+            runStart);
+      else if (report->candidates.size() == 1)
+        selectionReason = fmt::format(
+            "the only touched run, covered by {:.0f}%",
+            run.coverage(statsRange) * 100.f);
+      else
+        selectionReason = fmt::format(
+            "it passes none, this one is covered the most ({:.0f}%)",
+            run.coverage(statsRange) * 100.f);
+    }
+
     const auto previousAttempts = statsRange->attempts;
     const float previousTimePlayed = statsRange->timePlayed;
 
     statsRange->attempts++;
     statsRange->timePlayed += timePlayed;
+
+    if (report)
+      report->attemptNumber = statsRange->attempts;
 
     debugLog::info(
         "[Run #{}][COUNT] range {:.2f}-{:.2f}: attempt {} -> {}, timePlayed {:.2f} -> {:.2f}",
@@ -225,6 +330,9 @@ int GlobalStore::checkRun(
 
       statsRange->bestRunFrom = runStart;
       statsRange->bestRunTo = runEnd;
+
+      if (report)
+        report->newBest = true;
     }
 
     const bool passed =
@@ -240,6 +348,16 @@ int GlobalStore::checkRun(
 
     if (statsRange->checked)
     {
+      if (report)
+      {
+        report->outcome = AttemptOutcome::CountedChecked;
+        report->reason = fmt::format(
+            "Every touched run is already done, {} {}: {}",
+            passed ? "passed" : "stats went to",
+            formatRange(statsRange),
+            selectionReason);
+      }
+
       if (passed)
       {
         statsRange->completionCounter++;
@@ -260,6 +378,15 @@ int GlobalStore::checkRun(
 
     if (!passed)
     {
+      if (report)
+      {
+        report->outcome = AttemptOutcome::Counted;
+        report->reason = fmt::format(
+            "Counted to {}, not passed: {}",
+            formatRange(statsRange),
+            selectionReason);
+      }
+
       debugLog::info(
           "[Run #{}][STOP] attempt {} counted for range {:.2f}-{:.2f}, but the range is not completed",
           runLogId,
@@ -306,6 +433,15 @@ int GlobalStore::checkRun(
     targetRange = statsRange;
     progressHasChecked = true;
 
+    if (report)
+    {
+      report->outcome = AttemptOutcome::RunPassed;
+      report->reason = fmt::format(
+          "Passed {}: {}",
+          formatRange(statsRange),
+          selectionReason);
+    }
+
     break;
   }
 
@@ -330,6 +466,12 @@ int GlobalStore::checkRun(
     {
       targetStage->checked = true;
       isStageClosed = true;
+
+      if (report && targetRange)
+      {
+        report->outcome = AttemptOutcome::StageClosed;
+        report->reason += ", it was the last open run of the stage";
+      }
     }
   }
 
