@@ -224,9 +224,12 @@ std::vector<BackupInfo> BackupStore::list() const
     // A folder without meta still shows up, dated by the folder itself
     if (info.createdAt <= 0)
     {
+      // clock_cast is missing in libc++ (macOS, iOS, Android), shift by the gap between the clocks
       const auto writeTime = std::filesystem::last_write_time(info.path, ec);
-      info.createdAt = std::chrono::system_clock::to_time_t(
-          std::chrono::clock_cast<std::chrono::system_clock>(writeTime));
+      const auto systemTime = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+          writeTime - std::filesystem::file_time_type::clock::now() + std::chrono::system_clock::now());
+
+      info.createdAt = std::chrono::system_clock::to_time_t(systemTime);
     }
 
     info.size = getFolderSize(info.path);

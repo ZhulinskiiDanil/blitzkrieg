@@ -31,7 +31,7 @@ private:
   static constexpr float CONTROLS_HEIGHT = 16.f;
   static constexpr float ROW_GAP = 7.f;
   // Cells are built for the newest attempts only, "Show more" adds a page
-  static constexpr std::size_t PAGE_SIZE = 150;
+  static constexpr std::size_t ATTEMPTS_PAGE_SIZE = 150;
 
   struct PillButton
   {
@@ -67,7 +67,7 @@ private:
   CCNode *m_emptyState = nullptr;
 
   bool m_thisLevelOnly = true;
-  std::size_t m_shownCount = PAGE_SIZE;
+  std::size_t m_shownCount = ATTEMPTS_PAGE_SIZE;
   std::unordered_set<std::uint64_t> m_expanded;
 
   bool m_rebuildQueued = false;

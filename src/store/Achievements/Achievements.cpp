@@ -1,6 +1,7 @@
 #include "Achievements.hpp"
 
 #include <algorithm>
+#include <cstdlib>
 #include <ctime>
 
 #include "../GlobalStore.hpp"

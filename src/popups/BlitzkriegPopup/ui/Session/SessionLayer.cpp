@@ -529,7 +529,7 @@ void SessionLayer::queueRebuild(bool keepScroll)
 void SessionLayer::onLevelFilter(CCObject *)
 {
   m_thisLevelOnly = !m_thisLevelOnly;
-  m_shownCount = PAGE_SIZE;
+  m_shownCount = ATTEMPTS_PAGE_SIZE;
 
   Mod::get()->setSavedValue(LEVEL_FILTER_SAVE_KEY, m_thisLevelOnly);
 
@@ -542,7 +542,7 @@ void SessionLayer::onLevelFilter(CCObject *)
 
 void SessionLayer::onShowMore(CCObject *)
 {
-  m_shownCount += PAGE_SIZE;
+  m_shownCount += ATTEMPTS_PAGE_SIZE;
   queueRebuild(true);
 }
 
@@ -586,7 +586,7 @@ void SessionLayer::onReset(CCObject *)
           return;
 
         self->m_expanded.clear();
-        self->m_shownCount = PAGE_SIZE;
+        self->m_shownCount = ATTEMPTS_PAGE_SIZE;
         SessionStore::get()->reset();
       });
 }
