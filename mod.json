@@ -225,6 +225,34 @@
         ]
       }
     },
+    "backups": {
+      "type": "title",
+      "name": "Backups"
+    },
+    "auto-backups": {
+      "type": "bool",
+      "name": "Automatic backups",
+      "description": "Back up all profiles when the game starts, at most once per interval. Profiles are also backed up before they are deleted, imported or regenerated.",
+      "default": true
+    },
+    "backups-interval": {
+      "type": "int",
+      "name": "Automatic backup interval (hours)",
+      "description": "How old the last automatic backup must be before a new one is made.",
+      "default": 12,
+      "min": 1,
+      "max": 168,
+      "enable-if": "auto-backups"
+    },
+    "backups-keep": {
+      "type": "int",
+      "name": "Automatic backups to keep",
+      "description": "Older automatic backups are deleted. Manual backups and the ones made before a delete, import or restore are kept until you delete them.",
+      "default": 10,
+      "min": 1,
+      "max": 50,
+      "enable-if": "auto-backups"
+    },
     "keybinds": {
       "type": "title",
       "name": "Keybinds"

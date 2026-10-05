@@ -1,5 +1,6 @@
 #include "../GlobalStore.hpp"
 #include "../../utils/debugLog.hpp"
+#include "../BackupStore/BackupStore.hpp"
 
 using namespace geode::prelude;
 
@@ -27,6 +28,12 @@ std::size_t GlobalStore::addProfiles(
     bool overwrite)
 {
   std::size_t added = 0;
+
+  // An import can overwrite, keep what was there
+  if (!newProfiles.empty())
+    (void)BackupStore::get()->create(
+        BackupReason::BeforeImport,
+        fmt::format("{} {}", newProfiles.size(), newProfiles.size() == 1 ? "profile" : "profiles"));
 
   for (auto const &profile : newProfiles)
   {
@@ -86,6 +93,9 @@ void GlobalStore::updateProfile(Profile const &profile)
 
 void GlobalStore::removeProfileById(std::string const &id)
 {
+  if (auto *profile = getProfileById(id))
+    (void)BackupStore::get()->create(BackupReason::BeforeDelete, profile->profileName);
+
   m_profiles.erase(
       std::remove_if(
           m_profiles.begin(),

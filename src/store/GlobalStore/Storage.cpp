@@ -75,6 +75,11 @@ void GlobalStore::saveProfileIndex() const
   }
 }
 
+void GlobalStore::reloadProfiles()
+{
+  m_profiles = loadProfiles();
+}
+
 std::vector<Profile>
 GlobalStore::loadProfiles() const
 {

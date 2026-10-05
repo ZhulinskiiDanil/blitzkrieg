@@ -1,5 +1,7 @@
 #include "index.hpp"
 
+#include "../../store/BackupStore/BackupStore.hpp"
+
 EditProfilePopup *EditProfilePopup::create(Profile *profile, GJGameLevel *level)
 {
   EditProfilePopup *ret = new EditProfilePopup();
@@ -160,6 +162,9 @@ void EditProfilePopup::onSave(CCObject *)
         {
           if (!confirmed)
             return;
+
+          // The runs are regenerated, keep the old ones
+          (void)BackupStore::get()->create(BackupReason::BeforeStartposChange, m_profile->profileName);
 
           auto regenerated = generateProfile("_mergeProfile", newStartposes);
           auto merged = mergeProfiles(*m_profile, regenerated.as<Profile>().unwrap(), false);

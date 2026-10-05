@@ -13,6 +13,7 @@
 #include "./serialization/profile/index.hpp"
 #include "./store/GlobalStore.hpp"
 #include "./store/SessionStore/SessionStore.hpp"
+#include "./store/BackupStore/BackupStore.hpp"
 
 using namespace geode::prelude;
 
@@ -21,10 +22,12 @@ namespace BKGlobal
     FMOD::ChannelGroup *sfxGroup = nullptr;
 }
 
-// The session log can be large, read it before the first attempt
 $on_mod(Loaded)
 {
+    // The session log can be large, read it before the first attempt
     SessionStore::get();
+
+    BackupStore::get()->createAutomaticIfDue();
 }
 
 class $modify(BlitzPlayLayer, PlayLayer)

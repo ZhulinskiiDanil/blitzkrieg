@@ -39,6 +39,10 @@ public:
     void upProfileById(std::string const &profileId);
     void removeProfileById(std::string const &id);
 
+    // Reads every profile from disk again, after a backup was restored.
+    // Profile pointers taken before are no longer valid.
+    void reloadProfiles();
+
     void pinProfileById(
         std::string const &profileId,
         bool isPinned);
