@@ -337,7 +337,7 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
     cell->m_mainLayer->setContentSize({m_levelList->getContentWidth(), m_customCellHeigth});
     m_downloadUrls[index] = startposLevel.downloadUrl;
 
-    // ! --- Level Name Label --- !
+    // ! --- Level Name ::Label --- !
     auto levelNameLabel = CCLabelBMFont::create(startposLevel.levelName.c_str(), "bigFont.fnt");
     float availableWidth = cell->m_mainLayer->getContentWidth() - 20.0f;
     float labelWidth = levelNameLabel->getContentWidth();
@@ -353,7 +353,7 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
     levelNameLabel->setPosition(10, cell->m_mainLayer->getContentHeight() - 8);
     cell->m_mainLayer->addChild(levelNameLabel);
 
-    // ! --- Author Label --- !
+    // ! --- Author ::Label --- !
     auto authorLabel = CCLabelBMFont::create("By Nayloren", "goldFont.fnt");
     authorLabel->setScale(.6f);
     authorLabel->setAnchorPoint({0, 1});

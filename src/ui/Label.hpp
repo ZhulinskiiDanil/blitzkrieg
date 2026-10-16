@@ -32,7 +32,7 @@ private:
   void parseAndBuild();
 
 public:
-  static Label *create(const std::string &text,
+  static ::Label *create(const std::string &text,
                        const std::string &font = "gjFont17.fnt",
                        float fontSize = 1.f);
   bool init(const std::string &text,

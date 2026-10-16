@@ -1,10 +1,10 @@
 #include "Label.hpp"
 
-Label *Label::create(const std::string &text,
+::Label *::Label::create(const std::string &text,
                      const std::string &font,
                      float fontSize)
 {
-  Label *ret = new Label();
+  ::Label *ret = new ::Label();
   if (ret && ret->init(text, font, fontSize))
   {
     ret->autorelease();
@@ -14,7 +14,7 @@ Label *Label::create(const std::string &text,
   return nullptr;
 }
 
-bool Label::init(const std::string &text,
+bool ::Label::init(const std::string &text,
                  const std::string &font,
                  float fontSize)
 {
@@ -41,25 +41,25 @@ bool Label::init(const std::string &text,
   return true;
 }
 
-void Label::setText(const std::string &text)
+void ::Label::setText(const std::string &text)
 {
   m_text = text;
   parseAndBuild();
   updateColor();
 }
 
-void Label::setVariant(Variant variant)
+void ::Label::setVariant(Variant variant)
 {
   m_variant = variant;
   updateColor();
 }
 
-Label::Variant Label::getVariant() const
+auto ::Label::getVariant() const -> Variant
 {
   return m_variant;
 }
 
-void Label::updateColor()
+void ::Label::updateColor()
 {
   ccColor3B color;
   switch (m_variant)
@@ -81,7 +81,7 @@ void Label::updateColor()
     lbl->setColor(color);
 }
 
-void Label::parseAndBuild()
+void ::Label::parseAndBuild()
 {
   for (auto textPart : m_parts)
     textPart->removeFromParentAndCleanup(true);
@@ -146,7 +146,7 @@ void Label::parseAndBuild()
   this->updateLayout();
 }
 
-void Label::setFontSize(float fontSize)
+void ::Label::setFontSize(float fontSize)
 {
   m_fontSize = fontSize;
   parseAndBuild();

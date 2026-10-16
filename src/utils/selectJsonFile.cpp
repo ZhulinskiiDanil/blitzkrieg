@@ -21,8 +21,6 @@ static std::string readFileToString(const std::filesystem::path &path)
 
 void selectJsonFile(std::function<void(std::string)> callback)
 {
-    using FileEvent = geode::Task<geode::Result<std::filesystem::path>>;
-
     geode::utils::file::FilePickOptions::Filter filter;
     filter.description = "JSON files";
     filter.files.insert("*.json");
