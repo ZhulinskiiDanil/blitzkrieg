@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include <string>
-#include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include <cvolton.level-id-api/EditorIDs.hpp>
 
 #include "../getMetaInfoFromStages.hpp"
 #include "../../store/GlobalStore.hpp"

@@ -24,7 +24,7 @@ web::WebFuture api::news::getNews(
       "limit",
       fmt::format("{}", limit));
 
-  request.timeout(std::chrono::seconds(15));
+  request.timeout(asp::time::Duration::fromSecs(15));
 
   return request.get(
       fmt::format("{}/news", API_URL));

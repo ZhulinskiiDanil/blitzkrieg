@@ -91,12 +91,6 @@ The mod can be used together with `zsa.percentage-toggle`.
 - **Spanish:** https://youtu.be/3zeuT4ggzZk
 - **Russian:** https://youtu.be/d6jAYVD1144
 
-## Credits
-
-The **Blitzkrieg training method** was originally created by [Rudder](https://www.youtube.com/@TheRealRudder).
-
-Blitzkrieg automates the tracking workflow around that training method.
-
 ## Support
 
 Found a bug or need help?

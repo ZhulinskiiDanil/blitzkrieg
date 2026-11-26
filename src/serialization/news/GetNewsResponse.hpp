@@ -2,11 +2,11 @@
 
 #include <vector>
 
-#include "NewsItem.hpp"
+#include "BlitzNewsItem.hpp"
 
 struct GetNewsResponse
 {
-  std::vector<NewsItem> data;
+  std::vector<BlitzNewsItem> data;
 
   int page = 1;
   int limit = 20;

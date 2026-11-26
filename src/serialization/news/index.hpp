@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "NewsAction.hpp"
-#include "NewsItem.hpp"
+#include "BlitzNewsItem.hpp"
 #include "GetNewsResponse.hpp"
 
 #include "../../utils/getOr.hpp"
@@ -63,15 +63,15 @@ struct matjson::Serialize<NewsAction>
   }
 };
 
-// ! --- NewsItem --- !
+// ! --- BlitzNewsItem --- !
 
 template <>
-struct matjson::Serialize<NewsItem>
+struct matjson::Serialize<BlitzNewsItem>
 {
-  static geode::Result<NewsItem> fromJson(
+  static geode::Result<BlitzNewsItem> fromJson(
       matjson::Value const &value)
   {
-    NewsItem news;
+    BlitzNewsItem news;
 
     news.id =
         getOr<std::string>(
@@ -135,7 +135,7 @@ struct matjson::Serialize<NewsItem>
   }
 
   static matjson::Value toJson(
-      NewsItem const &news)
+      BlitzNewsItem const &news)
   {
     auto object =
         matjson::Value::object();
@@ -200,7 +200,7 @@ struct matjson::Serialize<GetNewsResponse>
          dataValue.unwrap())
     {
       auto newsResult =
-          item.as<NewsItem>();
+          item.as<BlitzNewsItem>();
 
       if (newsResult.isErr())
       {

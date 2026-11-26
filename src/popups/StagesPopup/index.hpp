@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include <cvolton.level-id-api/EditorIDs.hpp>
 
 #include <Geode/Geode.hpp>
 #include <Geode/loader/Event.hpp>

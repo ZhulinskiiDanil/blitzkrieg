@@ -7,10 +7,10 @@
 #include <deque>
 #include <optional>
 
-#include "./utils/generateDSMessageByClosedRun.hpp"
-#include "./events/RunClosedEvent.hpp"
-#include "./serialization/profile/index.hpp"
-#include "./store/GlobalStore.hpp"
+#include "utils/generateDSMessageByClosedRun.hpp"
+#include "events/RunClosedEvent.hpp"
+#include "serialization/profile/index.hpp"
+#include "store/GlobalStore.hpp"
 
 using namespace geode::prelude;
 
@@ -61,10 +61,8 @@ class $modify(BlitzPlayLayer, PlayLayer)
     }
 
 public:
-    bool init(GJGameLevel *level, bool p1, bool p2)
-    {
-        if (!PlayLayer::init(level, p1, p2))
-            return false;
+    bool init(GJGameLevel* level, bool dontCreateObjects) {
+        if (!PlayLayer::init(level, dontCreateObjects)) return false;
 
         auto engine = FMODAudioEngine::get();
         auto system = engine->m_system;
@@ -91,7 +89,7 @@ public:
 
                 auto req = utils::web::WebRequest()
                                .bodyMultipart(form)
-                               .timeout(std::chrono::seconds(15))
+                               .timeout(asp::time::Duration::fromSecs(15))
                                .post(webhook);
 
                 m_fields->m_task.spawn(
@@ -265,17 +263,17 @@ public:
         auto engine = FMODAudioEngine::get();
         auto system = engine->m_system;
 
-        auto sfxStagePath = Mod::get()->getSettingValue<std::filesystem::path>("sfx-stage-path");
-        auto sfxProgressPath = Mod::get()->getSettingValue<std::filesystem::path>("sfx-progress-path");
+        auto sfxStagePath = Mod::get()->getSettingValue<asp::fs::Path>("sfx-stage-path");
+        auto sfxProgressPath = Mod::get()->getSettingValue<asp::fs::Path>("sfx-progress-path");
         auto sfxUseCustomSounds = Mod::get()->getSettingValue<bool>("sfx-use-custom-sounds");
 
         auto stageSound = !sfxStagePath.empty() &&
                                   sfxUseCustomSounds
-                              ? geode::utils::string::pathToString(sfxStagePath)
+                              ? sfxStagePath.string()
                               : fmt::format("{}/stage_complete.mp3", Mod::get()->getResourcesDir());
         auto progressSound = !sfxProgressPath.empty() &&
                                      sfxUseCustomSounds
-                                 ? geode::utils::string::pathToString(sfxProgressPath)
+                                 ? sfxProgressPath.string()
                                  : fmt::format("{}/progress_complete.mp3", Mod::get()->getResourcesDir());
 
         std::string actualSound = isStage ? stageSound : progressSound;

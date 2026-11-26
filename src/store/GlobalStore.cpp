@@ -1,4 +1,5 @@
 #include "GlobalStore.hpp"
+#include <asp/fs/fs.hpp>
 
 using namespace geode::prelude;
 
@@ -12,7 +13,7 @@ GlobalStore::GlobalStore()
 {
   auto indexPath = getProfilesDir() / "index.json";
 
-  if (std::filesystem::exists(indexPath))
+  if (indexPath.exists())
   {
     m_profiles = loadProfiles();
     return;
@@ -28,12 +29,12 @@ GlobalStore::GlobalStore()
 }
 
 // ! --- Profiles API --- !
-std::filesystem::path GlobalStore::getProfilesDir() const
+asp::fs::Path GlobalStore::getProfilesDir() const
 {
   return Mod::get()->getSaveDir() / "profiles";
 }
 
-std::filesystem::path GlobalStore::getProfilePath(
+asp::fs::Path GlobalStore::getProfilePath(
     std::string const &profileId) const
 {
   return getProfilesDir() / fmt::format("{}.json", profileId);
@@ -47,12 +48,9 @@ void GlobalStore::saveProfile(Profile const &profile) const
     return;
   }
 
-  std::error_code ec;
-  std::filesystem::create_directories(getProfilesDir(), ec);
-
-  if (ec)
-  {
-    log::error("Failed to create profiles directory: {}", ec.message());
+  auto dirResult = asp::fs::createDirAll(getProfilesDir());
+  if (dirResult.isErr()) {
+    log::error("Failed to create profiles directory: {}", dirResult.err());
     return;
   }
 
@@ -70,14 +68,9 @@ void GlobalStore::saveProfile(Profile const &profile) const
 
 void GlobalStore::saveProfileIndex() const
 {
-  std::error_code ec;
-  std::filesystem::create_directories(getProfilesDir(), ec);
-
-  if (ec)
-  {
-    log::error(
-        "Failed to create profiles directory: {}",
-        ec.message());
+  auto dirResult = asp::fs::createDirAll(getProfilesDir());
+  if (dirResult.isErr()) {
+    log::error("Failed to create profiles directory: {}", dirResult.err());
     return;
   }
 
@@ -106,10 +99,9 @@ GlobalStore::loadProfiles() const
 {
   std::vector<Profile> profiles;
 
-  auto indexResult =
-      geode::utils::file::readJson(
-          getProfilesDir() /
-          "index.json");
+  auto indexResult = geode::utils::file::readJson(
+    getProfilesDir() / "index.json"
+  );
 
   if (indexResult.isErr())
   {
@@ -289,11 +281,11 @@ void GlobalStore::removeProfileById(std::string const &id)
           }),
       m_profiles.end());
 
-  std::error_code ec;
-  std::filesystem::remove(getProfilePath(id), ec);
-
-  if (ec)
-    log::error("Failed to remove profile {}: {}", id, ec.message());
+  auto removeResult = asp::fs::remove(getProfilePath(id));
+  if (removeResult.isErr()) {
+    log::error("Failed to remove profile {}: {}", id, removeResult.err());
+    return;
+  }
 
   saveProfileIndex();
 }

@@ -1,9 +1,12 @@
-# v2.3.5
+# 2.3.6
+- Update to stable geode v6
+
+# 2.3.5
 - Added a popup to choose which profiles and data fields to include when exporting profile backups, instead of always exporting everything raw
 - Improved News card layout to support dynamic height and multi-line descriptions
 - Fixed stage progression counter showing one stage behind
 
-# v2.3.4
+# 2.3.4
 - Fixed incorrect run assignment when multiple ranges overlap.
 - Runs now always assign stats and PASS to the same target range.
 - Improved fallback selection when no unchecked range can be completed.

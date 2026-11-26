@@ -54,6 +54,7 @@ bool StageListLayer::init(
   // ! --- ScrollLayer --- !
   m_scroll = ScrollLayer::create(contentSize);
   m_scroll->setContentSize({contentSize.width - padding * 2, contentSize.height - padding * 2});
+  m_scroll->setAnchorPoint({ 0.0f, 0.0f });
   m_scroll->setPosition({padding, padding});
   m_scroll->m_contentLayer->setLayout(
       ColumnLayout::create()

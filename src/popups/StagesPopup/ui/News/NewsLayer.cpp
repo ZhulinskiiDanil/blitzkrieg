@@ -83,9 +83,8 @@ bool NewsLayer::init(
         innerSize.height - 8.f,
     };
 
-    m_scroll =
-        ScrollLayer::create(scrollSize);
-
+    m_scroll = ScrollLayer::create(scrollSize);
+    m_scroll->setAnchorPoint({ 0.0f, 0.0f });
     m_scroll->setPosition({
         padding.left + 4.f,
         padding.bottom + 4.f,
@@ -255,7 +254,7 @@ void NewsLayer::showMessage(
 }
 
 void NewsLayer::setNews(
-    std::vector<NewsItem> const &news)
+    std::vector<BlitzNewsItem> const &news)
 {
     if (!m_scroll)
         return;

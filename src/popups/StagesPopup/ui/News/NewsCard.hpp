@@ -5,14 +5,14 @@
 #include <ctime>
 #include <string>
 
-#include "../../../../serialization/news/NewsItem.hpp"
+#include "../../../../serialization/news/BlitzNewsItem.hpp"
 
 using namespace geode::prelude;
 
 class NewsCard : public CCLayer
 {
 private:
-    NewsItem m_news;
+    BlitzNewsItem m_news;
     CCSize m_size;
 
     void onAction(CCObject *sender);
@@ -28,10 +28,10 @@ private:
 
 public:
     static NewsCard *create(
-        NewsItem const &news,
+        BlitzNewsItem const &news,
         CCSize const &size);
 
     bool init(
-        NewsItem const &news,
+        BlitzNewsItem const &news,
         CCSize const &size);
 };

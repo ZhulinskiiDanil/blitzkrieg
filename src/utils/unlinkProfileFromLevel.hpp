@@ -2,7 +2,7 @@
 
 #include <string>
 #include <Geode/Geode.hpp>
-#include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include <cvolton.level-id-api/EditorIDs.hpp>
 #include "../serialization/profile/index.hpp"
 
 using namespace geode::prelude;

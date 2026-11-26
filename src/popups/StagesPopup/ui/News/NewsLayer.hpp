@@ -45,7 +45,7 @@ public:
         CCSize const &contentSize);
 
     void setNews(
-        std::vector<NewsItem> const &news);
+        std::vector<BlitzNewsItem> const &news);
 
     void reload();
 };

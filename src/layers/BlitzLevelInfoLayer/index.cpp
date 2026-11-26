@@ -16,7 +16,7 @@ bool BlitzLevelInfoLayer::init(GJGameLevel *level, bool challenge)
     m_fields->m_startPosSprite->setVisible(false);
     m_fields->m_startposBtn->setVisible(false);
 
-    auto menu = this->getChildByIDRecursive("left-side-menu");
+    auto menu = this->getChildByID("left-side-menu");
     menu->addChild(m_fields->m_startposBtn);
     menu->updateLayout();
 

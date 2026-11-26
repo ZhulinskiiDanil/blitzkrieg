@@ -1,8 +1,8 @@
 #include "./index.hpp"
 
-StartPosLayer *StartPosLayer::create()
+BlitzStartPosLayer *BlitzStartPosLayer::create()
 {
-  auto ret = new StartPosLayer();
+  auto ret = new BlitzStartPosLayer();
   if (ret->init())
   {
     ret->autorelease();
@@ -12,19 +12,19 @@ StartPosLayer *StartPosLayer::create()
   return nullptr;
 }
 
-CCScene *StartPosLayer::scene()
+CCScene *BlitzStartPosLayer::scene()
 {
   auto scene = CCScene::create();
-  scene->addChild(StartPosLayer::create());
+  scene->addChild(BlitzStartPosLayer::create());
   return scene;
 }
 
-bool StartPosLayer::init()
+bool BlitzStartPosLayer::init()
 {
   if (!CCLayer::init())
     return false;
 
-  setID("StartPosLayer");
+  setID("BlitzStartPosLayer");
   auto winSize = CCDirector::get()->getWinSize();
 
   auto BG = CCSprite::create("GJ_gradientBG.png");
@@ -85,9 +85,7 @@ bool StartPosLayer::init()
   m_searchBar->setAnchorPoint({0, 0.5f});
   m_searchBar->ignoreAnchorPointForPosition(true);
   m_searchBar->setPosition({6, 0});
-  m_searchBar->setTextAlign(TextInputAlign::Left);
-  m_searchBar->getInputNode()->setLabelPlaceholderScale(0.70f);
-  m_searchBar->getInputNode()->setMaxLabelScale(0.70f);
+  m_searchBar->setAlignment(Label::Alignment::Left);
   m_searchBar->setCallback([this](std::string val)
                            { m_query = val; });
   m_searchBar->setID("search-bar");
@@ -158,7 +156,7 @@ bool StartPosLayer::init()
   return true;
 }
 
-void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
+void BlitzStartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
 {
   toggleLoading(false);
 
@@ -168,7 +166,7 @@ void StartPosLayer::loadLevelsFinished(CCArray *levels, char const *key)
   reload();
 }
 
-void StartPosLayer::loadLevelsFailed(char const *key, int p1)
+void BlitzStartPosLayer::loadLevelsFailed(char const *key, int p1)
 {
   toggleLoading(false);
 
@@ -181,7 +179,7 @@ void StartPosLayer::loadLevelsFailed(char const *key, int p1)
   log::warn("Failed to load StartPos levels: {} (key: {})", p1, key);
 }
 
-void StartPosLayer::loadLevels()
+void BlitzStartPosLayer::loadLevels()
 {
   m_levels.clear();
   m_downloadUrls.clear();
@@ -203,14 +201,13 @@ void StartPosLayer::loadLevels()
 
     levelsIdsString += std::to_string(id);
   }
-  auto gdStr = gd::string{levelsIdsString.data(), levelsIdsString.size()};
 
   auto glm = GameLevelManager::get();
   glm->m_levelManagerDelegate = this;
-  glm->getOnlineLevels(GJSearchObject::create(SearchType::Type26, gdStr));
+  glm->getOnlineLevels(GJSearchObject::create(SearchType::Type26, levelsIdsString));
 }
 
-void StartPosLayer::reload()
+void BlitzStartPosLayer::reload()
 {
   if (auto listView = m_levelList->m_listView)
   {
@@ -235,18 +232,18 @@ void StartPosLayer::reload()
   tableView->moveToTop();
 }
 
-void StartPosLayer::page(size_t page)
+void BlitzStartPosLayer::page(size_t page)
 {
   m_page = std::clamp(page, (size_t)1, m_totalPages);
   loadStartPosLevelList();
 }
 
-void StartPosLayer::setIDPopupClosed(SetIDPopup *, int pageValue)
+void BlitzStartPosLayer::setIDPopupClosed(SetIDPopup *, int pageValue)
 {
   page(pageValue);
 }
 
-void StartPosLayer::toggleLoading(bool isToggled)
+void BlitzStartPosLayer::toggleLoading(bool isToggled)
 {
   if (auto listView = m_levelList->m_listView)
     listView->setVisible(!isToggled);
@@ -261,7 +258,7 @@ void StartPosLayer::toggleLoading(bool isToggled)
   m_isLoading = isToggled;
 }
 
-void StartPosLayer::onOpenDownloadLink(CCObject *sender)
+void BlitzStartPosLayer::onOpenDownloadLink(CCObject *sender)
 {
   int i = sender->getTag();
   auto it = m_downloadUrls.find(i);
@@ -290,18 +287,18 @@ void StartPosLayer::onOpenDownloadLink(CCObject *sender)
 
 // ! === Rows === !
 
-unsigned int StartPosLayer::numberOfSectionsInTableView(TableView *table)
+unsigned int BlitzStartPosLayer::numberOfSectionsInTableView(TableView *table)
 {
   return 1;
 }
 
-int StartPosLayer::numberOfRowsInSection(unsigned int section, TableView *table)
+int BlitzStartPosLayer::numberOfRowsInSection(unsigned int section, TableView *table)
 {
   // At least 2 elements to fix the scroll even if we draw 1 or 0
   return std::max(m_searchResults.size(), (size_t)2);
 }
 
-TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, TableView *table)
+TableViewCell *BlitzStartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, TableView *table)
 {
   auto index = static_cast<std::size_t>(indexPath.m_row);
 
@@ -368,7 +365,7 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
     // ! --- Button --- !
     auto spr = ButtonSprite::create("Download .gmd");
     auto btn = CCMenuItemSpriteExtra::create(
-        spr, this, menu_selector(StartPosLayer::onOpenDownloadLink));
+        spr, this, menu_selector(BlitzStartPosLayer::onOpenDownloadLink));
     btn->setAnchorPoint({.5, .5});
     btn->setScale(.8f);
     btn->setTag(index);
@@ -404,18 +401,18 @@ TableViewCell *StartPosLayer::cellForRowAtIndexPath(CCIndexPath &indexPath, Tabl
   return nullptr;
 }
 
-void StartPosLayer::search()
+void BlitzStartPosLayer::search()
 {
   if (m_lastReqUrl != generateRequestURL())
     loadStartPosLevelList();
 }
 
-std::string StartPosLayer::generateRequestURL()
+std::string BlitzStartPosLayer::generateRequestURL()
 {
   return fmt::format("{}/levels?page={}&limit={}&levelName={}", API_URL, m_page, m_lvlsPerPage, encodeURIComponent(m_query));
 }
 
-void StartPosLayer::loadStartPosLevelList(bool isRefresh)
+void BlitzStartPosLayer::loadStartPosLevelList(bool isRefresh)
 {
   std::string reqUrl = generateRequestURL();
 
@@ -475,7 +472,7 @@ void StartPosLayer::loadStartPosLevelList(bool isRefresh)
   auto req = web::WebRequest();
 }
 
-void StartPosLayer::keyDown(enumKeyCodes key, double d)
+void BlitzStartPosLayer::keyDown(enumKeyCodes key, double d)
 {
   switch (key)
   {
@@ -498,7 +495,7 @@ void StartPosLayer::keyDown(enumKeyCodes key, double d)
   }
 }
 
-void StartPosLayer::keyBackClicked()
+void BlitzStartPosLayer::keyBackClicked()
 {
   CCDirector::get()->popSceneWithTransition(0.5f, kPopTransitionFade);
 }
@@ -506,10 +503,10 @@ void StartPosLayer::keyBackClicked()
 // ! === Destructor === !
 
 // Fix input focus bug when exiting the layer while the search bar is focused
-void StartPosLayer::onExit()
+void BlitzStartPosLayer::onExit()
 {
   if (m_searchBar)
-    m_searchBar->defocus();
+    m_searchBar->unfocus();
 
   auto glm = GameLevelManager::get();
 
@@ -519,7 +516,7 @@ void StartPosLayer::onExit()
   CCLayer::onExit();
 }
 
-StartPosLayer::~StartPosLayer()
+BlitzStartPosLayer::~BlitzStartPosLayer()
 {
   auto glm = GameLevelManager::get();
   if (glm->m_levelManagerDelegate == this)

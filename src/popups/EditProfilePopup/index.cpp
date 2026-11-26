@@ -29,7 +29,7 @@ bool EditProfilePopup::init(Profile *profile, GJGameLevel *level)
 
   // ! --- Profile Name Input --- !
   m_profileNameInput = TextInput::create(m_size.width - 20.f, "Profile name", "bigFont.fnt");
-  m_profileNameInput->getInputNode()->setMaxLabelLength(32);
+  m_profileNameInput->setMaxCharCount(32);
   m_profileNameInput->setAnchorPoint({0.f, 1.f});
   m_profileNameInput->setPosition(10.f, m_size.height - 30.f - 10.f);
   m_profileNameInput->setString(profile->profileName, false);
@@ -39,7 +39,7 @@ bool EditProfilePopup::init(Profile *profile, GJGameLevel *level)
   // ! --- Discord Webhook Input --- !
   m_discordWebhookInput = TextInput::create(m_size.width - 20.f, "Discord webhook URL", "bigFont.fnt");
   m_discordWebhookInput->setPasswordMode(true);
-  m_discordWebhookInput->getInputNode()->setMaxLabelLength(128);
+  m_discordWebhookInput->setMaxCharCount(128);
   m_discordWebhookInput->setFilter("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_/:.");
   m_discordWebhookInput->setAnchorPoint({0, 1});
   m_discordWebhookInput->setPosition(10.f, m_profileNameInput->getPositionY() - 30.f - 10.f);

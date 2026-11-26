@@ -2,7 +2,7 @@
 
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PauseLayer.hpp>
-#include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include <cvolton.level-id-api/EditorIDs.hpp>
 
 #include <filesystem>
 #include <string>
@@ -65,9 +65,9 @@ private:
     void saveProfile(Profile const &profile) const;
     void saveProfileIndex() const;
 
-    std::filesystem::path getProfilesDir() const;
+    asp::fs::Path getProfilesDir() const;
 
-    std::filesystem::path getProfilePath(
+    asp::fs::Path getProfilePath(
         std::string const &profileId) const;
 
     std::vector<Profile> m_profiles;

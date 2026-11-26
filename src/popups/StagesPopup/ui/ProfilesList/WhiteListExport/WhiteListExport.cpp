@@ -39,7 +39,7 @@ void WhiteListExport::createTitleRow()
 
   // ! --- Title --- !
   setTitle("Export Profiles", "goldFont.fnt", .5f, 20.f);
-  m_title->limitLabelWidth(180.f, .5f, .1f);
+  m_title->setLimitLabelWidth(180.f, .5f, .1f);
   m_title->setAnchorPoint({0.f, .5f});
   m_title->setPosition({12.f, rowY});
 
@@ -98,6 +98,7 @@ void WhiteListExport::createProfilesList()
 
   // ! --- ScrollLayer --- !
   m_scroll = ScrollLayer::create(scrollSize);
+  m_scroll->setAnchorPoint({ 0.0f, 0.0f });
   m_scroll->setPosition({12.f, scrollBottomY});
 
   m_scroll->m_contentLayer->setLayout(

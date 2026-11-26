@@ -6,7 +6,7 @@
 #include <ctime>
 
 NewsCard *NewsCard::create(
-    NewsItem const &news,
+    BlitzNewsItem const &news,
     CCSize const &size)
 {
     auto ret = new NewsCard();
@@ -192,7 +192,7 @@ void NewsCard::onAction(
 }
 
 bool NewsCard::init(
-    NewsItem const &news,
+    BlitzNewsItem const &news,
     CCSize const &size)
 {
     if (!CCLayer::init())

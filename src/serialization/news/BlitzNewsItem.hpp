@@ -15,7 +15,7 @@ enum class NewsType
   Warning
 };
 
-struct NewsItem
+struct BlitzNewsItem
 {
   std::string id;
   NewsType type = NewsType::Unknown;

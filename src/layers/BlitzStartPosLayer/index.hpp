@@ -6,15 +6,15 @@
 #include "../../utils/encodeURIComponent.hpp"
 #include "../../ui/RectNode.hpp"
 
-class StartPosLayer : public CCLayer,
+class BlitzStartPosLayer : public CCLayer,
 											public SetIDPopupDelegate,
 											public LevelManagerDelegate,
 											public TableViewDataSource
 {
 public:
-	static StartPosLayer *create();
+	static BlitzStartPosLayer *create();
 	static CCScene *scene();
-	~StartPosLayer();
+	~BlitzStartPosLayer();
 
 protected:
 	GJListLayer *m_levelList;

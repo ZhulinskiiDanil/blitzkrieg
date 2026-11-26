@@ -40,7 +40,9 @@ bool CreateProfilePopup::init(GJGameLevel *level)
   auto btnCancel = CCMenuItemSpriteExtra::create(
       m_button2,
       this,
-      menu_selector(CreateProfilePopup::onBtn2));
+      // menu_selector(CreateProfilePopup::onBtn2)
+      nullptr
+    );
 
   m_bottomButtonMenu->addChild(btnCancel);
   btnCancel->ignoreAnchorPointForPosition(true);
@@ -84,11 +86,10 @@ bool CreateProfilePopup::init(GJGameLevel *level)
 
   // ! --- Input --- !
   m_input = TextInput::create(m_size.width - 20.f, "Profile name", "bigFont.fnt");
-  m_input->getInputNode()->setMaxLabelLength(32);
+  m_input->setMaxCharCount(32);
   m_input->setAnchorPoint({0.f, 1.f});
   m_input->setPosition(10.f, m_size.height - 40.f);
   m_input->setString(m_level->m_levelName, false);
-  m_input->setMaxCharCount(32);
 
   // ! --- Lists Container --- !
   m_lists = CCLayer::create();

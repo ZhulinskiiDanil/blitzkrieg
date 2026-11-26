@@ -4,7 +4,7 @@ void BlitzPauseLayer::customSetup()
 {
     PauseLayer::customSetup();
     auto level = PlayLayer::get()->m_level;
-    auto leftMenu = this->getChildByID("left-button-menu");
+    auto leftMenu = m_mainLayer->getChildByID("left-button-menu");
 
     auto modCircleLogo = CCSprite::create("logo-circle.png"_spr);
     auto modBtn = CCMenuItemExt::createSpriteExtra(modCircleLogo, [this](auto)

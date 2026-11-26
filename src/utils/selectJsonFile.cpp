@@ -10,17 +10,15 @@
 
 using namespace geode;
 
-static std::string readFileToString(const std::filesystem::path &path)
+static std::string readFileToString(const asp::fs::Path &path)
 {
-    std::ifstream file(path, std::ios::binary);
-
-    if (!file.is_open())
+    auto data = utils::file::readString(path);
+    if (data.isErr()) {
+        log::error("Failed to read file: {}", data.err());
         return {};
+    }
 
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-
-    return buffer.str();
+    return data.unwrap();
 }
 
 void selectJsonFile(std::function<void(std::string)> callback)
@@ -50,10 +48,9 @@ void selectJsonFile(std::function<void(std::string)> callback)
             auto path = result.unwrap();
 
             // User closed the file picker.
-            if (!path)
-                return;
+            if (!path.has_value()) return;
 
-            auto content = readFileToString(*path);
+            auto content = readFileToString(path.value());
 
             if (content.empty())
             {
